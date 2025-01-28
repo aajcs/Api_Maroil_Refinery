@@ -1,2 +1,3 @@
-# Api_Maroil_Refinery
-Backend del proyecto de colombia
+# WebServer + RestServer
+
+Recuerden que deben de ejecutar ```npm install``` para reconstruir los módulos de Node.
