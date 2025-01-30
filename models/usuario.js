@@ -15,9 +15,7 @@ const UsuarioSchema = Schema({
         type: String,
         required: [true, 'La contraseña es obligatoria'],
     },
-    img: {
-        type: String,
-    },
+    
     rol: {
         type: String,
         required: true,
@@ -28,17 +26,33 @@ const UsuarioSchema = Schema({
         type: Boolean,
         default: true
     },
-    google: {
+   /* google: {
         type: Boolean,
         default: false
+    },*/
+    acceso: {
+        type: String,
+        required: true,
+        default: 'ACCESS_LIMIT',
+        enum: ['ACCESS_LIMIT', 'FULL_ACCESS']
     },
-});
+    id_refineria: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Refineria',            
+    }],
+
+},
+{
+    timestamps: true,
+    versionKey: false
+  }
+);
 
 
 
 UsuarioSchema.methods.toJSON = function() {
-    const { __v, password, _id, ...usuario  } = this.toObject();
-    usuario.uid = _id;
+    const { password, _id, ...usuario  } = this.toObject();
+    usuario.id = _id;
     return usuario;
 }
 

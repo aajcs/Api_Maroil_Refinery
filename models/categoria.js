@@ -16,7 +16,10 @@ const CategoriaSchema = Schema({
         ref: 'Usuario',
         required: true
     }
-});
+}, {
+    timestamps: true,
+    versionKey: false
+  });
 
 
 CategoriaSchema.methods.toJSON = function() {
