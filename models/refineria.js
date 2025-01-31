@@ -7,22 +7,28 @@ const RefineriaSchema = Schema({
         required: [true, 'Ubicación física de la refineria es necesaria']
     },
     
+    nombre: {
+      type: String,
+      required: [true, 'NIT es necesario']
+                   
+  },    
+
     nit: {
         type: String,
-        required: [true, 'NIT es necesario']
-                     
-    }    
+        required: [true, 'NIT es necesario']  
+        }    
+
+        
   },
   {
     timestamps: true,
-    versionKey: false
-  });
+     });
 
 
 RefineriaSchema.methods.toJSON = function() {
-    const { _id, ...refineria } = this.toObject();
+    const { __v,_id, ...refineria } = this.toObject();
     refineria.id = _id;
     return refineria;
 }
 
-module.exports = model( 'Refineria', contactosSchema );
+module.exports = model( 'Refineria', RefineriaSchema );
