@@ -38,8 +38,8 @@ const UsuarioSchema = Schema(
     acceso: {
       type: String,
       required: true,
-      default: "ACCESS_LIMIT",
-      enum: ["ACCESS_LIMIT", "FULL_ACCESS"],
+      default: "ninguno",
+      enum: ["limitado", "completo", "ninguno"],
     },
     id_refineria: [
       {
