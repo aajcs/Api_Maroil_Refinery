@@ -26,6 +26,11 @@ const UsuarioSchema = Schema(
       type: String,
       default: true,
     },
+    eliminado: {
+      type: Boolean,
+      default: false,
+    },
+
     /* google: {
         type: Boolean,
         default: false

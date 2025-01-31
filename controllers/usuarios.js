@@ -4,19 +4,34 @@ const bcryptjs = require("bcryptjs");
 const Usuario = require("../models/usuario");
 const { generarJWT } = require("../helpers");
 
-const usuariosGet = async (req = request, res = response) => {
+const usuariosGets = async (req = request, res = response) => {
   const { limite = 5, desde = 0 } = req.query;
-  //   const query = { estado: true };
+  const query = { eliminado: false };
 
   const [total, usuarios] = await Promise.all([
-    Usuario.countDocuments(),
-    Usuario.find().skip(Number(desde)).limit(Number(limite)),
+    Usuario.countDocuments(query),
+    Usuario.find(query).skip(Number(desde)).limit(Number(limite)),
   ]);
 
   res.json({
     total,
     usuarios,
   });
+};
+
+const usuariosGet = async (req = request, res = response) => {
+  const { id } = req.params;
+  const usuario = await Usuario.findById(id);
+
+  // Verificar si el campo eliminado es falso
+  if (usuario && !usuario.eliminado) {
+    res.json(usuario);
+  } else {
+    // Enviar una respuesta apropiada si el usuario no existe o está marcado como eliminado
+    res.status(404).json({
+      msg: "Usuario no encontrado o eliminado",
+    });
+  }
 };
 
 const usuariosPost = async (req, res = response) => {
@@ -53,7 +68,7 @@ const usuariosPost = async (req, res = response) => {
 
 const usuariosPut = async (req, res = response) => {
   const { id } = req.params;
-  const { _id, password, google, correo, ...resto } = req.body;
+  const { _id, password, correo, ...resto } = req.body;
 
   if (password) {
     // Encriptar la contraseña
@@ -61,7 +76,7 @@ const usuariosPut = async (req, res = response) => {
     resto.password = bcryptjs.hashSync(password, salt);
   }
 
-  const usuario = await Usuario.findByIdAndUpdate(id, resto);
+  const usuario = await Usuario.findByIdAndUpdate(id, resto, { new: true });
 
   res.json(usuario);
 };
@@ -74,15 +89,20 @@ const usuariosPatch = (req, res = response) => {
 
 const usuariosDelete = async (req, res = response) => {
   const { id } = req.params;
-  const usuario = await Usuario.findByIdAndUpdate(id, { estado: false });
+  const usuario = await Usuario.findByIdAndUpdate(
+    id,
+    { eliminado: true },
+    { new: true }
+  );
 
   res.json(usuario);
 };
 
 module.exports = {
-  usuariosGet,
+  usuariosGets,
   usuariosPost,
   usuariosPut,
   usuariosPatch,
   usuariosDelete,
+  usuariosGet,
 };

@@ -1,34 +1,43 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
-const RefineriaSchema = Schema({
-   
+const RefineriaSchema = Schema(
+  {
     ubicacion: {
-        type: String,
-        required: [true, 'Ubicación física de la refineria es necesaria']
+      type: String,
+      required: [true, "Ubicación física de la refineria es necesaria"],
     },
-    
+
     nombre: {
       type: String,
-      required: [true, 'NIT es necesario']
-                   
-  },    
+      required: [true, "NIT es necesario"],
+    },
 
     nit: {
-        type: String,
-        required: [true, 'NIT es necesario']  
-        }    
+      type: String,
+      required: [true, "NIT es necesario"],
+    },
 
-        
+    img: {
+      type: String,
+    },
+    estado: {
+      type: String,
+      default: true,
+    },
+    eliminado: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
-     });
+  }
+);
 
+RefineriaSchema.methods.toJSON = function () {
+  const { __v, _id, ...refineria } = this.toObject();
+  refineria.id = _id;
+  return refineria;
+};
 
-RefineriaSchema.methods.toJSON = function() {
-    const { __v,_id, ...refineria } = this.toObject();
-    refineria.id = _id;
-    return refineria;
-}
-
-module.exports = model( 'Refineria', RefineriaSchema );
+module.exports = model("Refineria", RefineriaSchema);

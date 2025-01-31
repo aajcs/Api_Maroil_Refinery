@@ -9,23 +9,25 @@ const {
 } = require("../middlewares");
 
 const {
-  esRoleValido,
+  //esRoleValido,
   emailExiste,
   existeUsuarioPorId,
+  nitExiste,
+  existeRefineriaPorId,
 } = require("../helpers/db-validators");
 
 const {
-  usuariosGet,
-  usuariosPut,
-  usuariosPost,
-  usuariosDelete,
-  usuariosPatch,
-  usuariosGets,
-} = require("../controllers/usuarios");
+  refineriasGet,
+  refineriasPut,
+  refineriasPost,
+  refineriasDelete,
+  refineriasPatch,
+  refineriasGets,
+} = require("../controllers/refinerias");
 
 const router = Router();
 
-router.get("/", usuariosGets);
+router.get("/", refineriasGets);
 router.get(
   "/:id",
   [
@@ -33,33 +35,30 @@ router.get(
     // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
-  usuariosGet
+  refineriasGet
 );
 router.put(
   "/:id",
   [
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeUsuarioPorId),
+    check("id").custom(existeRefineriaPorId),
     //check("rol").custom(esRoleValido),
     validarCampos,
   ],
-  usuariosPut
+  refineriasPut
 );
 
 router.post(
   "/",
   [
     check("nombre", "El nombre es obligatorio").not().isEmpty(),
-    check("password", "El password debe de ser más de 6 letras").isLength({
-      min: 6,
-    }),
-    check("correo", "El correo no es válido").isEmail(),
-    check("correo").custom(emailExiste),
+    check("nit").custom(nitExiste),
+    check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
     // check('rol', 'No es un rol válido').isIn(['ADMIN_ROLE','USER_ROLE']),
     // check('rol').custom( esRoleValido ),
     validarCampos,
   ],
-  usuariosPost
+  refineriasPost
 );
 
 router.delete(
@@ -69,12 +68,12 @@ router.delete(
     // esAdminRole,
     tieneRole("ADMIN_ROLE", "VENTAR_ROLE", "OTRO_ROLE"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeUsuarioPorId),
+    check("id").custom(existeRefineriaPorId),
     validarCampos,
   ],
-  usuariosDelete
+  refineriasDelete
 );
 
-router.patch("/", usuariosPatch);
+router.patch("/", refineriasPatch);
 
 module.exports = router;
