@@ -62,7 +62,7 @@ class Server {
     this.app.use(this.paths.usuarios, require("../routes/usuarios"));
     this.app.use(this.paths.uploads, require("../routes/uploads"));
     this.app.use(this.paths.refinerias, require("../routes/refinerias"));
-    this.app.use(this.paths.refinerias, require("../routes/linea_carga"));
+    this.app.use(this.paths.linea_carga, require("../routes/linea_carga"));
   }
 
   listen() {

@@ -1,5 +1,11 @@
 const Role = require("../models/role");
-const { Usuario, Categoria, Producto } = require("../models");
+const {
+  Usuario,
+  Categoria,
+  Producto,
+  Refineria,
+  Linea_carga,
+} = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
   const existeRol = await Role.findOne({ rol });
@@ -33,7 +39,7 @@ const existeUsuarioPorId = async (id) => {
 
 const existeRefineriaPorId = async (id) => {
   // Verificar si la refineria existe
-  const existeRefineria = await refineria.findById(id);
+  const existeRefineria = await Refineria.findById(id);
   if (!existeRefineria) {
     throw new Error(`El id no existe ${id}`);
   }
@@ -41,7 +47,7 @@ const existeRefineriaPorId = async (id) => {
 
 const existeLineaPorId = async (id) => {
   // Verificar si la linea existe
-  const existeLinea = await linea_carga.findById(id);
+  const existeLinea = await Linea_carga.findById(id);
   if (!existeLinea) {
     throw new Error(`El id no existe ${id}`);
   }

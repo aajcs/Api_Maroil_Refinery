@@ -8,7 +8,10 @@ const linea_cargaGets = async (req = request, res = response) => {
 
   const [total, linea_cargas] = await Promise.all([
     Linea_carga.countDocuments(query),
-    Linea_carga.find(query).skip(Number(desde)).limit(Number(limite)),
+    Linea_carga.find(query)
+      .skip(Number(desde))
+      .limit(Number(limite))
+      .populate("id_empresa", "nombre"),
   ]);
 
   res.json({
@@ -19,7 +22,10 @@ const linea_cargaGets = async (req = request, res = response) => {
 
 const linea_cargaGet = async (req = request, res = response) => {
   const { id } = req.params;
-  const linea_carga = await Linea_carga.findById(id);
+  const linea_carga = await Linea_carga.findById(id).populate(
+    "id_empresa",
+    "nombre"
+  );
 
   // Verificar si el campo eliminado es falso
   if (linea_carga && !linea_carga.eliminado) {
@@ -39,6 +45,7 @@ const linea_cargaPost = async (req, res = response) => {
     numero,
     id_empresa,
   });
+  console.log(linea_carga);
   try {
     // Guardar en BD
     await linea_carga.save();
@@ -54,7 +61,6 @@ const linea_cargaPost = async (req, res = response) => {
 const linea_cargaPut = async (req, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
-
   const linea_carga = await Linea_carga.findByIdAndUpdate(id, resto, {
     new: true,
   });
