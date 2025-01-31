@@ -9,23 +9,25 @@ const {
 } = require("../middlewares");
 
 const {
-  esRoleValido,
-  emailExiste,
-  existeUsuarioPorId,
+  //esRoleValido,
+  // emailExiste,
+  // existeUsuarioPorId,
+  // nitExiste,
+  existeLineaPorId,
 } = require("../helpers/db-validators");
 
 const {
-  usuariosGet,
-  usuariosPut,
-  usuariosPost,
-  usuariosDelete,
-  usuariosPatch,
-  usuariosGets,
-} = require("../controllers/usuarios");
+  linea_cargaGet,
+  linea_cargaPut,
+  linea_cargaPost,
+  linea_cargaDelete,
+  linea_cargaPatch,
+  linea_cargaGets,
+} = require("../controllers/linea_carga");
 
 const router = Router();
 
-router.get("/", usuariosGets);
+router.get("/", linea_cargaGets);
 router.get(
   "/:id",
   [
@@ -33,33 +35,32 @@ router.get(
     // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
-  usuariosGet
+  linea_cargaGet
 );
 router.put(
   "/:id",
   [
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeUsuarioPorId),
+    check("id").custom(existeLineaPorId),
     //check("rol").custom(esRoleValido),
     validarCampos,
   ],
-  usuariosPut
+  linea_cargaPut
 );
 
 router.post(
   "/",
   [
-    check("nombre", "El nombre es obligatorio").not().isEmpty(),
-    check("password", "El password debe de ser más de 6 letras").isLength({
-      min: 6,
-    }),
-    check("correo", "El correo no es válido").isEmail(),
-    check("correo").custom(emailExiste),
+    check("numero", "El numero es obligatorio").not().isEmpty(),
+    //check("nit").custom(nitExiste),
+    check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
+    check("refineria").custom(existeLineaPorId),
+
     // check('rol', 'No es un rol válido').isIn(['ADMIN_ROLE','USER_ROLE']),
     // check('rol').custom( esRoleValido ),
     validarCampos,
   ],
-  usuariosPost
+  linea_cargaPost
 );
 
 router.delete(
@@ -67,14 +68,14 @@ router.delete(
   [
     validarJWT,
     // esAdminRole,
-    tieneRole("ADMIN_ROLE", "VENTAR_ROLE", "OTRO_ROLE", "superAdmin"),
+    tieneRole("ADMIN_ROLE", "VENTAR_ROLE", "OTRO_ROLE"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeUsuarioPorId),
+    check("id").custom(existeLineaPorId),
     validarCampos,
   ],
-  usuariosDelete
+  linea_cargaDelete
 );
 
-router.patch("/", usuariosPatch);
+router.patch("/", linea_cargaPatch);
 
 module.exports = router;

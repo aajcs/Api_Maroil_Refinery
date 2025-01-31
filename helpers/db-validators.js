@@ -1,6 +1,5 @@
 const Role = require("../models/role");
 const { Usuario, Categoria, Producto } = require("../models");
-const refineria = require("../models/refineria");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
   const existeRol = await Role.findOne({ rol });
@@ -36,6 +35,14 @@ const existeRefineriaPorId = async (id) => {
   // Verificar si la refineria existe
   const existeRefineria = await refineria.findById(id);
   if (!existeRefineria) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+
+const existeLineaPorId = async (id) => {
+  // Verificar si la linea existe
+  const existeLinea = await linea_carga.findById(id);
+  if (!existeLinea) {
     throw new Error(`El id no existe ${id}`);
   }
 };
@@ -84,4 +91,5 @@ module.exports = {
   coleccionesPermitidas,
   nitExiste,
   existeRefineriaPorId,
+  existeLineaPorId,
 };
