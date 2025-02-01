@@ -42,7 +42,7 @@ router.put(
   [
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeRefineriaPorId),
-    //check("rol").custom(esRoleValido),
+    //check("rol").custom(esRoleValido), subiendo cambioos
     validarCampos,
   ],
   refineriasPut
