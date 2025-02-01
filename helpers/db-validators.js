@@ -23,7 +23,7 @@ const emailExiste = async (correo = "") => {
 };
 const nitExiste = async (nit = "") => {
   // Verificar si el nit existe
-  const nitExiste = await refineria.findOne({ nit });
+  const nitExiste = await Refineria.findOne({ nit });
   if (nitExiste) {
     throw new Error(`El nit: ${nit}, ya está registrado`);
   }
