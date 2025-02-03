@@ -18,6 +18,9 @@ class Server {
       uploads: "/api/uploads",
       refinerias: "/api/refinerias",
       linea_carga: "/api/linea_carga",
+      bomba: "/api/bomba",
+      tanque: "/api/tanque",
+      torre: "/api/torre",
     };
 
     // Conectar a base de datos
@@ -63,6 +66,9 @@ class Server {
     this.app.use(this.paths.uploads, require("../routes/uploads"));
     this.app.use(this.paths.refinerias, require("../routes/refinerias"));
     this.app.use(this.paths.linea_carga, require("../routes/linea_carga"));
+    this.app.use(this.paths.bomba, require("../routes/bomba"));
+    this.app.use(this.paths.tanque, require("../routes/tanque"));
+    this.app.use(this.paths.torre, require("../routes/torre"));
   }
 
   listen() {

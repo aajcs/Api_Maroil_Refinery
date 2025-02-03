@@ -5,6 +5,7 @@ const {
   Producto,
   Refineria,
   Linea_carga,
+  Tanque,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -53,6 +54,28 @@ const existeLineaPorId = async (id) => {
   }
 };
 
+const existeBombaPorId = async (id) => {
+  // Verificar si la Bomba existe
+  const existeBomba = await Bomba.findById(id);
+  if (!existeBomba) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+const existeTanquePorId = async (id) => {
+  // Verificar si la linea existe
+  const existeTanque = await Tanque.findById(id);
+  if (!existeTanque) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+
+const existeTorrePorId = async (id) => {
+  // Verificar si torre existe
+  const existeTorre = await Torre.findById(id);
+  if (!existeTorre) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
 /**
  * Categorias
  */
@@ -98,4 +121,7 @@ module.exports = {
   nitExiste,
   existeRefineriaPorId,
   existeLineaPorId,
+  existeBombaPorId,
+  existeTanquePorId,
+  existeTorrePorId,
 };

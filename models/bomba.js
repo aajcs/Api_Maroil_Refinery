@@ -12,10 +12,6 @@ const BombaSchema = Schema(
       type: String,
       required: [true, "Ubicación física de la bomba es necesaria"],
     },
-    status: {
-      type: Boolean,
-      required: [true, "Estatus de bomba obligatorio"],
-    },
     apertura: {
       type: Number,
       required: [true, "% de apertura necesario"],
@@ -32,6 +28,10 @@ const BombaSchema = Schema(
       type: Boolean,
       default: false,
     },
+    estado: {
+      type: String,
+      default: true,
+    },
   },
   {
     timestamps: true,
@@ -40,9 +40,9 @@ const BombaSchema = Schema(
 );
 
 BombaSchema.methods.toJSON = function () {
-  const { _id, ...bomba } = this.toObject();
+  const { __v, _id, ...bomba } = this.toObject();
   bomba.id = _id;
   return bomba;
 };
 
-module.exports = model("Bomba", contactosSchema);
+module.exports = model("Bomba", BombaSchema);
