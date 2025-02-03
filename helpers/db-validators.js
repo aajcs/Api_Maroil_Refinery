@@ -6,6 +6,7 @@ const {
   Refineria,
   Linea_carga,
   Tanque,
+  Bomba,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
