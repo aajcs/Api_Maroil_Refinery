@@ -51,11 +51,10 @@ router.put(
 router.post(
   "/",
   [
-    check("nombre", "El nombre es obligatorio").not().isEmpty(),
-    check("nit").custom(nitExiste),
     check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    // check('rol', 'No es un rol válido').isIn(['ADMIN_ROLE','USER_ROLE']),
-    // check('rol').custom( esRoleValido ),
+    check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),
+    check("nit", "El NIT es obligatorio").not().isEmpty(),
+    check("img", "El logotipo de la refineria es obligatorio").not().isEmpty(),
     validarCampos,
   ],
   refineriasPost

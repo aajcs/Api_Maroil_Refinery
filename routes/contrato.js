@@ -13,21 +13,21 @@ const {
   // emailExiste,
   // existeUsuarioPorId,
   // nitExiste,
-  existeTanquePorId,
+  existeContratoPorId,
 } = require("../helpers/db-validators");
 
 const {
-  tanqueGet,
-  tanquePut,
-  tanquePost,
-  tanqueDelete,
-  tanquePatch,
-  tanqueGets,
-} = require("../controllers/tanque");
+  contratoGet,
+  contratoPut,
+  contratoPost,
+  contratoDelete,
+  contratoPatch,
+  contratoGets,
+} = require("../controllers/contrato");
 
 const router = Router();
 
-router.get("/", tanqueGets);
+router.get("/", contratoGets);
 router.get(
   "/:id",
   [
@@ -35,33 +35,32 @@ router.get(
     // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
-  tanqueGet
+  contratoGet
 );
 router.put(
   "/:id",
   [
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeTanquePorId),
+    check("id").custom(existeContratoPorId),
     //check("rol").custom(esRoleValido),
     validarCampos,
   ],
-  tanquePut
+  contratoPut
 );
 
 router.post(
   "/",
   [
     //Validación de campos.
-
-    check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),
-    check("capacidad", "La capacidad del tanque es obligatoria")
-      .not()
-      .isEmpty(),
-    check("material", "El material del tanque es obligatoria").not().isEmpty(),
-    validarCampos,
+    //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
+    //check("nombre", "El nombre del contrato es obligatorio").not().isEmpty(),
+    //check("capacidad", "La capacidad del contrato es obligatoria")
+    //  .not()
+    //.isEmpty(),
+    // check("material", "El material del contrato es obligatoria").not().isEmpty(),
+    // validarCampos,
   ],
-  tanquePost
+  contratoPost
 );
 
 router.delete(
@@ -71,12 +70,12 @@ router.delete(
     // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeTanquePorId),
+    check("id").custom(existeContratoPorId),
     validarCampos,
   ],
-  tanqueDelete
+  contratoDelete
 );
 
-router.patch("/", tanquePatch);
+router.patch("/", contratoPatch);
 
 module.exports = router;

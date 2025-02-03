@@ -8,6 +8,8 @@ const {
   Tanque,
   Bomba,
   Torre,
+  Contrato,
+  Contacto,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -78,6 +80,22 @@ const existeTorrePorId = async (id) => {
     throw new Error(`El id no existe ${id}`);
   }
 };
+
+const existeContratoPorId = async (id) => {
+  // Verificar si contrato existe
+  const existeContrato = await Contrato.findById(id);
+  if (!existeContrato) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+
+const existeContactoPorId = async (id) => {
+  // Verificar si contacto existe
+  const existeContacto = await Contacto.findById(id);
+  if (!existeContacto) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
 /**
  * Categorias
  */
@@ -126,4 +144,6 @@ module.exports = {
   existeBombaPorId,
   existeTanquePorId,
   existeTorrePorId,
+  existeContratoPorId,
+  existeContactoPorId,
 };

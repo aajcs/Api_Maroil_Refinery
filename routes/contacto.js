@@ -13,21 +13,22 @@ const {
   // emailExiste,
   // existeUsuarioPorId,
   // nitExiste,
-  existeTanquePorId,
+  existeContratoPorId,
+  existeContactoPorId,
 } = require("../helpers/db-validators");
 
 const {
-  tanqueGet,
-  tanquePut,
-  tanquePost,
-  tanqueDelete,
-  tanquePatch,
-  tanqueGets,
-} = require("../controllers/tanque");
+  contactoGet,
+  contactoPut,
+  contactoPost,
+  contactoDelete,
+  contactoPatch,
+  contactoGets,
+} = require("../controllers/contacto");
 
 const router = Router();
 
-router.get("/", tanqueGets);
+router.get("/", contactoGets);
 router.get(
   "/:id",
   [
@@ -35,33 +36,32 @@ router.get(
     // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
-  tanqueGet
+  contactoGet
 );
 router.put(
   "/:id",
   [
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeTanquePorId),
+    check("id").custom(existeContactoPorId),
     //check("rol").custom(esRoleValido),
     validarCampos,
   ],
-  tanquePut
+  contactoPut
 );
 
 router.post(
   "/",
   [
     //Validación de campos.
-
-    check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),
-    check("capacidad", "La capacidad del tanque es obligatoria")
-      .not()
-      .isEmpty(),
-    check("material", "El material del tanque es obligatoria").not().isEmpty(),
-    validarCampos,
+    //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
+    //check("nombre", "El nombre del contacto es obligatorio").not().isEmpty(),
+    //check("capacidad", "La capacidad del contacto es obligatoria")
+    //  .not()
+    //.isEmpty(),
+    // check("material", "El material del contacto es obligatoria").not().isEmpty(),
+    // validarCampos,
   ],
-  tanquePost
+  contactoPost
 );
 
 router.delete(
@@ -71,12 +71,12 @@ router.delete(
     // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeTanquePorId),
+    check("id").custom(existeContactoPorId),
     validarCampos,
   ],
-  tanqueDelete
+  contactoDelete
 );
 
-router.patch("/", tanquePatch);
+router.patch("/", contactoPatch);
 
 module.exports = router;

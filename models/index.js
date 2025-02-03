@@ -8,6 +8,8 @@ const Server = require("./server");
 const Usuario = require("./usuario");
 const Tanque = require("./tanque");
 const Torre = require("./torre");
+const Contrato = require("./contrato");
+const Contacto = require("./contacto");
 /*const contactos = require ('./contactos');
 const bombas = require('./bombas');
 const inspeccion_tanque = require('./inspeccion_tanque');
@@ -29,6 +31,8 @@ module.exports = {
   Bomba,
   Tanque,
   Torre,
+  Contrato,
+  Contacto,
   /*contactos,
     bombas,
     inspeccion_tanque,

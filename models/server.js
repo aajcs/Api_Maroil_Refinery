@@ -21,6 +21,8 @@ class Server {
       bomba: "/api/bomba",
       tanque: "/api/tanque",
       torre: "/api/torre",
+      contrato: "/api/contrato",
+      contacto: "/api/contacto",
     };
 
     // Conectar a base de datos
@@ -69,6 +71,8 @@ class Server {
     this.app.use(this.paths.bomba, require("../routes/bomba"));
     this.app.use(this.paths.tanque, require("../routes/tanque"));
     this.app.use(this.paths.torre, require("../routes/torre"));
+    this.app.use(this.paths.contrato, require("../routes/contrato"));
+    this.app.use(this.paths.contacto, require("../routes/contacto"));
   }
 
   listen() {
