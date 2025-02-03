@@ -7,6 +7,7 @@ const {
   Linea_carga,
   Tanque,
   Bomba,
+  Torre,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -63,7 +64,7 @@ const existeBombaPorId = async (id) => {
   }
 };
 const existeTanquePorId = async (id) => {
-  // Verificar si la linea existe
+  // Verificar si el Tanque existe
   const existeTanque = await Tanque.findById(id);
   if (!existeTanque) {
     throw new Error(`El id no existe ${id}`);

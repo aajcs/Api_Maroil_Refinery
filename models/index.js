@@ -6,6 +6,8 @@ const Refineria = require("./refineria");
 const Role = require("./role");
 const Server = require("./server");
 const Usuario = require("./usuario");
+const Tanque = require("./tanque");
+const Torre = require("./torre");
 /*const contactos = require ('./contactos');
 const bombas = require('./bombas');
 const inspeccion_tanque = require('./inspeccion_tanque');
@@ -25,6 +27,8 @@ module.exports = {
   Linea_carga,
   Refineria,
   Bomba,
+  Tanque,
+  Torre,
   /*contactos,
     bombas,
     inspeccion_tanque,

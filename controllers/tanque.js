@@ -36,14 +36,13 @@ const tanqueGet = async (req = request, res = response) => {
 };
 
 const tanquePost = async (req, res = response) => {
-  const { nombre, ubicacion, caudal, densidad, material, presion } = req.body;
+  const { nombre, ubicacion, capacidad, material, almacenamiento } = req.body;
   const tanque = new Tanque({
     nombre,
     ubicacion,
-    caudal,
-    densidad,
+    capacidad,
     material,
-    presion,
+    almacenamiento,
   });
   console.log(tanque);
   try {

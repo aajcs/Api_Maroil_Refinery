@@ -68,7 +68,7 @@ router.delete(
   [
     validarJWT,
     // esAdminRole,
-    tieneRole("ADMIN_ROLE", "VENTAR_ROLE", "OTRO_ROLE"),
+    tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeBombaPorId),
     validarCampos,
