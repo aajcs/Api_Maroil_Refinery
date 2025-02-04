@@ -11,7 +11,7 @@ const linea_cargaGets = async (req = request, res = response) => {
     Linea_carga.find(query)
       .skip(Number(desde))
       .limit(Number(limite))
-      .populate("id_empresa", "nombre"),
+      .populate("id_refineria", "nombre"),
   ]);
 
   res.json({
