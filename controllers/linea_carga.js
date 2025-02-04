@@ -63,7 +63,7 @@ const linea_cargaPut = async (req, res = response) => {
   const { _id, ...resto } = req.body;
   const linea_carga = await Linea_carga.findByIdAndUpdate(id, resto, {
     new: true,
-  });
+  }).populate("id_refineria", "nombre");
 
   res.json(linea_carga);
 };

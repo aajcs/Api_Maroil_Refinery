@@ -72,7 +72,7 @@ const torrePut = async (req, res = response) => {
   const { _id, ...resto } = req.body;
   const torre = await Torre.findByIdAndUpdate(id, resto, {
     new: true,
-  });
+  }).populate("id_refineria", "nombre");
 
   res.json(torre);
 };

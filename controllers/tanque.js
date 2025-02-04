@@ -70,7 +70,7 @@ const tanquePut = async (req, res = response) => {
   const { _id, ...resto } = req.body;
   const tanque = await Tanque.findByIdAndUpdate(id, resto, {
     new: true,
-  });
+  }).populate("id_refineria", "nombre");
 
   res.json(tanque);
 };

@@ -61,7 +61,9 @@ const bombaPut = async (req, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
-  const bomba = await Bomba.findByIdAndUpdate(id, resto, { new: true });
+  const bomba = await Bomba.findByIdAndUpdate(id, resto, {
+    new: true,
+  }).populate("id_refineria", "nombre");
 
   res.json(bomba);
 };
