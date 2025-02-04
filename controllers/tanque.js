@@ -56,7 +56,7 @@ const tanquePost = async (req, res = response) => {
   try {
     // Guardar en BD
     await tanque.save();
-    await torre.populate("id_refineria", "nombre"),
+    await tanque.populate("id_refineria", "nombre"),
       res.json({
         tanque,
       });

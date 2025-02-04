@@ -48,10 +48,10 @@ const bombaPost = async (req, res = response) => {
   try {
     // Guardar en BD
     await bomba.save();
-
-    res.json({
-      bomba,
-    });
+    await bomba.populate("id_refineria", "nombre"),
+      res.json({
+        bomba,
+      });
   } catch (err) {
     res.status(400).json({ error: err });
   }
