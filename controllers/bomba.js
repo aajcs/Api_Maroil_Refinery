@@ -48,7 +48,7 @@ const bombaPost = async (req, res = response) => {
   try {
     // Guardar en BD
     await bomba.save();
-    await bomba.populate("id_refineria", "nombre"),
+    await bomba.populate("id_refineria", "nombre").execPopulate(),
       res.json({
         bomba,
       });

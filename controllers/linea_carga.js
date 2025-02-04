@@ -49,7 +49,7 @@ const linea_cargaPost = async (req, res = response) => {
   try {
     // Guardar en BD
     await linea_carga.save();
-    await linea_carga.populate("id_refineria", "nombre"),
+    await linea_carga.populate("id_refineria", "nombre").execPopulate(),
       res.json({
         linea_carga,
       });

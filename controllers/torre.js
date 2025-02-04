@@ -58,7 +58,7 @@ const torrePost = async (req, res = response) => {
   try {
     // Guardar en BD
     await torre.save();
-    await torre.populate("id_refineria", "nombre"),
+    await torre.populate("id_refineria", "nombre").execPopulate(),
       res.json({
         torre,
       });

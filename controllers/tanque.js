@@ -56,10 +56,10 @@ const tanquePost = async (req, res = response) => {
   try {
     // Guardar en BD
     await tanque.save();
-    await tanque.populate("id_refineria", "nombre"),
-      res.json({
-        tanque,
-      });
+    await tanque.populate("id_refineria", "nombre").execPopulate();
+    res.json({
+      tanque,
+    });
   } catch (err) {
     res.status(400).json({ error: err });
   }
