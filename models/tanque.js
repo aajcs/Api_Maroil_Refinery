@@ -9,7 +9,6 @@ const TanqueSchema = Schema(
     ubicacion: {
       type: String,
       required: [true, "La ubicación es obligatorio"],
-      unique: true,
     },
     capacidad: {
       type: Number,

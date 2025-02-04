@@ -9,7 +9,6 @@ const TorreSchema = Schema(
     ubicacion: {
       type: String,
       required: [false, "La ubicación es obligatorio"],
-      unique: true,
     },
     caudal: {
       type: Number,
