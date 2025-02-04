@@ -20,12 +20,13 @@ const TorreSchema = Schema(
       required: [false, "Densidad de torre obligatorio"],
     },
     material: {
-      type: String,
+      type: [String],
       required: [
         false,
         "El tipo de material que almacena el torre es obligatorio",
       ],
     },
+
     presion: {
       type: Number,
       required: [false, "La presión es obligatoria"],
