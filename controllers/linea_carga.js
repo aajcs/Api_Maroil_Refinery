@@ -23,7 +23,7 @@ const linea_cargaGets = async (req = request, res = response) => {
 const linea_cargaGet = async (req = request, res = response) => {
   const { id } = req.params;
   const linea_carga = await Linea_carga.findById(id).populate(
-    "id_empresa",
+    "id_refineria",
     "nombre"
   );
 
