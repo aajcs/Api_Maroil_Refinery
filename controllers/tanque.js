@@ -11,7 +11,7 @@ const tanqueGets = async (req = request, res = response) => {
     Tanque.find(query)
       .skip(Number(desde))
       .limit(Number(limite))
-      .populate("id_empresa", "nombre"),
+      .populate("id_refineria", "nombre"),
   ]);
 
   res.json({
@@ -22,7 +22,7 @@ const tanqueGets = async (req = request, res = response) => {
 
 const tanqueGet = async (req = request, res = response) => {
   const { id } = req.params;
-  const tanque = await Tanque.findById(id).populate("id_empresa", "nombre");
+  const tanque = await Tanque.findById(id).populate("id_refineria", "nombre");
 
   // Verificar si el campo eliminado es falso
   if (tanque && !tanque.eliminado) {
@@ -36,13 +36,21 @@ const tanqueGet = async (req = request, res = response) => {
 };
 
 const tanquePost = async (req, res = response) => {
-  const { nombre, ubicacion, capacidad, material, almacenamiento } = req.body;
+  const {
+    nombre,
+    ubicacion,
+    capacidad,
+    material,
+    almacenamiento,
+    id_refineria,
+  } = req.body;
   const tanque = new Tanque({
     nombre,
     ubicacion,
     capacidad,
     material,
     almacenamiento,
+    id_refineria,
   });
   console.log(tanque);
   try {

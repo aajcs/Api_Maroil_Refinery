@@ -22,7 +22,7 @@ const torreGets = async (req = request, res = response) => {
 
 const torreGet = async (req = request, res = response) => {
   const { id } = req.params;
-  const torre = await Torre.findById(id).populate("id_empresa", "nombre");
+  const torre = await Torre.findById(id).populate("id_refineria", "nombre");
 
   // Verificar si el campo eliminado es falso
   if (torre && !torre.eliminado) {

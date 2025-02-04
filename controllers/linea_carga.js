@@ -39,11 +39,11 @@ const linea_cargaGet = async (req = request, res = response) => {
 };
 
 const linea_cargaPost = async (req, res = response) => {
-  const { ubicacion, numero, id_empresa } = req.body;
+  const { ubicacion, numero, id_refineria } = req.body;
   const linea_carga = new Linea_carga({
     ubicacion,
     numero,
-    id_empresa,
+    id_refineria,
   });
   console.log(linea_carga);
   try {

@@ -12,7 +12,7 @@ const linea_cargaSchema = Schema(
       required: [true, "Fecha de recepción obligatoria"],
     },
 
-    id_empresa: {
+    id_refineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
       required: true,

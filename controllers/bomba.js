@@ -11,7 +11,7 @@ const bombaGets = async (req = request, res = response) => {
     Bomba.find(query)
       .skip(Number(desde))
       .limit(Number(limite))
-      .populate("id_empresa", "nombre"),
+      .populate("id_refineria", "nombre"),
   ]);
 
   res.json({
@@ -22,7 +22,7 @@ const bombaGets = async (req = request, res = response) => {
 
 const bombaGet = async (req = request, res = response) => {
   const { id } = req.params;
-  const bomba = await Bomba.findById(id).populate("id_empresa", "nombre");
+  const bomba = await Bomba.findById(id).populate("id_refineria", "nombre");
 
   // Verificar si el campo eliminado es falso
   if (bomba && !bomba.eliminado) {
@@ -36,9 +36,9 @@ const bombaGet = async (req = request, res = response) => {
 };
 
 const bombaPost = async (req, res = response) => {
-  const { id_empresa, ubicacion, apertura, rpm, caudal } = req.body;
+  const { id_refineria, ubicacion, apertura, rpm, caudal } = req.body;
   const bomba = new Bomba({
-    id_empresa,
+    id_refineria,
     ubicacion,
     apertura,
     rpm,
