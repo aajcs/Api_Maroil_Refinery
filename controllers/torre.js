@@ -11,7 +11,7 @@ const torreGets = async (req = request, res = response) => {
     Torre.find(query)
       .skip(Number(desde))
       .limit(Number(limite))
-      .populate("id_empresa", "nombre"),
+      .populate("id_refineria", "nombre"),
   ]);
 
   res.json({
