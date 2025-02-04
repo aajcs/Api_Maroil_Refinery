@@ -36,8 +36,15 @@ const torreGet = async (req = request, res = response) => {
 };
 
 const torrePost = async (req, res = response) => {
-  const { nombre, ubicacion, capacidad, material, almacenamiento, numero } =
-    req.body;
+  const {
+    nombre,
+    ubicacion,
+    capacidad,
+    material,
+    almacenamiento,
+    numero,
+    id_refineria,
+  } = req.body;
   const torre = new Torre({
     nombre,
     ubicacion,
@@ -45,6 +52,7 @@ const torrePost = async (req, res = response) => {
     material,
     almacenamiento,
     numero,
+    id_refineria,
   });
   console.log(torre);
   try {
