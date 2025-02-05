@@ -2,55 +2,119 @@ const { Schema, model } = require("mongoose");
 
 const ContratoSchema = Schema(
   {
+    numeroContrato: {
+      type: String,
+      required: [false, "El número de contrato es obligatorio"],
+      unique: false,
+    },
     id_empresa: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
-      required: false,
+      required: [false, "La refinería es obligatoria"],
     },
     producto: {
-      type: String /*deberia ser una lista pre cargada de productos*/,
-      required: [false, "Descripción del producto obligatoria"],
+      type: String,
+      enum: ["Crudo Ligero", "Crudo Pesado", "Diesel", "Gasolina", "Jet Fuel", "Otros"],
+      required: [false, "El producto es obligatorio"],
     },
-    fecha: {
+    fechaInicio: {
       type: Date,
-      required: [false, "Fecha de lote obligatoria"],
+      required: [false, "La fecha de inicio es obligatoria"],
     },
-    gravedad: {
+    fechaFin: {
+      type: Date,
+      required: [false, "La fecha de finalización es obligatoria"],
+    },
+    cantidad: {
       type: Number,
-      required: [false, "% Api requerido"],
+      required: [false, "La cantidad es obligatoria"],
+    },
+    precioUnitario: {
+      type: Number,
+      required: [false, "El precio unitario es obligatorio"],
+    },
+    moneda: {
+      type: String,
+      enum: ["USD", "EUR", "COP", "MXN"],
+      default: "USD",
+    },
+    condicionesPago: {
+      tipo: {
+        type: String,
+        enum: ["Contado", "Crédito"],
+        default: "Contado",
+      },
+      plazo: {
+        type: Number, // Días de plazo si es crédito
+        default: 0,
+      },
+    },
+    gravedadAPI: {
+      type: Number,
+      required: [false, "La gravedad API es obligatoria"],
     },
     azufre: {
       type: Number,
-      required: [false, "% de Azufre requerido"],
+      required: [false, "El porcentaje de azufre es obligatorio"],
     },
-    viscocidad: {
+    viscosidad: {
       type: Number,
-      required: [false, "% de de Viscocidad requerido"],
+      required: [false, "La viscosidad es obligatoria"],
+    },
+    densidad: {
+      type: Number,
+      required: [false, "La densidad es obligatoria"],
+    },
+    contenidoAgua: {
+      type: Number,
+      required: [false, "El contenido de agua es obligatorio"],
     },
     origen: {
       type: String,
-      required: [false, "Origen del lote obligatorio"],
+      required: [false, "El origen es obligatorio"],
+    },
+    destino: {
+      type: String,
+      required: [false, "El destino es obligatorio"],
     },
     temperatura: {
       type: Number,
-      required: [false, "Temperatura del lote obligatorio"],
+      required: [false, "La temperatura es obligatoria"],
     },
     presion: {
-      type: String,
-      required: [false, "Presión del lote obligatorio"],
-    },
-    valor: {
       type: Number,
-      required: [false, "Valor del lote en $ es necesario."],
+      required: [false, "La presión es obligatoria"],
     },
+    transportista: {
+      type: String,
+      required: [false, "El transportista es obligatorio"],
+    },
+    fechaEnvio: {
+      type: Date,
+      required: [false, "La fecha de envío es obligatoria"],
+    },
+    estadoEntrega: {
+      type: String,
+      enum: ["Pendiente", "En Tránsito", "Entregado", "Cancelado"],
+      default: "Pendiente",
+    },
+    clausulas: {
+      type: [String],
+      default: [],
+    },
+    historialModificaciones: [
+      {
+        fecha: { type: Date, default: Date.now },
+        usuario: { type: String, required: true },
+        cambios: { type: String, required: true },
+      },
+    ],
   },
-
   {
     timestamps: true,
     versionKey: false,
   }
 );
-
 ContratoSchema.methods.toJSON = function () {
   const { _id, ...contrato } = this.toObject();
   contrato.id = _id;
