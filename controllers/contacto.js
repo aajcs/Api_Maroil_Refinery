@@ -38,6 +38,7 @@ const contactoGet = async (req = request, res = response) => {
 const contactoPost = async (req, res = response) => {
   const {
     nombre,
+    identificacionFiscal,
     correo,
     direccion,
     telefono,
@@ -49,6 +50,7 @@ const contactoPost = async (req, res = response) => {
   } = req.body;
   const contacto = new Contacto({
     nombre,
+    identificacionFiscal,
     correo,
     direccion,
     telefono,
