@@ -36,42 +36,38 @@ const contactoGet = async (req = request, res = response) => {
 };
 
 const contactoPost = async (req, res = response) => {
+  const {
+    nombre,
+    identificacionFiscal,
+    correo,
+    direccion,
+    telefono,
+    tipo,
+    id_refineria,
+    representanteLegal,
+    estado,
+    eliminado,
+  } = req.body;
+  const contacto = new Contacto({
+    nombre,
+    identificacionFiscal,
+    correo,
+    direccion,
+    telefono,
+    tipo,
+    id_refineria,
+    representanteLegal,
+    estado,
+    eliminado,
+  });
+
   try {
-    const {
-      nombre,
-      ubicacion,
-      infoContacto,
-      tipo,
-      cuentasBancarias,
-      cuentasPorPagar,
-      cuentasPorCobrar,
-      compras,
-      ventas,
-      historialModificaciones,
-      id_refineria,
-    } = req.body;
-
-    const nuevoContacto = new Contacto({
-      nombre,
-      ubicacion,
-      infoContacto,
-      tipo,
-      cuentasBancarias,
-      cuentasPorPagar,
-      cuentasPorCobrar,
-      compras,
-      ventas,
-      historialModificaciones,
-      id_refineria,
-    });
-
-    await nuevoContacto.save();
-    await nuevoContacto.populate("id_refineria", "nombre").execPopulate();
+    await contacto.save();
+    await contacto.populate("id_refineria", "nombre").execPopulate();
     res.json({
-      nuevoContacto,
+      contacto,
     });
   } catch (err) {
-    console.log(err);
     res.status(400).json({ error: err });
   }
 };
