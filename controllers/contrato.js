@@ -12,7 +12,8 @@ const contratoGets = async (req = request, res = response) => {
       Contrato.find(query)
         .skip(Number(desde))
         .limit(Number(limite))
-        .populate("id_empresa", "nombre"),
+        .populate({ path: "id_refineria", select: "nombre" })
+        .populate({ path: "id_contacto", select: "nombre" }),
     ]);
 
     res.json({
@@ -29,7 +30,9 @@ const contratoGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const contrato = await Contrato.findById(id).populate("id_empresa", "nombre");
+    const contrato = await Contrato.findById(id)
+      .populate("id_refineria", "nombre")
+      .populate("id_contacto", "nombre");
 
     if (contrato && !contrato.eliminado) {
       res.json(contrato);
@@ -46,60 +49,68 @@ const contratoGet = async (req = request, res = response) => {
 // Crear un nuevo contrato
 const contratoPost = async (req, res = response) => {
   const {
-numeroContrato,
-id_empresa,
-producto,
-fechaInicio,
-fechaFin,
-cantidad,
-precioUnitario,
-moneda,
-condicionesPago,
-plazo,
-gravedadAPI,
-azufre,
-viscosidad,
-densidad,
-contenidoAgua,
-origen,
-destino,
-temperatura,
-presion,
-transportista,
-fechaEnvio,
-estadoEntrega,
-clausulas,
+    numeroContrato,
+    id_empresa,
+    producto,
+    fechaInicio,
+    fechaFin,
+    cantidad,
+    precioUnitario,
+    moneda,
+    condicionesPago,
+    plazo,
+    gravedadAPI,
+    azufre,
+    viscosidad,
+    densidad,
+    contenidoAgua,
+    origen,
+    destino,
+    temperatura,
+    presion,
+    transportista,
+    fechaEnvio,
+    estadoEntrega,
+    clausulas,
+    id_contacto,
   } = req.body;
 
   const nuevoContrato = new Contrato({
     numeroContrato,
-id_empresa,
-producto,
-fechaInicio,
-fechaFin,
-cantidad,
-precioUnitario,
-moneda,
-condicionesPago,
-plazo,
-gravedadAPI,
-azufre,
-viscosidad,
-densidad,
-contenidoAgua,
-origen,
-destino,
-temperatura,
-presion,
-transportista,
-fechaEnvio,
-estadoEntrega,
-clausulas,
+    id_empresa,
+    producto,
+    fechaInicio,
+    fechaFin,
+    cantidad,
+    precioUnitario,
+    moneda,
+    condicionesPago,
+    plazo,
+    gravedadAPI,
+    azufre,
+    viscosidad,
+    densidad,
+    contenidoAgua,
+    origen,
+    destino,
+    temperatura,
+    presion,
+    transportista,
+    fechaEnvio,
+    estadoEntrega,
+    clausulas,
+    id_contacto,
   });
 
   try {
     await nuevoContrato.save();
-    res.json({ contrato: nuevoContrato });
+    await nuevoContrato
+      .populate("id_empresa", "nombre")
+      .populate("id_contacto", "nombre")
+      .execPopulate();
+    res.json({
+      nuevoContrato,
+    });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -111,8 +122,11 @@ const contratoPut = async (req, res = response) => {
   const { _id, ...resto } = req.body;
 
   try {
-    const contratoActualizado = await Contrato.findByIdAndUpdate(id, resto, { new: true })
-      .populate("id_empresa", "nombre");
+    const contratoActualizado = await Contrato.findByIdAndUpdate(id, resto, {
+      new: true,
+    })
+      .populate("id_refineria", "nombre")
+      .populate("id_contacto", "nombre");
 
     if (!contratoActualizado) {
       return res.status(404).json({
@@ -131,7 +145,11 @@ const contratoDelete = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const contrato = await Contrato.findByIdAndUpdate(id, { eliminado: true }, { new: true });
+    const contrato = await Contrato.findByIdAndUpdate(
+      id,
+      { eliminado: true },
+      { new: true }
+    );
 
     if (!contrato) {
       return res.status(404).json({

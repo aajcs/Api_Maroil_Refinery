@@ -7,14 +7,26 @@ const ContratoSchema = Schema(
       required: [false, "El número de contrato es obligatorio"],
       unique: false,
     },
-    id_empresa: {
+    id_refineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
-      required: [false, "La refinería es obligatoria"],
+      required: false,
+    },
+    id_contacto: {
+      type: Schema.Types.ObjectId,
+      ref: "Contacto",
+      required: false,
     },
     producto: {
       type: String,
-      enum: ["Crudo Ligero", "Crudo Pesado", "Diesel", "Gasolina", "Jet Fuel", "Otros"],
+      enum: [
+        "Crudo Ligero",
+        "Crudo Pesado",
+        "Diesel",
+        "Gasolina",
+        "Jet Fuel",
+        "Otros",
+      ],
       required: [false, "El producto es obligatorio"],
     },
     fechaInicio: {
@@ -109,6 +121,14 @@ const ContratoSchema = Schema(
         cambios: { type: String, required: true },
       },
     ],
+    estado: {
+      type: String,
+      default: true,
+    },
+    eliminado: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
