@@ -49,10 +49,10 @@ const ContactoSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "Usuario",
-    },
+    // updatedBy: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "Usuario",
+    // },
   },
   {
     timestamps: true,

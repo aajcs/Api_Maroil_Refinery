@@ -46,7 +46,6 @@ const contactoPost = async (req, res = response) => {
     representanteLegal,
     estado,
     eliminado,
-    createdBy,
   } = req.body;
   const contacto = new Contacto({
     nombre,
@@ -58,7 +57,6 @@ const contactoPost = async (req, res = response) => {
     representanteLegal,
     estado,
     eliminado,
-    createdBy,
   });
 
   try {
@@ -74,7 +72,7 @@ const contactoPost = async (req, res = response) => {
 
 const contactoPut = async (req, res = response) => {
   const { id } = req.params;
-  const { _id, createdBy, ...resto } = req.body;
+  const { _id, ...resto } = req.body;
   const contacto = await Contacto.findByIdAndUpdate(id, resto, {
     new: true,
   }).populate("id_refineria", "nombre");
