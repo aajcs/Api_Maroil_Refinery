@@ -36,11 +36,11 @@ const ContactoSchema = new Schema(
       enum: ["cliente", "proveedor"],
       required: [true, "Seleccione que tipo de contacto es"],
     },
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "Usuario",
-      required: true,
-    },
+    // createdBy: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "Usuario",
+    //   required: true,
+    // },
     estado: {
       type: String,
       default: true,
