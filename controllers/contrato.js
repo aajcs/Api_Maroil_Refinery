@@ -50,7 +50,7 @@ const contratoGet = async (req = request, res = response) => {
 const contratoPost = async (req, res = response) => {
   const {
     numeroContrato,
-    id_empresa,
+    id_refineria,
     producto,
     fechaInicio,
     fechaFin,
@@ -77,7 +77,7 @@ const contratoPost = async (req, res = response) => {
 
   const nuevoContrato = new Contrato({
     numeroContrato,
-    id_empresa,
+    id_refineria,
     producto,
     fechaInicio,
     fechaFin,
@@ -105,7 +105,7 @@ const contratoPost = async (req, res = response) => {
   try {
     await nuevoContrato.save();
     await nuevoContrato
-      .populate("id_empresa", "nombre")
+      .populate("id_refineria", "nombre")
       .populate("id_contacto", "nombre")
       .execPopulate();
     res.json({
