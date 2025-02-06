@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const { stringify } = require("uuid");
 
 const TorreSchema = Schema(
   {
@@ -21,7 +22,7 @@ const TorreSchema = Schema(
     material: [
       {
         nombre: { type: String, required: false },
-        posicion: { type: Number, required: false },
+        posicion: { type: String, required: false },
         estadoMaterial: { type: String, required: false },
       },
     ],
