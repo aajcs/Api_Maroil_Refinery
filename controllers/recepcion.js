@@ -13,19 +13,24 @@ const recepcionGets = async (req = request, res = response) => {
       Recepcion.find(query)
         .skip(Number(desde))
         .limit(Number(limite))
-        .populate('id_contrato')
+        .populate("id_contrato"),
     ]);
 
     // Poblar id_refineria e id_contacto de cada recepción
-    await Promise.all(recepciones.map(async (recepcion) => {
-      await recepcion.populate({
-      path: 'id_contrato',
-      select: 'id_refineria id_contacto',
-      populate: [
-        { path: 'id_refineria', select: 'nombre' },
-        { path: 'id_contacto', select: 'nombre' }
-    ]}).execPopulate();
-    }));
+    await Promise.all(
+      recepciones.map(async (recepcion) => {
+        await recepcion
+          .populate({
+            path: "id_contrato",
+            select: "id_refineria id_contacto",
+            populate: [
+              { path: "id_refineria", select: "nombre" },
+              { path: "id_contacto", select: "nombre" },
+            ],
+          })
+          .execPopulate();
+      })
+    );
 
     res.json({
       total,
@@ -36,20 +41,19 @@ const recepcionGets = async (req = request, res = response) => {
   }
 };
 
-   
 // Obtener una recepción específica por ID
 const recepcionGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
     const recepcionActualizado = await Recepcion.findById(id).populate({
-      path: 'id_contrato',
-      select: 'id_refineria id_contacto',
+      path: "id_contrato",
+      select: "id_refineria id_contacto",
       populate: [
-        { path: 'id_refineria', select: 'nombre' },
-        { path: 'id_contacto', select: 'nombre' }
-    ]})
-    
+        { path: "id_refineria", select: "nombre" },
+        { path: "id_contacto", select: "nombre" },
+      ],
+    });
 
     if (recepcionActualizado) {
       res.json(recepcionActualizado);
@@ -103,15 +107,23 @@ const recepcionPost = async (req, res = response) => {
 
   try {
     await nuevaRecepcion.save();
-    
-    await nuevaRecepcion.populate({
-      path: 'id_contrato',
-      select: 'id_refineria id_contacto',
-      populate: [
-        { path: 'id_refineria', select: 'nombre' },
-        { path: 'id_contacto', select: 'nombre' }
-    ]}).execPopulate(),
-    res.json({ recepcion: nuevaRecepcion });
+
+    await nuevaRecepcion
+      .populate({
+        path: "id_contrato",
+        select: "id_refineria id_contacto",
+        populate: [
+          { path: "id_refineria", select: "nombre" },
+          { path: "id_contacto", select: "nombre" },
+        ],
+      })
+      .populate({
+        path: "id_linea",
+        select: "nombre",
+        populate: { path: "id_linea", select: "nombre" },
+      })
+      .execPopulate(),
+      res.json({ recepcion: nuevaRecepcion });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -125,14 +137,14 @@ const recepcionPut = async (req, res = response) => {
   try {
     const recepcionActualizada = await Recepcion.findByIdAndUpdate(id, resto, {
       new: true,
-    })
-    .populate({
-      path: 'id_contrato',
-      select: 'id_refineria id_contacto',
+    }).populate({
+      path: "id_contrato",
+      select: "id_refineria id_contacto",
       populate: [
-        { path: 'id_refineria', select: 'nombre' },
-        { path: 'id_contacto', select: 'nombre' }
-    ]})
+        { path: "id_refineria", select: "nombre" },
+        { path: "id_contacto", select: "nombre" },
+      ],
+    });
     if (!recepcionActualizada) {
       return res.status(404).json({
         msg: "Recepción no encontrada",
@@ -147,40 +159,39 @@ const recepcionPut = async (req, res = response) => {
 
 // Eliminar (marcar como eliminado) una recepción
 const recepcionDelete = async (req, res = response) => {
-   const { id } = req.params;
-  
-    try {
-      const recepcion = await Recepcion.findByIdAndUpdate(
-        id,
-        { eliminado: true },
-        { new: true }
-      ).populate({
-        path: 'id_contrato',
-        select: 'id_refineria id_contacto',
-        populate: [
-          { path: 'id_refineria', select: 'nombre' },
-          { path: 'id_contacto', select: 'nombre' }
-      ]});
-  
-      if (!recepcion) {
-        return res.status(404).json({
-          msg: "Recepcion no encontrado",
-        });
-      }
-  
-      res.json(recepcion);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
+  const { id } = req.params;
+
+  try {
+    const recepcion = await Recepcion.findByIdAndUpdate(
+      id,
+      { eliminado: true },
+      { new: true }
+    ).populate({
+      path: "id_contrato",
+      select: "id_refineria id_contacto",
+      populate: [
+        { path: "id_refineria", select: "nombre" },
+        { path: "id_contacto", select: "nombre" },
+      ],
+    });
+
+    if (!recepcion) {
+      return res.status(404).json({
+        msg: "Recepcion no encontrado",
+      });
     }
+
+    res.json(recepcion);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
+};
 
 const recepcionPatch = (req, res = response) => {
   res.json({
     msg: "patch API - usuariosPatch",
   });
 };
-
-
 
 module.exports = {
   recepcionPost,
