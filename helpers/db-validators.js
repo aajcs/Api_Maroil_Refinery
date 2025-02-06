@@ -88,6 +88,13 @@ const existeContratoPorId = async (id) => {
     throw new Error(`El id no existe ${id}`);
   }
 };
+const existeRecepcionPorId = async (id) => {
+  // Verificar si la linea existe
+  const existeRecepcion = await Recepcion.findById(id);
+  if (!existeRecepcion) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
 
 const existeContactoPorId = async (id) => {
   // Verificar si contacto existe
@@ -146,4 +153,5 @@ module.exports = {
   existeTorrePorId,
   existeContratoPorId,
   existeContactoPorId,
+  existeRecepcionPorId,
 };
