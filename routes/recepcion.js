@@ -51,10 +51,10 @@ router.put(
 router.post(
   "/",
   [
-    check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),
-    check("nit", "El NIT es obligatorio").not().isEmpty(),
-    check("img", "El logotipo de la refineria es obligatorio").not().isEmpty(),
+    // check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
+    // check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),
+    // check("nit", "El NIT es obligatorio").not().isEmpty(),
+    // check("img", "El logotipo de la refineria es obligatorio").not().isEmpty(),
     validarCampos,
   ],
   recepcionPost

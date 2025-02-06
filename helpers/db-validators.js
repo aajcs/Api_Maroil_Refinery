@@ -10,6 +10,7 @@ const {
   Torre,
   Contrato,
   Contacto,
+  Recepcion,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {

@@ -5,22 +5,22 @@ const RecepcionSchema = Schema(
     contrato: {
       type: Schema.Types.ObjectId,
       ref: "Contrato",
-      required: true,
+      required: false,
     },
 
     cantidadRecibida: {
       type: Number,
-      required: [true, "Cantidad recibida obligatoria"],
+      required: [false, "Cantidad recibida obligatoria"],
     },
 
     precioUnitario: {
       type: Number,
-      required: [true, "Precio Unitario obligatorio"],
+      required: [false, "Precio Unitario obligatorio"],
     },
 
     montoTotal: {
       type: Number,
-      required: [true, "Monto Total obligatorio"],
+      required: [false, "Monto Total obligatorio"],
     },
 
     estado: {
@@ -31,44 +31,48 @@ const RecepcionSchema = Schema(
 
     fechaRecepcion: {
       type: Date,
-      required: [true, "Fecha de recepción obligatoria"],
+      required: [false, "Fecha de recepción obligatoria"],
     },
     hora: {
       type: Date,
-      required: [true, "Hora de recepción obligatoria"],
+      required: [false, "Hora de recepción obligatoria"],
     },
     id_lote: {
       type: Schema.Types.ObjectId,
       ref: "Lotes_producto",
-      required: true,
+      required: false,
     },
 
     id_linea: {
       type: Schema.Types.ObjectId,
       ref: "Linea_carga",
-      required: true,
+      required: false,
     },
-    id_tanqueRecepcion: {
+    id_tanque: {
       type: Schema.Types.ObjectId,
       ref: "Tanque",
-      required: true,
+      required: false,
     },
-
+    id_contrato: {
+      type: Schema.Types.ObjectId,
+      ref: "Contrato",
+      required: false,
+    },
     id_guia: {
       type: Number,
-      required: [true, "Número de guía obligatorio"],
+      required: [false, "Número de guía obligatorio"],
     },
     placa: {
       type: String,
-      required: [true, "Placa del Vehículo obligatorio"],
+      required: [false, "Placa del Vehículo obligatorio"],
     },
     nombre_chofer: {
       type: String,
-      required: [true, "Nombre del Chofer obligatorio"],
+      required: [false, "Nombre del Chofer obligatorio"],
     },
     apellido_chofer: {
       type: String,
-      required: [true, "Apellido del chofer obligatorio"],
+      required: [false, "Apellido del chofer obligatorio"],
     },
   },
   {
@@ -80,7 +84,7 @@ const RecepcionSchema = Schema(
 RecepcionSchema.methods.toJSON = function () {
   const { _id, ...recepcion } = this.toObject();
   recepcion.id = _id;
-  return Recepcion;
+  return recepcion;
 };
 
 module.exports = model("Recepcion", RecepcionSchema);
