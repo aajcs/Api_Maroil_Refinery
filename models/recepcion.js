@@ -74,6 +74,10 @@ const RecepcionSchema = Schema(
       type: String,
       required: [false, "Apellido del chofer obligatorio"],
     },
+    eliminado: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
