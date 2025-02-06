@@ -147,28 +147,40 @@ const recepcionPut = async (req, res = response) => {
 
 // Eliminar (marcar como eliminado) una recepción
 const recepcionDelete = async (req, res = response) => {
-  const { id } = req.params;
-
-  try {
-    const recepcion = await Recepcion.findByIdAndDelete(id);
-
-    if (!recepcion) {
-      return res.status(404).json({
-        msg: "Recepción no encontrada",
-      });
+   const { id } = req.params;
+  
+    try {
+      const recepcion = await Recepcion.findByIdAndUpdate(
+        id,
+        { eliminado: true },
+        { new: true }
+      ).populate({
+        path: 'id_contrato',
+        select: 'id_refineria id_contacto',
+        populate: [
+          { path: 'id_refineria', select: 'nombre' },
+          { path: 'id_contacto', select: 'nombre' }
+      ]});
+  
+      if (!recepcion) {
+        return res.status(404).json({
+          msg: "Recepcion no encontrado",
+        });
+      }
+  
+      res.json(recepcion);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
-
-    res.json(recepcion);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
   }
-};
 
 const recepcionPatch = (req, res = response) => {
   res.json({
     msg: "patch API - usuariosPatch",
   });
 };
+
+
 
 module.exports = {
   recepcionPost,
