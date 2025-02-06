@@ -21,7 +21,7 @@ const TorreSchema = Schema(
     material: [
       {
         nombre: { type: String, required: false },
-        index: { type: Number, required: false },
+        posicion: { type: Number, required: false },
         estadoMaterial: { type: String, required: false },
       },
     ],
