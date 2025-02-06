@@ -45,7 +45,7 @@ const torrePost = async (req, res = response) => {
     numero,
     id_refineria,
   } = req.body;
-  const torreSave = new Torre({
+  const torre = new Torre({
     nombre,
     ubicacion,
     capacidad,
@@ -54,17 +54,14 @@ const torrePost = async (req, res = response) => {
     numero,
     id_refineria,
   });
-  console.log(torreSave);
+  console.log(torre);
   try {
     // Guardar en BD
-    await torreSave.save();
-    // await torreSave.populate("id_refineria", "nombre").execPopulate();
-    const torre = await Torre.find()
-      .populate("id_refineria", "nombre")
-      .sort({ "material.posicion": 1 });
-    res.json({
-      torre,
-    });
+    await torre.save();
+    await torre.populate("id_refineria", "nombre").execPopulate(),
+      res.json({
+        torre,
+      });
   } catch (err) {
     res.status(400).json({ error: err });
   }
