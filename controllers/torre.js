@@ -58,10 +58,16 @@ const torrePost = async (req, res = response) => {
   try {
     // Guardar en BD
     await torre.save();
-    await torre.populate("id_refineria", "nombre").execPopulate(),
-      res.json({
-        torre,
-      });
+    await torre
+      .populate("id_refineria", "nombre")
+      .sort({ "material.posicion": 1 })
+      .execPopulate();
+    // const torres = await Torre.find()
+    //   .populate("id_refineria", "nombre")
+    //   .sort({ "material.posicion": 1 });
+    res.json({
+      torre,
+    });
   } catch (err) {
     res.status(400).json({ error: err });
   }
