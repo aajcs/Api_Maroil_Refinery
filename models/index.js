@@ -11,6 +11,7 @@ const Torre = require("./torre");
 const Contrato = require("./contrato");
 const Contacto = require("./contacto");
 const Recepcion = require("./recepcion");
+const Refinacion = require("./refinacion");
 /*const contactos = require ('./contactos');
 const bombas = require('./bombas');
 const inspeccion_tanque = require('./inspeccion_tanque');
@@ -35,6 +36,7 @@ module.exports = {
   Contrato,
   Contacto,
   Recepcion,
+  Refinacion,
   /*contactos,
     bombas,
     inspeccion_tanque,

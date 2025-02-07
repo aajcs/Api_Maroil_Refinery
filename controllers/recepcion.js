@@ -27,6 +27,10 @@ const recepcionGets = async (req = request, res = response) => {
               { path: "id_refineria", select: "nombre" },
               { path: "id_contacto", select: "nombre" },
             ],
+          }).populate({
+            path: "id_linea",
+            select: "nombre",
+            populate: { path: "id_linea", select: "nombre" },
           })
           .execPopulate();
       })
@@ -53,6 +57,10 @@ const recepcionGet = async (req = request, res = response) => {
         { path: "id_refineria", select: "nombre" },
         { path: "id_contacto", select: "nombre" },
       ],
+    }).populate({
+      path: "id_linea",
+      select: "nombre",
+      populate: { path: "id_linea", select: "nombre" },
     });
 
     if (recepcionActualizado) {
@@ -144,6 +152,10 @@ const recepcionPut = async (req, res = response) => {
         { path: "id_refineria", select: "nombre" },
         { path: "id_contacto", select: "nombre" },
       ],
+    }).populate({
+      path: "id_linea",
+      select: "nombre",
+      populate: { path: "id_linea", select: "nombre" },
     });
     if (!recepcionActualizada) {
       return res.status(404).json({

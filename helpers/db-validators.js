@@ -125,6 +125,13 @@ const existeProductoPorId = async (id) => {
     throw new Error(`El id no existe ${id}`);
   }
 };
+const existeRefinacionPorId = async (id) => {
+  // Verificar si refinacion existe
+  const existeRefinacion = await Refinacion.findById(id);
+  if (!existeRefinacion) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
 
 /**
  * Validar colecciones permitidas
@@ -155,4 +162,5 @@ module.exports = {
   existeContratoPorId,
   existeContactoPorId,
   existeRecepcionPorId,
+  existeRefinacionPorId,
 };

@@ -3,6 +3,7 @@ const cors = require("cors");
 const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config");
+const refinacion = require("./refinacion");
 
 class Server {
   constructor() {
@@ -24,6 +25,7 @@ class Server {
       contrato: "/api/contrato",
       contacto: "/api/contacto",
       recepcion: "/api/recepcion",
+      refinacion: "/api/refinacion",
     };
 
     // Conectar a base de datos
@@ -75,6 +77,7 @@ class Server {
     this.app.use(this.paths.contrato, require("../routes/contrato"));
     this.app.use(this.paths.contacto, require("../routes/contacto"));
     this.app.use(this.paths.recepcion, require("../routes/recepcion"));
+    this.app.use(this.paths.refinacion, require("../routes/refinacion"));
   }
 
   listen() {
