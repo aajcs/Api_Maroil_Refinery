@@ -10,7 +10,7 @@ const {
 const router = express.Router();
 
 // Ruta para crear un nuevo proceso de refinación
-router.post("/refinaciones", crearRefinacion);
+router.post("/refinacion", crearRefinacion);
 
 // Ruta para obtener todos los procesos de refinación
 router.get("/refinaciones", obtenerRefinaciones);

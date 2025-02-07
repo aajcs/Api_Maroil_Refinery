@@ -155,7 +155,11 @@ const eliminarRefinacion = async (req, res) => {
     });
   }
 };
-
+const refinacionPatch = (req, res = response) => {
+  res.json({
+    msg: "patch API - usuariosPatch",
+  });
+};
 module.exports = {
   crearRefinacion,
   obtenerRefinaciones,
