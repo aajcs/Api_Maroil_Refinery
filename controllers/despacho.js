@@ -1,10 +1,10 @@
-const Despacho = require('../models/despacho');
 const { validationResult } = require('express-validator');
+const despacho = require('../models/despacho');
 
 // Obtener todos los despachos
 const getDespachos = async (req, res) => {
     try {
-        const despachos = await Despacho.find()
+        const despachos = await despacho.find()
             .populate('id_lote')
             .populate('id_linea')
             .populate('id_empresa');

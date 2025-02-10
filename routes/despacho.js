@@ -6,7 +6,7 @@ const {
     createDespacho,
     updateDespacho,
     deleteDespacho
-} = require('../controllers/despachoController');
+} = require('../controllers/despacho');
 
 const {
     validarCampos,

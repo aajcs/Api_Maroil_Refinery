@@ -61,4 +61,4 @@ DespachoSchema.methods.toJSON = function() {
     return despacho;
 }
 
-module.exports = model( 'Despacho', despacho_tanqueSchema );
+module.exports = model( 'Despacho', DespachoSchema );
