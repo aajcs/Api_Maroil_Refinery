@@ -1,27 +1,78 @@
-const express = require("express");
+const { Router } = require("express");
+const { check } = require("express-validator");
+
 const {
-  crearRefinacion,
-  obtenerRefinaciones,
-  obtenerRefinacionPorId,
-  actualizarRefinacion,
-  eliminarRefinacion,
+  validarCampos,
+  validarJWT,
+  esAdminRole,
+  tieneRole,
+} = require("../middlewares");
+
+const {
+  //esRoleValido,
+  // emailExiste,
+  // existeUsuarioPorId,
+  // nitExiste,
+  existeRefinacionPorId,
+} = require("../helpers/db-validators");
+
+const {
+  refinacionGet,
+  refinacionPut,
+  refinacionPost,
+  refinacionDelete,
+  refinacionPatch,
+  refinacionGets,
 } = require("../controllers/refinacion");
 
-const router = express.Router();
+const router = Router();
 
-// Ruta para crear un nuevo proceso de refinación
-router.post("/refinacion", crearRefinacion);
+router.get("/", refinacionGets);
+router.get(
+  "/:id",
+  [
+    check("id", "No es un id de Mongo válido").isMongoId(),
+    // check('id').custom( existeProductoPorId ),
+    validarCampos,
+  ],
+  refinacionGet
+);
+router.put(
+  "/:id",
+  [
+    check("id", "No es un ID válido").isMongoId(),
+    check("id").custom(existeRefinacionPorId),
+    //check("rol").custom(esRoleValido), subiendo cambioos
+    validarCampos,
+  ],
+  refinacionPut
+);
 
-// Ruta para obtener todos los procesos de refinación
-router.get("/refinaciones", obtenerRefinaciones);
+router.post(
+  "/",
+  [
+    // check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
+    // check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),
+    // check("nit", "El NIT es obligatorio").not().isEmpty(),
+    // check("img", "El logotipo de la refineria es obligatorio").not().isEmpty(),
+    validarCampos,
+  ],
+  refinacionPost
+);
 
-// Ruta para obtener un proceso de refinación por su ID
-router.get("/refinaciones/:id", obtenerRefinacionPorId);
+router.delete(
+  "/:id",
+  [
+    validarJWT,
+    // esAdminRole,
+    tieneRole("superAdmin", "admin"),
+    check("id", "No es un ID válido").isMongoId(),
+    check("id").custom(existeRefinacionPorId),
+    validarCampos,
+  ],
+  refinacionDelete
+);
 
-// Ruta para actualizar un proceso de refinación por su ID
-router.put("/refinaciones/:id", actualizarRefinacion);
-
-// Ruta para eliminar un proceso de refinación por su ID
-router.delete("/refinaciones/:id", eliminarRefinacion);
+router.patch("/", refinacionPatch);
 
 module.exports = router;
