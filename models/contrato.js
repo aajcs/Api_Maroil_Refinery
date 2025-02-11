@@ -56,6 +56,14 @@ const ContratoSchema = Schema(
         enum: ["Contado", "Crédito"],
         default: "Contado",
       },
+
+      abono: [
+        {
+          monto: { type: Number, required: false },
+          fecha: { type: Date, required: false },
+          
+        },
+      ],
       plazo: {
         type: Number, // Días de plazo si es crédito
         default: 0,

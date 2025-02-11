@@ -1,11 +1,11 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 const {
-    getDespachos,
-    getDespachoById,
-    createDespacho,
-    updateDespacho,
-    deleteDespacho
+    despachoGet,
+    despachoGets,
+    despachoPost,
+    despachoPut,
+    despachoDelete
 } = require('../controllers/despacho');
 
 const {
@@ -16,12 +16,12 @@ const {
 } = require('../middlewares');
 
 const {
-    existeRecepcionPorId,
+    existeDespachoGets,
 } = require('../helpers/db-validators');
 
 const router = Router();
 
-router.get("/", getDespachos);
+router.get("/", despachoGets);
 
 router.get(
     "/:id",
@@ -29,7 +29,7 @@ router.get(
         check("id", "No es un id de Mongo válido").isMongoId(),
         validarCampos,
     ],
-    getDespachoById
+    despachoGets
 );
 
 router.post(
@@ -38,17 +38,17 @@ router.post(
         // Agregar validaciones específicas aquí si es necesario
         validarCampos,
     ],
-    createDespacho
+    despachoPost
 );
 
 router.put(
     "/:id",
     [
         check("id", "No es un ID válido").isMongoId(),
-        check("id").custom(existeRecepcionPorId),
+        check("id").custom(existeDespachoGets),
         validarCampos,
     ],
-    updateDespacho
+    despachoPut
 );
 
 router.delete(
@@ -57,10 +57,10 @@ router.delete(
         validarJWT,
         tieneRole("superAdmin", "admin"),
         check("id", "No es un ID válido").isMongoId(),
-        check("id").custom(existeRecepcionPorId),
+        check("id").custom(existeDespachoGets),
         validarCampos,
     ],
-    deleteDespacho
+     despachoDelete
 );
 
 module.exports = router;

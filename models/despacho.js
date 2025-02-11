@@ -1,6 +1,7 @@
 const { Schema, model } = require('mongoose');
 
-const DespachoSchema = Schema({
+const DespachoSchema = Schema(
+    {
     
     fecha: {
         type: Date,
