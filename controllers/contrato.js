@@ -50,6 +50,8 @@ const contratoGet = async (req = request, res = response) => {
 const contratoPost = async (req, res = response) => {
   const {
     numeroContrato,
+    descripcion,
+    estado_contrato,
     id_refineria,
     // producto,
     fechaInicio,
@@ -79,6 +81,8 @@ const contratoPost = async (req, res = response) => {
 
   const nuevoContrato = new Contrato({
     numeroContrato,
+    descripcion,
+    estado_contrato,
     id_refineria,
     // producto,
     fechaInicio,

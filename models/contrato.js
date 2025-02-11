@@ -71,6 +71,16 @@ const ContratoSchema = Schema(
       required: [false, "El número de contrato es obligatorio"],
       unique: false,
     },
+    descripcion: {
+      type: String,
+      required: [false, "La Descripcion es Obligatoria"],
+      unique: false,
+    },
+    estado_contrato: {
+      type: String,
+      enum: ["Adjudicado", "Activo", "Inactivo"],
+      default: "Inactivo",
+    },
     id_refineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
