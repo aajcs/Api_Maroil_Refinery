@@ -4,6 +4,7 @@ const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config");
 const refinacion = require("./refinacion");
+const contrato_items = require("./contrato_items");
 
 class Server {
   constructor() {
@@ -23,6 +24,7 @@ class Server {
       tanque: "/api/tanque",
       torre: "/api/torre",
       contrato: "/api/contrato",
+      contrato_items: "/api/contrato_items",
       contacto: "/api/contacto",
       recepcion: "/api/recepcion",
       refinacion: "/api/refinacion",
@@ -76,6 +78,10 @@ class Server {
     this.app.use(this.paths.tanque, require("../routes/tanque"));
     this.app.use(this.paths.torre, require("../routes/torre"));
     this.app.use(this.paths.contrato, require("../routes/contrato"));
+    this.app.use(
+      this.paths.contrato_items,
+      require("../routes/contrato_items")
+    );
     this.app.use(this.paths.contacto, require("../routes/contacto"));
     this.app.use(this.paths.recepcion, require("../routes/recepcion"));
     this.app.use(this.paths.refinacion, require("../routes/refinacion"));
