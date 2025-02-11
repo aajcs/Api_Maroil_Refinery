@@ -1,4 +1,68 @@
 const { Schema, model } = require("mongoose");
+const Items = Schema({
+  producto: {
+    type: String,
+    enum: [
+      "Crudo Ligero",
+      "Crudo Pesado",
+      "Diesel",
+      "Gasolina",
+      "Jet Fuel",
+      "Otros",
+    ],
+    required: [false, "El producto es obligatorio"],
+  },
+  cantidad: {
+    type: Number,
+    required: [false, "La cantidad es obligatoria"],
+  },
+  precioUnitario: {
+    type: Number,
+    required: [false, "El precio unitario es obligatorio"],
+  },
+  gravedadAPI: {
+    type: Number,
+    required: [false, "La gravedad API es obligatoria"],
+  },
+  azufre: {
+    type: Number,
+    required: [false, "El porcentaje de azufre es obligatorio"],
+  },
+  viscosidad: {
+    type: Number,
+    required: [false, "La viscosidad es obligatoria"],
+  },
+  densidad: {
+    type: Number,
+    required: [false, "La densidad es obligatoria"],
+  },
+  contenidoAgua: {
+    type: Number,
+    required: [false, "El contenido de agua es obligatorio"],
+  },
+  origen: {
+    type: String,
+    required: [false, "El origen es obligatorio"],
+  },
+
+  temperatura: {
+    type: Number,
+    required: [false, "La temperatura es obligatoria"],
+  },
+  presion: {
+    type: Number,
+    required: [false, "La presión es obligatoria"],
+  },
+
+  estado: {
+    type: String,
+    default: true,
+  },
+  eliminado: {
+    type: Boolean,
+    default: false,
+  },
+});
 
 const ContratoSchema = Schema(
   {
@@ -17,6 +81,8 @@ const ContratoSchema = Schema(
       ref: "Contacto",
       required: false,
     },
+
+    id_contrato_items: [Items],
 
     // producto: {
     //   type: String,
