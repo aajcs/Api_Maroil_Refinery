@@ -3,12 +3,11 @@ const Items = Schema({
   producto: {
     type: String,
     enum: [
-      "Crudo Ligero",
-      "Crudo Pesado",
-      "Diesel",
-      "Gasolina",
-      "Jet Fuel",
-      "Otros",
+      "Nafta",
+      "Queroseno",
+      "Fuel Oil 4 (MOG)",
+      "Fuel Oil 6 (Fondo)",
+      "Petroleo Crudo",
     ],
     required: [false, "El producto es obligatorio"],
   },
