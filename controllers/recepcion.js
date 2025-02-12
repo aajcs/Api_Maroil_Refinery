@@ -23,8 +23,7 @@ const recepcionGets = async (req = request, res = response) => {
         await recepcion
           .populate({
             path: "id_contrato",
-            select:
-              "id_refineria id_contacto numeroContrato producto gravedadAPI azufre viscocidad densidad contenidoAgua origen temperatura presion ",
+            select: "id_refineria id_contacto id_contrato_items",
             populate: [
               { path: "id_refineria", select: "nombre" },
               { path: "id_contacto", select: "nombre" },
@@ -66,7 +65,7 @@ const recepcionGet = async (req = request, res = response) => {
     const recepcionActualizado = await Recepcion.findById(id)
       .populate({
         path: "id_contrato",
-        select: "id_refineria id_contacto",
+        select: "id_refineria id_contacto id_contrato_items",
         populate: [
           { path: "id_refineria", select: "nombre" },
           { path: "id_contacto", select: "nombre" },
