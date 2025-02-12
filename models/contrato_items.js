@@ -1,0 +1,77 @@
+const { Schema, model } = require("mongoose");
+const ContratoItemsSchema = Schema({
+  producto: {
+    type: String,
+    enum: [
+      "Nafta",
+      "Queroseno",
+      "Fuel Oil 4 (MOG)",
+      "Fuel Oil 6 (Fondo)",
+      "Petroleo Crudo",
+    ],
+    required: [false, "El producto es obligatorio"],
+  },
+  cantidad: {
+    type: Number,
+    required: [false, "La cantidad es obligatoria"],
+  },
+  precioUnitario: {
+    type: Number,
+    required: [false, "El precio unitario es obligatorio"],
+  },
+  gravedadAPI: {
+    type: Number,
+    required: [false, "La gravedad API es obligatoria"],
+  },
+  azufre: {
+    type: Number,
+    required: [false, "El porcentaje de azufre es obligatorio"],
+  },
+  viscosidad: {
+    type: Number,
+    required: [false, "La viscosidad es obligatoria"],
+  },
+  densidad: {
+    type: Number,
+    required: [false, "La densidad es obligatoria"],
+  },
+  contenidoAgua: {
+    type: Number,
+    required: [false, "El contenido de agua es obligatorio"],
+  },
+  origen: {
+    type: String,
+    required: [false, "El origen es obligatorio"],
+  },
+
+  temperatura: {
+    type: Number,
+    required: [false, "La temperatura es obligatoria"],
+  },
+  presion: {
+    type: Number,
+    required: [false, "La presión es obligatoria"],
+  },
+  id_contrato: {
+    type: Schema.Types.ObjectId,
+    ref: "Contrato",
+    required: false,
+  },
+
+  estado: {
+    type: String,
+    default: true,
+  },
+  eliminado: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+ContratoItemsSchema.methods.toJSON = function () {
+  const { _id, ...contratoItems } = this.toObject();
+  contratoItems.id = _id;
+  return contratoItems;
+};
+
+module.exports = model("ContratoItems", ContratoItemsSchema);

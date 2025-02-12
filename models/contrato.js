@@ -1,67 +1,4 @@
 const { Schema, model } = require("mongoose");
-const Items = Schema({
-  producto: {
-    type: String,
-    enum: [
-      "Nafta",
-      "Queroseno",
-      "Fuel Oil 4 (MOG)",
-      "Fuel Oil 6 (Fondo)",
-      "Petroleo Crudo",
-    ],
-    required: [false, "El producto es obligatorio"],
-  },
-  cantidad: {
-    type: Number,
-    required: [false, "La cantidad es obligatoria"],
-  },
-  precioUnitario: {
-    type: Number,
-    required: [false, "El precio unitario es obligatorio"],
-  },
-  gravedadAPI: {
-    type: Number,
-    required: [false, "La gravedad API es obligatoria"],
-  },
-  azufre: {
-    type: Number,
-    required: [false, "El porcentaje de azufre es obligatorio"],
-  },
-  viscosidad: {
-    type: Number,
-    required: [false, "La viscosidad es obligatoria"],
-  },
-  densidad: {
-    type: Number,
-    required: [false, "La densidad es obligatoria"],
-  },
-  contenidoAgua: {
-    type: Number,
-    required: [false, "El contenido de agua es obligatorio"],
-  },
-  origen: {
-    type: String,
-    required: [false, "El origen es obligatorio"],
-  },
-
-  temperatura: {
-    type: Number,
-    required: [false, "La temperatura es obligatoria"],
-  },
-  presion: {
-    type: Number,
-    required: [false, "La presión es obligatoria"],
-  },
-
-  estado: {
-    type: String,
-    default: true,
-  },
-  eliminado: {
-    type: Boolean,
-    default: false,
-  },
-});
 
 const ContratoSchema = Schema(
   {
@@ -91,7 +28,7 @@ const ContratoSchema = Schema(
       required: false,
     },
 
-    id_contrato_items: [Items],
+    id_items: [{ type: Schema.Types.ObjectId, ref: "ContratoItems" }], // Array de IDs,
 
     fechaInicio: {
       type: Date,
