@@ -14,7 +14,8 @@ const contratoGets = async (req = request, res = response) => {
         .skip(Number(desde))
         .limit(Number(limite))
         .populate({ path: "id_refineria", select: "nombre" })
-        .populate({ path: "id_contacto", select: "nombre" }),
+        .populate({ path: "id_contacto", select: "nombre" })
+        .populate("id_items"),
     ]);
 
     res.json({
@@ -33,7 +34,8 @@ const contratoGet = async (req = request, res = response) => {
   try {
     const contrato = await Contrato.findById(id)
       .populate("id_refineria", "nombre")
-      .populate("id_contacto", "nombre");
+      .populate("id_contacto", "nombre")
+      .populate("id_items");
 
     if (contrato && !contrato.eliminado) {
       res.json(contrato);
