@@ -187,7 +187,7 @@ const contratoPost = async (req, res = response) => {
     await nuevoContrato
       .populate("id_refineria", "nombre")
       .populate("id_contacto", "nombre")
-      .populate("id_contrato_items") // Populate para los items
+      .populate("id_items") // Populate para los items
       .execPopulate();
 
     res.json({
@@ -201,20 +201,50 @@ const contratoPost = async (req, res = response) => {
 // Actualizar un contrato existente
 const contratoPut = async (req, res = response) => {
   const { id } = req.params;
-  const { _id, ...resto } = req.body;
-
+  const { _id, items, ...resto } = req.body;
+  if (!items) {
+    return res.status(404).json({
+      msg: "Items no encontrado",
+    });
+  }
   try {
     const contratoActualizado = await Contrato.findByIdAndUpdate(id, resto, {
       new: true,
-    })
-      .populate("id_refineria", "nombre")
-      .populate("id_contacto", "nombre");
-
+    });
     if (!contratoActualizado) {
       return res.status(404).json({
         msg: "Contrato no encontrado",
       });
     }
+    // 2. Actualizar o crear los items asociados al contrato
+    const nuevosItems = await Promise.all(
+      items.map(async (item) => {
+        if (item._id) {
+          // Si el item tiene un _id, actualizarlo
+          return await contrato_items.findByIdAndUpdate(item._id, item, {
+            new: true,
+          });
+        } else {
+          // Si el item no tiene un _id, crearlo
+          const nuevoItem = new contrato_items({
+            ...item, // Spread operator para copiar las propiedades del item
+            id_contrato: id, // Asignar el ID del contrato al item
+          });
+          return await nuevoItem.save();
+        }
+      })
+    );
+
+    // 3. Actualizar el contrato con los IDs de los items
+    contratoActualizado.id_items = nuevosItems.map((item) => item._id);
+    await contratoActualizado.save();
+
+    // 4. Populate para obtener los datos de refinería y contacto
+    await contratoActualizado
+      .populate("id_refineria", "nombre")
+      .populate("id_contacto", "nombre")
+      .populate("id_items") // Populate para los items
+      .execPopulate();
 
     res.json(contratoActualizado);
   } catch (err) {
