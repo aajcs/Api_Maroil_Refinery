@@ -118,6 +118,7 @@ const recepcionPost = async (req, res = response) => {
     placa,
     nombre_chofer,
     apellido_chofer,
+    estadoCarga,
   } = req.body;
 
   const nuevaRecepcion = new Recepcion({
@@ -137,6 +138,7 @@ const recepcionPost = async (req, res = response) => {
     placa,
     nombre_chofer,
     apellido_chofer,
+    estadoCarga,
   });
 
   try {

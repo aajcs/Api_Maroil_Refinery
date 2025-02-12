@@ -13,10 +13,15 @@ const RecepcionSchema = Schema(
       required: [false, "Cantidad recibida obligatoria"],
     },
 
-    estado: {
+    estadoCarga: {
       type: String,
       enum: ["En tránsito", "Entregado"],
       default: "En tránsito",
+    },
+
+    estado: {
+      type: String,
+      default: true,
     },
 
     fechaInicio: {
