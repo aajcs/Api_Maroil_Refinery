@@ -33,6 +33,12 @@ const RecepcionSchema = Schema(
       ref: "Linea_carga",
       required: false,
     },
+    id_refineria: {
+      type: Schema.Types.ObjectId,
+      ref: "Refineria",
+      required: false,
+    },
+
     id_tanque: {
       type: Schema.Types.ObjectId,
       ref: "Tanque",
