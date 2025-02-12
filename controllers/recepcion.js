@@ -13,7 +13,8 @@ const recepcionGets = async (req = request, res = response) => {
       Recepcion.find(query)
         .skip(Number(desde))
         .limit(Number(limite))
-        .populate("id_contrato"),
+        .populate("id_contrato")
+        .populate("id_refineria"),
     ]);
 
     // Poblar id_refineria e id_contacto de cada recepción
@@ -33,6 +34,11 @@ const recepcionGets = async (req = request, res = response) => {
             path: "id_linea",
             select: "nombre",
             populate: { path: "id_linea", select: "nombre" },
+          })
+          .populate({
+            path: "id_refineria",
+            select: "nombre",
+            populate: { path: "id_refineria", select: "nombre" },
           })
           .execPopulate();
       })
@@ -65,6 +71,11 @@ const recepcionGet = async (req = request, res = response) => {
         path: "id_linea",
         select: "nombre",
         populate: { path: "id_linea", select: "nombre" },
+      })
+      .populate({
+        path: "id_refineria",
+        select: "nombre",
+        populate: { path: "id_refineria", select: "nombre" },
       });
 
     if (recepcionActualizado) {
@@ -168,6 +179,11 @@ const recepcionPut = async (req, res = response) => {
         path: "id_linea",
         select: "nombre",
         populate: { path: "id_linea", select: "nombre" },
+      })
+      .populate({
+        path: "id_refineria",
+        select: "nombre",
+        populate: { path: "id_refineria", select: "nombre" },
       });
     if (!recepcionActualizada) {
       return res.status(404).json({
