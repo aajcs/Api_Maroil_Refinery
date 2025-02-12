@@ -19,13 +19,13 @@ const RecepcionSchema = Schema(
       default: "En tránsito",
     },
 
-    fechaRecepcion: {
+    fechaInicio: {
       type: Date,
       required: [false, "Fecha de recepción obligatoria"],
     },
-    hora: {
+    fechaFin: {
       type: Date,
-      required: [false, "Hora de recepción obligatoria"],
+      required: [false, "Fecha de recepción obligatoria"],
     },
 
     id_linea: {
