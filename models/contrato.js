@@ -94,18 +94,6 @@ const ContratoSchema = Schema(
 
     id_contrato_items: [Items],
 
-    // producto: {
-    //   type: String,
-    //   enum: [
-    //     "Crudo Ligero",
-    //     "Crudo Pesado",
-    //     "Diesel",
-    //     "Gasolina",
-    //     "Jet Fuel",
-    //     "Otros",
-    //   ],
-    //   required: [false, "El producto es obligatorio"],
-    // },
     fechaInicio: {
       type: Date,
       required: [false, "La fecha de inicio es obligatoria"],
@@ -114,19 +102,7 @@ const ContratoSchema = Schema(
       type: Date,
       required: [false, "La fecha de finalización es obligatoria"],
     },
-    // cantidad: {
-    //   type: Number,
-    //   required: [false, "La cantidad es obligatoria"],
-    // },
-    // precioUnitario: {
-    //   type: Number,
-    //   required: [false, "El precio unitario es obligatorio"],
-    // },
-    // moneda: {
-    //   type: String,
-    //   enum: ["USD", "EUR", "COP", "MXN"],
-    //   default: "USD",
-    // },
+
     condicionesPago: {
       tipo: {
         type: String,
@@ -140,31 +116,6 @@ const ContratoSchema = Schema(
       },
     },
 
-    // gravedadAPI: {
-    //   type: Number,
-    //   required: [false, "La gravedad API es obligatoria"],
-    // },
-    // azufre: {
-    //   type: Number,
-    //   required: [false, "El porcentaje de azufre es obligatorio"],
-    // },
-    // viscosidad: {
-    //   type: Number,
-    //   required: [false, "La viscosidad es obligatoria"],
-    // },
-    // densidad: {
-    //   type: Number,
-    //   required: [false, "La densidad es obligatoria"],
-    // },
-    // contenidoAgua: {
-    //   type: Number,
-    //   required: [false, "El contenido de agua es obligatorio"],
-    // },
-    // origen: {
-    //   type: String,
-    //   required: [false, "El origen es obligatorio"],
-    // },
-
     abono: [
       {
         monto: { type: Number, required: false },
@@ -175,19 +126,6 @@ const ContratoSchema = Schema(
       type: String,
       required: [false, "El destino es obligatorio"],
     },
-    // temperatura: {
-    //   type: Number,
-    //   required: [false, "La temperatura es obligatoria"],
-    // },
-    // presion: {
-    //   type: Number,
-    //   required: [false, "La presión es obligatoria"],
-    // },
-
-    // transportista: {
-    //   type: String,
-    //   required: [false, "El transportista es obligatorio"],
-    // },
 
     fechaEnvio: {
       type: Date,

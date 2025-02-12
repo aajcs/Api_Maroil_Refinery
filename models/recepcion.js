@@ -2,7 +2,7 @@ const { Schema, model } = require("mongoose");
 
 const RecepcionSchema = Schema(
   {
-    contrato: {
+    id_contrato: {
       type: Schema.Types.ObjectId,
       ref: "Contrato",
       required: false,

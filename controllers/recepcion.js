@@ -123,24 +123,24 @@ const recepcionPost = async (req, res = response) => {
     await nuevaRecepcion
       .populate({
         path: "id_contrato",
-        select: "id_refineria id_contacto",
-        populate: [
-          { path: "id_refineria", select: "nombre" },
-          { path: "id_contacto", select: "nombre" },
-        ],
+        select: "numeroContrato id_contrato_items id_contacto",
+        populate: [{ path: "id_contacto", select: "nombre" }],
       })
       .populate({
         path: "id_linea",
         select: "nombre",
-        populate: { path: "id_linea", select: "nombre" },
       })
-      .execPopulate(),
-      res.json({ recepcion: nuevaRecepcion });
+      .populate({
+        path: "id_tanque",
+        select: "nombre",
+      })
+      .execPopulate();
+
+    res.json({ recepcion: nuevaRecepcion });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
-
 // Actualizar una recepción existente
 const recepcionPut = async (req, res = response) => {
   const { id } = req.params;
