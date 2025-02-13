@@ -1,9 +1,11 @@
 const express = require("express");
+const http = require("http");
+const socketio = require("socket.io");
 const cors = require("cors");
 const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config");
-const refinacion = require("./refinacion");
+const Sockets = require("./sockets");
 
 class Server {
   constructor() {
@@ -32,7 +34,13 @@ class Server {
 
     // Conectar a base de datos
     this.conectarDB();
+    // Http server
+    this.server = http.createServer(this.app);
 
+    // Configuraciones de sockets
+    this.io = socketio(this.server, {
+      /* configuraciones */
+    });
     // Middlewares
     this.middlewares();
 
@@ -77,14 +85,17 @@ class Server {
     this.app.use(this.paths.tanque, require("../routes/tanque"));
     this.app.use(this.paths.torre, require("../routes/torre"));
     this.app.use(this.paths.contrato, require("../routes/contrato"));
-
     this.app.use(this.paths.contacto, require("../routes/contacto"));
     this.app.use(this.paths.recepcion, require("../routes/recepcion"));
     this.app.use(this.paths.refinacion, require("../routes/refinacion"));
     this.app.use(this.paths.despacho, require("../routes/despacho"));
   }
-
+  configurarSockets() {
+    new Sockets(this.io);
+  }
   listen() {
+    // Inicializar sockets
+    this.configurarSockets();
     this.app.listen(this.port, () => {
       console.log("Servidor corriendo en puerto", this.port);
     });
