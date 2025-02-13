@@ -37,10 +37,11 @@ const linea_cargaSchema = Schema(
   }
 );
 
-linea_cargaSchema.methods.toJSON = function () {
-  const { _id, ...linea_carga } = this.toObject();
-  linea_carga.id = _id;
-  return linea_carga;
-};
-
+linea_cargaSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+});
 module.exports = model("Linea_carga", linea_cargaSchema);

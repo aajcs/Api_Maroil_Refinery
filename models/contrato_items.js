@@ -68,10 +68,12 @@ const ContratoItemsSchema = Schema({
   },
 });
 
-ContratoItemsSchema.methods.toJSON = function () {
-  const { _id, ...contratoItems } = this.toObject();
-  contratoItems.id = _id;
-  return contratoItems;
-};
+ContratoItemsSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+});
 
 module.exports = model("ContratoItems", ContratoItemsSchema);

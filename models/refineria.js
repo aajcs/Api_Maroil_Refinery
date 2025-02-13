@@ -34,10 +34,12 @@ const RefineriaSchema = Schema(
   }
 );
 
-RefineriaSchema.methods.toJSON = function () {
-  const { __v, _id, ...refineria } = this.toObject();
-  refineria.id = _id;
-  return refineria;
-};
+RefineriaSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+});
 
 module.exports = model("Refineria", RefineriaSchema);

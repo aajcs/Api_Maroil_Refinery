@@ -39,10 +39,11 @@ const BombaSchema = Schema(
   }
 );
 
-BombaSchema.methods.toJSON = function () {
-  const { __v, _id, ...bomba } = this.toObject();
-  bomba.id = _id;
-  return bomba;
-};
-
+BombaSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+});
 module.exports = model("Bomba", BombaSchema);

@@ -2,47 +2,51 @@ const { response, request } = require("express");
 const Recepcion = require("../models/recepcion");
 const Contrato = require("../models/contrato");
 
-// Obtener todas las recepcions con paginación y población de referencias
+// Obtener todas las recepciones con paginación y población de referencias
 const recepcionGets = async (req = request, res = response) => {
   const { limite = 5, desde = 0 } = req.query;
   const query = {};
 
   try {
-    const [total, recepcions] = await Promise.all([
+    const [total, recepciones] = await Promise.all([
       Recepcion.countDocuments(query),
       Recepcion.find(query)
         .skip(Number(desde))
         .limit(Number(limite))
-        .populate("id_contrato")
-        .populate("id_refineria"),
+        .populate("idContrato")
+        .populate("idRefineria"),
     ]);
 
-    // Poblar id_refineria e id_contacto de cada recepción
+    // Poblar idRefineria e idContacto de cada recepción
     await Promise.all(
-      recepcions.map(async (recepcion) => {
+      recepciones.map(async (recepcion) => {
         await recepcion
           .populate({
-            path: "id_contrato",
-            select: "id_refineria id_contacto id_contrato_items numeroContrato",
+            path: "idContrato",
+            select: "idRefineria idContacto idContratoItems numeroContrato",
             populate: [
-              { path: "id_refineria", select: "nombre" },
-              { path: "id_contacto", select: "nombre" },
+              { path: "idRefineria", select: "nombre" },
+              { path: "idContacto", select: "nombre" },
             ],
           })
           .populate({
-            path: "id_linea",
-            select: "nombre",
-            populate: { path: "id_linea", select: "nombre" },
+            path: "idContratoItems",
+            select: "producto cantidad",
           })
           .populate({
-            path: "id_refineria",
+            path: "idLinea",
             select: "nombre",
-            populate: { path: "id_refineria", select: "nombre" },
+            populate: { path: "idLinea", select: "nombre" },
           })
           .populate({
-            path: "id_tanque",
+            path: "idRefineria",
             select: "nombre",
-            populate: { path: "id_tanque", select: "nombre" },
+            populate: { path: "idRefineria", select: "nombre" },
+          })
+          .populate({
+            path: "idTanque",
+            select: "nombre",
+            populate: { path: "idTanque", select: "nombre" },
           })
           .execPopulate();
       })
@@ -50,7 +54,7 @@ const recepcionGets = async (req = request, res = response) => {
 
     res.json({
       total,
-      recepcions,
+      recepciones,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -62,34 +66,37 @@ const recepcionGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const recepcionActualizado = await Recepcion.findById(id)
+    const recepcionActualizada = await Recepcion.findById(id)
       .populate({
-        path: "id_contrato",
-        select: "id_refineria id_contacto id_contrato_items numeroContrato",
+        path: "idContrato",
+        select: "idRefineria idContacto idContratoItems numeroContrato",
         populate: [
-          { path: "id_refineria", select: "nombre" },
-          { path: "id_contacto", select: "nombre" },
+          { path: "idRefineria", select: "nombre" },
+          { path: "idContacto", select: "nombre" },
         ],
       })
-
       .populate({
-        path: "id_linea",
-        select: "nombre",
-        populate: { path: "id_linea", select: "nombre" },
+        path: "idContratoItems",
+        select: "producto cantidad",
       })
       .populate({
-        path: "id_refineria",
+        path: "idLinea",
         select: "nombre",
-        populate: { path: "id_refineria", select: "nombre" },
+        populate: { path: "idLinea", select: "nombre" },
       })
       .populate({
-        path: "id_tanque",
+        path: "idRefineria",
         select: "nombre",
-        populate: { path: "id_tanque", select: "nombre" },
+        populate: { path: "idRefineria", select: "nombre" },
+      })
+      .populate({
+        path: "idTanque",
+        select: "nombre",
+        populate: { path: "idTanque", select: "nombre" },
       });
 
-    if (recepcionActualizado) {
-      res.json(recepcionActualizado);
+    if (recepcionActualizada) {
+      res.json(recepcionActualizada);
     } else {
       res.status(404).json({
         msg: "Recepción no encontrada",
@@ -103,43 +110,51 @@ const recepcionGet = async (req = request, res = response) => {
 // Crear una nueva recepción
 const recepcionPost = async (req, res = response) => {
   const {
-    contrato,
+    // Relaciones con otros modelos
+    idContrato,
+    idContratoItems,
+    idLinea,
+    idRefineria,
+    idTanque,
+
+    // Información de la recepción
     cantidadRecibida,
-    precioUnitario,
-    montoTotal,
+    estadoCarga,
     estado,
+
+    // Fechas
     fechaInicio,
     fechaFin,
-    id_lote,
-    id_contrato,
-    id_linea,
-    id_tanque,
-    id_guia,
-    id_refineria,
+
+    // Información del transporte
+    idGuia,
     placa,
-    nombre_chofer,
-    apellido_chofer,
-    estadoCarga,
+    nombreChofer,
+    apellidoChofer,
   } = req.body;
 
   const nuevaRecepcion = new Recepcion({
-    contrato,
+    // Relaciones con otros modelos
+    idContrato,
+    idContratoItems,
+    idLinea,
+    idRefineria,
+    idTanque,
+
+    // Información de la recepción
     cantidadRecibida,
-    precioUnitario,
-    montoTotal,
+    estadoCarga,
     estado,
+
+    // Fechas
     fechaInicio,
     fechaFin,
-    id_lote,
-    id_contrato,
-    id_linea,
-    id_tanque,
-    id_guia,
-    id_refineria,
+
+    // Información del transporte
+    idGuia,
     placa,
-    nombre_chofer,
-    apellido_chofer,
-    estadoCarga,
+    nombreChofer,
+    apellidoChofer,
   });
 
   try {
@@ -147,20 +162,24 @@ const recepcionPost = async (req, res = response) => {
 
     await nuevaRecepcion
       .populate({
-        path: "id_contrato",
-        select: "numeroContrato id_contrato_items id_contacto",
-        populate: [{ path: "id_contacto", select: "nombre" }],
+        path: "idContrato",
+        select: "numeroContrato idContacto",
+        populate: [{ path: "idContacto", select: "nombre" }],
       })
       .populate({
-        path: "id_linea",
+        path: "idContratoItems",
+        select: "producto cantidad",
+      })
+      .populate({
+        path: "idLinea",
         select: "nombre",
       })
       .populate({
-        path: "id_refineria",
+        path: "idRefineria",
         select: "nombre",
       })
       .populate({
-        path: "id_tanque",
+        path: "idTanque",
         select: "nombre",
       })
       .execPopulate();
@@ -170,6 +189,7 @@ const recepcionPost = async (req, res = response) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 // Actualizar una recepción existente
 const recepcionPut = async (req, res = response) => {
   const { id } = req.params;
@@ -180,22 +200,26 @@ const recepcionPut = async (req, res = response) => {
       new: true,
     })
       .populate({
-        path: "id_contrato",
-        select: "id_refineria id_contacto",
+        path: "idContrato",
+        select: "idRefineria idContacto",
         populate: [
-          { path: "id_refineria", select: "nombre" },
-          { path: "id_contacto", select: "nombre" },
+          { path: "idRefineria", select: "nombre" },
+          { path: "idContacto", select: "nombre" },
         ],
       })
       .populate({
-        path: "id_linea",
-        select: "nombre",
-        populate: { path: "id_linea", select: "nombre" },
+        path: "idContratoItems",
+        select: "producto cantidad",
       })
       .populate({
-        path: "id_refineria",
+        path: "idLinea",
         select: "nombre",
-        populate: { path: "id_refineria", select: "nombre" },
+        populate: { path: "idLinea", select: "nombre" },
+      })
+      .populate({
+        path: "idRefineria",
+        select: "nombre",
+        populate: { path: "idRefineria", select: "nombre" },
       });
     if (!recepcionActualizada) {
       return res.status(404).json({
@@ -219,17 +243,17 @@ const recepcionDelete = async (req, res = response) => {
       { eliminado: true },
       { new: true }
     ).populate({
-      path: "id_contrato",
-      select: "id_refineria id_contacto",
+      path: "idContrato",
+      select: "idRefineria idContacto",
       populate: [
-        { path: "id_refineria", select: "nombre" },
-        { path: "id_contacto", select: "nombre" },
+        { path: "idRefineria", select: "nombre" },
+        { path: "idContacto", select: "nombre" },
       ],
     });
 
     if (!recepcion) {
       return res.status(404).json({
-        msg: "Recepcion no encontrado",
+        msg: "Recepción no encontrada",
       });
     }
 

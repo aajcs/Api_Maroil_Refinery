@@ -52,10 +52,12 @@ const TorreSchema = Schema(
   }
 );
 
-TorreSchema.methods.toJSON = function () {
-  const { _id, ...torre } = this.toObject();
-  torre.id = _id;
-  return torre;
-};
+TorreSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+});
 
 module.exports = model("Torre", TorreSchema);

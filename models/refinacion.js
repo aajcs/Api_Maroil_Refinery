@@ -104,10 +104,12 @@ const RefinacionSchema = new Schema(
 );
 
 // Método para eliminar campos sensibles al convertir a JSON
-RefinacionSchema.methods.toJSON = function () {
-  const { _id, ...refinacion } = this.toObject();
-  refinacion.id = _id;
-  return refinacion;
-};
+RefinacionSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+});
 
 module.exports = model("Refinacion", RefinacionSchema);

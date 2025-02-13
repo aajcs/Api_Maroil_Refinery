@@ -60,10 +60,12 @@ const ContactoSchema = new Schema(
   }
 );
 
-ContactoSchema.methods.toJSON = function () {
-  const { _id, ...contactos } = this.toObject();
-  contactos.id = _id;
-  return contactos;
-};
+ContactoSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+});
 
 module.exports = model("Contacto", ContactoSchema);

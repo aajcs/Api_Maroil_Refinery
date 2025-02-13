@@ -1,86 +1,84 @@
 const { Schema, model } = require("mongoose");
 
-const RecepcionSchema = Schema(
+const RecepcionSchema = new Schema(
   {
-    id_contrato: {
+    // Relaciones con otros modelos (referencias)
+    idContrato: {
       type: Schema.Types.ObjectId,
       ref: "Contrato",
-      required: false,
+    },
+    idContratoItems: {
+      type: Schema.Types.ObjectId,
+      ref: "ContratoItems",
+    },
+    idLinea: {
+      type: Schema.Types.ObjectId,
+      ref: "Linea_carga",
+    },
+    idRefineria: {
+      type: Schema.Types.ObjectId,
+      ref: "Refineria",
+    },
+    idTanque: {
+      type: Schema.Types.ObjectId,
+      ref: "Tanque",
     },
 
+    // Información de la recepción
     cantidadRecibida: {
       type: Number,
-      required: [false, "Cantidad recibida obligatoria"],
     },
-
     estadoCarga: {
       type: String,
-      enum: ["En tránsito", "Entregado"],
-      default: "En tránsito",
+      enum: ["EN_TRANSITO", "ENTREGADO"],
+      default: "EN_TRANSITO",
     },
-
     estado: {
-      type: String,
+      type: Boolean,
       default: true,
     },
 
+    // Fechas
     fechaInicio: {
       type: Date,
-      required: [false, "Fecha de recepción obligatoria"],
     },
     fechaFin: {
       type: Date,
-      required: [false, "Fecha de recepción obligatoria"],
     },
 
-    id_linea: {
-      type: Schema.Types.ObjectId,
-      ref: "Linea_carga",
-      required: false,
-    },
-    id_refineria: {
-      type: Schema.Types.ObjectId,
-      ref: "Refineria",
-      required: false,
-    },
-
-    id_tanque: {
-      type: Schema.Types.ObjectId,
-      ref: "Tanque",
-      required: false,
-    },
-
-    id_guia: {
+    // Información del transporte
+    idGuia: {
       type: Number,
-      required: [false, "Número de guía obligatorio"],
     },
     placa: {
       type: String,
-      required: [false, "Placa del Vehículo obligatorio"],
     },
-    nombre_chofer: {
+    nombreChofer: {
       type: String,
-      required: [false, "Nombre del Chofer obligatorio"],
     },
-    apellido_chofer: {
+    apellidoChofer: {
       type: String,
-      required: [false, "Apellido del chofer obligatorio"],
     },
+
+    // Control de estado (eliminación lógica)
     eliminado: {
       type: Boolean,
       default: false,
     },
   },
   {
-    timestamps: true,
-    versionKey: false,
+    timestamps: true, // Añade createdAt y updatedAt automáticamente
+    versionKey: false, // Elimina el campo __v
   }
 );
 
-RecepcionSchema.methods.toJSON = function () {
-  const { _id, ...recepcion } = this.toObject();
-  recepcion.id = _id;
-  return recepcion;
-};
+// Método para transformar el objeto devuelto por Mongoose
+RecepcionSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString(); // Convierte _id a id
+    delete returnedObject._id; // Elimina _id
+    delete returnedObject.__v; // Elimina __v (si no lo has desactivado en las opciones del esquema)
+  },
+});
 
 module.exports = model("Recepcion", RecepcionSchema);

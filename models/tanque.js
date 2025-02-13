@@ -47,10 +47,12 @@ const TanqueSchema = Schema(
   }
 );
 
-TanqueSchema.methods.toJSON = function () {
-  const { _id, ...tanque } = this.toObject();
-  tanque.id = _id;
-  return tanque;
-};
+TanqueSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+});
 
 module.exports = model("Tanque", TanqueSchema);
