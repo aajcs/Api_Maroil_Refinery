@@ -52,7 +52,7 @@ const ContratoItemsSchema = Schema({
     type: Number,
     required: [false, "La presión es obligatoria"],
   },
-  id_contrato: {
+  idContrato: {
     type: Schema.Types.ObjectId,
     ref: "Contrato",
     required: false,

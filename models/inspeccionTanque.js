@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 
-const Inspeccion_tanqueSchema = Schema(
+const inspeccionTanqueSchema = Schema(
   {
     fecha: {
       type: Date,
@@ -55,7 +55,7 @@ const Inspeccion_tanqueSchema = Schema(
   }
 );
 
-inspeccion_tanqueSchema.methods.set("toJSON", {
+inspeccionTanqueSchema.methods.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;
@@ -63,4 +63,4 @@ inspeccion_tanqueSchema.methods.set("toJSON", {
   },
 });
 
-module.exports = model("Inspeccion_tanque", inspeccion_tanqueSchema);
+module.exports = model("InspeccionTanque", inspeccionTanqueSchema);

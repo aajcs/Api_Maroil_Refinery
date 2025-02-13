@@ -44,7 +44,7 @@ const UsuarioSchema = Schema(
       default: "ninguno",
       enum: ["limitado", "completo", "ninguno"],
     },
-    id_refineria: [
+    idRefineria: [
       {
         type: Schema.Types.ObjectId,
         ref: "Refineria",

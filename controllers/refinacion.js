@@ -13,25 +13,25 @@ const refinacionGets = async (req = request, res = response) => {
       Refinacion.find(query)
         .skip(Number(desde))
         .limit(Number(limite))
-        .populate("id_contrato"),
+        .populate("idContrato"),
     ]);
 
-    // Poblar id_refineria e id_contacto de cada recepción
+    // Poblar idRefineria e idContacto de cada recepción
     await Promise.all(
       refinacion.map(async (refinacion) => {
         await refinacion
           .populate({
-            path: "id_contrato",
-            select: "id_refineria id_contacto",
+            path: "idContrato",
+            select: "idRefineria idContacto",
             populate: [
-              { path: "id_refineria", select: "nombre" },
-              { path: "id_contacto", select: "nombre" },
+              { path: "idRefineria", select: "nombre" },
+              { path: "idContacto", select: "nombre" },
             ],
           })
           .populate({
-            path: "id_linea",
+            path: "idLinea",
             select: "nombre",
-            populate: { path: "id_linea", select: "nombre" },
+            populate: { path: "idLinea", select: "nombre" },
           })
           .execPopulate();
       })
@@ -53,17 +53,17 @@ const refinacionGet = async (req = request, res = response) => {
   try {
     const refinacionActualizado = await Refinacion.findById(id)
       .populate({
-        path: "id_contrato",
-        select: "id_refineria id_contacto",
+        path: "idContrato",
+        select: "idRefineria idContacto",
         populate: [
-          { path: "id_refineria", select: "nombre" },
-          { path: "id_contacto", select: "nombre" },
+          { path: "idRefineria", select: "nombre" },
+          { path: "idContacto", select: "nombre" },
         ],
       })
       .populate({
-        path: "id_linea",
+        path: "idLinea",
         select: "nombre",
-        populate: { path: "id_linea", select: "nombre" },
+        populate: { path: "idLinea", select: "nombre" },
       });
 
     if (refinacionActualizado) {
@@ -89,8 +89,8 @@ const refinacionPost = async (req, res = response) => {
     // fechaRecepcion,
     // hora,
     // id_lote,
-    // id_contrato,
-    // id_linea,
+    // idContrato,
+    // idLinea,
     // id_tanque,
     // id_guia,
     // placa,
@@ -107,8 +107,8 @@ const refinacionPost = async (req, res = response) => {
     // fechaRecepcion,
     // hora,
     // id_lote,
-    // id_contrato,
-    // id_linea,
+    // idContrato,
+    // idLinea,
     id_tanque,
     // id_guia,
     // placa,
@@ -121,17 +121,17 @@ const refinacionPost = async (req, res = response) => {
 
     await nuevaRefinacion
       .populate({
-        path: "id_contrato",
-        select: "id_refineria id_contacto",
+        path: "idContrato",
+        select: "idRefineria idContacto",
         populate: [
-          { path: "id_refineria", select: "nombre" },
-          { path: "id_contacto", select: "nombre" },
+          { path: "idRefineria", select: "nombre" },
+          { path: "idContacto", select: "nombre" },
         ],
       })
       .populate({
-        path: "id_linea",
+        path: "idLinea",
         select: "nombre",
-        populate: { path: "id_linea", select: "nombre" },
+        populate: { path: "idLinea", select: "nombre" },
       })
       .execPopulate(),
       res.json({ refinacion: nuevaRefinacion });
@@ -154,17 +154,17 @@ const refinacionPut = async (req, res = response) => {
       }
     )
       .populate({
-        path: "id_contrato",
-        select: "id_refineria id_contacto",
+        path: "idContrato",
+        select: "idRefineria idContacto",
         populate: [
-          { path: "id_refineria", select: "nombre" },
-          { path: "id_contacto", select: "nombre" },
+          { path: "idRefineria", select: "nombre" },
+          { path: "idContacto", select: "nombre" },
         ],
       })
       .populate({
-        path: "id_linea",
+        path: "idLinea",
         select: "nombre",
-        populate: { path: "id_linea", select: "nombre" },
+        populate: { path: "idLinea", select: "nombre" },
       });
     if (!refinacionActualizada) {
       return res.status(404).json({
@@ -188,11 +188,11 @@ const refinacionDelete = async (req, res = response) => {
       { eliminado: true },
       { new: true }
     ).populate({
-      path: "id_contrato",
-      select: "id_refineria id_contacto",
+      path: "idContrato",
+      select: "idRefineria idContacto",
       populate: [
-        { path: "id_refineria", select: "nombre" },
-        { path: "id_contacto", select: "nombre" },
+        { path: "idRefineria", select: "nombre" },
+        { path: "idContacto", select: "nombre" },
       ],
     });
 

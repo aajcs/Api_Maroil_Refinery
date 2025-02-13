@@ -1,6 +1,6 @@
 const Bomba = require("./bomba");
 const Categoria = require("./categoria");
-const Linea_carga = require("./linea_carga");
+const LineaCarga = require("./lineaCarga");
 const Producto = require("./producto");
 const Refineria = require("./refineria");
 const Role = require("./role");
@@ -28,7 +28,7 @@ module.exports = {
   Role,
   Server,
   Usuario,
-  Linea_carga,
+  LineaCarga,
   Refineria,
   Bomba,
   Tanque,

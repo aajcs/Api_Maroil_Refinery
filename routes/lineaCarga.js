@@ -17,17 +17,17 @@ const {
 } = require("../helpers/db-validators");
 
 const {
-  linea_cargaGet,
-  linea_cargaPut,
-  linea_cargaPost,
-  linea_cargaDelete,
-  linea_cargaPatch,
-  linea_cargaGets,
-} = require("../controllers/linea_carga");
+  lineaCargaGet,
+  lineaCargaPut,
+  lineaCargaPost,
+  lineaCargaDelete,
+  lineaCargaPatch,
+  lineaCargaGets,
+} = require("../controllers/lineaCarga");
 
 const router = Router();
 
-router.get("/", linea_cargaGets);
+router.get("/", lineaCargaGets);
 router.get(
   "/:id",
   [
@@ -35,7 +35,7 @@ router.get(
     // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
-  linea_cargaGet
+  lineaCargaGet
 );
 router.put(
   "/:id",
@@ -45,7 +45,7 @@ router.put(
     //check("rol").custom(esRoleValido),
     validarCampos,
   ],
-  linea_cargaPut
+  lineaCargaPut
 );
 
 router.post(
@@ -60,7 +60,7 @@ router.post(
     // check('rol').custom( esRoleValido ),
     validarCampos,
   ],
-  linea_cargaPost
+  lineaCargaPost
 );
 
 router.delete(
@@ -73,9 +73,9 @@ router.delete(
     check("id").custom(existeLineaPorId),
     validarCampos,
   ],
-  linea_cargaDelete
+  lineaCargaDelete
 );
 
-router.patch("/", linea_cargaPatch);
+router.patch("/", lineaCargaPatch);
 
 module.exports = router;

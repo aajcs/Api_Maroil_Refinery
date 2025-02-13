@@ -1,6 +1,6 @@
 const { response, request } = require("express");
 const Contrato = require("../models/contrato");
-const contrato_items = require("../models/contrato_items");
+const contratoItems = require("../models/contratoItems");
 
 // Obtener todos los contratos con paginación y población de referencias
 const contratoGets = async (req = request, res = response) => {
@@ -13,9 +13,9 @@ const contratoGets = async (req = request, res = response) => {
       Contrato.find(query)
         .skip(Number(desde))
         .limit(Number(limite))
-        .populate({ path: "id_refineria", select: "nombre" })
-        .populate({ path: "id_contacto", select: "nombre" })
-        .populate("id_items"),
+        .populate({ path: "idRefineria", select: "nombre" })
+        .populate({ path: "idContacto", select: "nombre" })
+        .populate("idItems"),
     ]);
 
     res.json({
@@ -33,9 +33,9 @@ const contratoGet = async (req = request, res = response) => {
 
   try {
     const contrato = await Contrato.findById(id)
-      .populate("id_refineria", "nombre")
-      .populate("id_contacto", "nombre")
-      .populate("id_items");
+      .populate("idRefineria", "nombre")
+      .populate("idContacto", "nombre")
+      .populate("idItems");
 
     if (contrato && !contrato.eliminado) {
       res.json(contrato);
@@ -54,9 +54,9 @@ const contratoGet = async (req = request, res = response) => {
 //   const {
 //     numeroContrato,
 //     descripcion,
-//     estado_contrato,
-//     id_refineria,
-//     id_items,
+//     estadoContrato,
+//     idRefineria,
+//     idItems,
 //     fechaInicio,
 //     fechaFin,
 //     // cantidad,
@@ -77,17 +77,17 @@ const contratoGet = async (req = request, res = response) => {
 //     fechaEnvio,
 //     estadoEntrega,
 //     clausulas,
-//     id_contacto,
+//     idContacto,
 //     abono,
-//     id_contrato_items,
+//     id_contratoItems,
 //   } = req.body;
 
 //   const nuevoContrato = new Contrato({
 //     numeroContrato,
 //     descripcion,
-//     estado_contrato,
-//     id_refineria,
-//     id_items,
+//     estadoContrato,
+//     idRefineria,
+//     idItems,
 //     fechaInicio,
 //     fechaFin,
 //     // cantidad,
@@ -108,16 +108,16 @@ const contratoGet = async (req = request, res = response) => {
 //     fechaEnvio,
 //     estadoEntrega,
 //     clausulas,
-//     id_contacto,
+//     idContacto,
 //     abono,
-//     id_contrato_items,
+//     id_contratoItems,
 //   });
 
 //   try {
 //     await nuevoContrato.save();
 //     await nuevoContrato
-//       .populate("id_refineria", "nombre")
-//       .populate("id_contacto", "nombre")
+//       .populate("idRefineria", "nombre")
+//       .populate("idContacto", "nombre")
 //       .execPopulate();
 //     res.json({
 //       nuevoContrato,
@@ -131,8 +131,8 @@ const contratoPost = async (req, res = response) => {
   const {
     numeroContrato,
     descripcion,
-    estado_contrato,
-    id_refineria,
+    estadoContrato,
+    idRefineria,
     fechaInicio,
     fechaFin,
     condicionesPago,
@@ -141,7 +141,7 @@ const contratoPost = async (req, res = response) => {
     fechaEnvio,
     estadoEntrega,
     clausulas,
-    id_contacto,
+    idContacto,
     abono,
     items, // Array de objetos item
   } = req.body;
@@ -151,8 +151,8 @@ const contratoPost = async (req, res = response) => {
     const nuevoContrato = new Contrato({
       numeroContrato,
       descripcion,
-      estado_contrato,
-      id_refineria,
+      estadoContrato,
+      idRefineria,
       fechaInicio,
       fechaFin,
       condicionesPago,
@@ -161,7 +161,7 @@ const contratoPost = async (req, res = response) => {
       fechaEnvio,
       estadoEntrega,
       clausulas,
-      id_contacto,
+      idContacto,
       abono,
     });
 
@@ -171,7 +171,7 @@ const contratoPost = async (req, res = response) => {
     // 3. Crear y guardar los items asociados al contrato
     const nuevosItems = await Promise.all(
       items.map(async (item) => {
-        const nuevoItem = new contrato_items({
+        const nuevoItem = new contratoItems({
           ...item, // Spread operator para copiar las propiedades del item
           id_contrato: nuevoContrato._id, // Asignar el ID del contrato al item
         });
@@ -180,14 +180,14 @@ const contratoPost = async (req, res = response) => {
     );
 
     // 4. Actualizar el contrato con los IDs de los items
-    nuevoContrato.id_items = nuevosItems.map((item) => item._id);
+    nuevoContrato.idItems = nuevosItems.map((item) => item._id);
     await nuevoContrato.save();
 
     // 5. Populate para obtener los datos de refinería y contacto
     await nuevoContrato
-      .populate("id_refineria", "nombre")
-      .populate("id_contacto", "nombre")
-      .populate("id_items") // Populate para los items
+      .populate("idRefineria", "nombre")
+      .populate("idContacto", "nombre")
+      .populate("idItems") // Populate para los items
       .execPopulate();
 
     res.json({
@@ -221,12 +221,12 @@ const contratoPut = async (req, res = response) => {
       items.map(async (item) => {
         if (item._id) {
           // Si el item tiene un _id, actualizarlo
-          return await contrato_items.findByIdAndUpdate(item._id, item, {
+          return await contratoItems.findByIdAndUpdate(item._id, item, {
             new: true,
           });
         } else {
           // Si el item no tiene un _id, crearlo
-          const nuevoItem = new contrato_items({
+          const nuevoItem = new contratoItems({
             ...item, // Spread operator para copiar las propiedades del item
             id_contrato: id, // Asignar el ID del contrato al item
           });
@@ -236,14 +236,14 @@ const contratoPut = async (req, res = response) => {
     );
 
     // 3. Actualizar el contrato con los IDs de los items
-    contratoActualizado.id_items = nuevosItems.map((item) => item._id);
+    contratoActualizado.idItems = nuevosItems.map((item) => item._id);
     await contratoActualizado.save();
 
     // 4. Populate para obtener los datos de refinería y contacto
     await contratoActualizado
-      .populate("id_refineria", "nombre")
-      .populate("id_contacto", "nombre")
-      .populate("id_items") // Populate para los items
+      .populate("idRefineria", "nombre")
+      .populate("idContacto", "nombre")
+      .populate("idItems") // Populate para los items
       .execPopulate();
 
     res.json(contratoActualizado);

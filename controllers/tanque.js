@@ -11,7 +11,7 @@ const tanqueGets = async (req = request, res = response) => {
     Tanque.find(query)
       .skip(Number(desde))
       .limit(Number(limite))
-      .populate("id_refineria", "nombre"),
+      .populate("idRefineria", "nombre"),
   ]);
 
   res.json({
@@ -22,7 +22,7 @@ const tanqueGets = async (req = request, res = response) => {
 
 const tanqueGet = async (req = request, res = response) => {
   const { id } = req.params;
-  const tanque = await Tanque.findById(id).populate("id_refineria", "nombre");
+  const tanque = await Tanque.findById(id).populate("idRefineria", "nombre");
 
   // Verificar si el campo eliminado es falso
   if (tanque && !tanque.eliminado) {
@@ -42,7 +42,7 @@ const tanquePost = async (req, res = response) => {
     capacidad,
     material,
     almacenamiento,
-    id_refineria,
+    idRefineria,
   } = req.body;
   const tanque = new Tanque({
     nombre,
@@ -50,13 +50,13 @@ const tanquePost = async (req, res = response) => {
     capacidad,
     material,
     almacenamiento,
-    id_refineria,
+    idRefineria,
   });
   console.log(tanque);
   try {
     // Guardar en BD
     await tanque.save();
-    await tanque.populate("id_refineria", "nombre").execPopulate();
+    await tanque.populate("idRefineria", "nombre").execPopulate();
     res.json({
       tanque,
     });
@@ -70,7 +70,7 @@ const tanquePut = async (req, res = response) => {
   const { _id, ...resto } = req.body;
   const tanque = await Tanque.findByIdAndUpdate(id, resto, {
     new: true,
-  }).populate("id_refineria", "nombre");
+  }).populate("idRefineria", "nombre");
 
   res.json(tanque);
 };

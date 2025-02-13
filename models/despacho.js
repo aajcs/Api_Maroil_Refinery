@@ -10,25 +10,25 @@ const DespachoSchema = Schema(
       type: Date,
       required: [true, "Hora de recepción obligatoria"],
     },
-    id_lote: {
+    idLote: {
       type: Schema.Types.ObjectId,
       ref: "Lotes_producto",
       required: true,
     },
 
-    id_linea: {
+    idLinea: {
       type: Schema.Types.ObjectId,
       ref: "Linea_carga",
       required: true,
     },
 
-    id_empresa: {
+    idEmpresa: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
       required: true,
     },
 
-    numero_guia: {
+    numeroGuia: {
       type: Number,
       required: [true, "Número de guía obligatorio"],
     },
@@ -36,11 +36,11 @@ const DespachoSchema = Schema(
       type: String,
       required: [true, "Placa del Vehículo obligatorio"],
     },
-    nombre_chofer: {
+    nombreChofer: {
       type: String,
       required: [true, "Nombre del Chofer obligatorio"],
     },
-    apellido_chofer: {
+    apellidoChofer: {
       type: String,
       required: [true, "Apellido del chofer obligatorio"],
     },

@@ -11,7 +11,7 @@ const torreGets = async (req = request, res = response) => {
     Torre.find(query)
       .skip(Number(desde))
       .limit(Number(limite))
-      .populate("id_refineria", "nombre"),
+      .populate("idRefineria", "nombre"),
   ]);
 
   res.json({
@@ -22,7 +22,7 @@ const torreGets = async (req = request, res = response) => {
 
 const torreGet = async (req = request, res = response) => {
   const { id } = req.params;
-  const torre = await Torre.findById(id).populate("id_refineria", "nombre");
+  const torre = await Torre.findById(id).populate("idRefineria", "nombre");
 
   // Verificar si el campo eliminado es falso
   if (torre && !torre.eliminado) {
@@ -43,7 +43,7 @@ const torrePost = async (req, res = response) => {
     material,
     almacenamiento,
     numero,
-    id_refineria,
+    idRefineria,
   } = req.body;
   const torre = new Torre({
     nombre,
@@ -52,13 +52,13 @@ const torrePost = async (req, res = response) => {
     material,
     almacenamiento,
     numero,
-    id_refineria,
+    idRefineria,
   });
   console.log(torre);
   try {
     // Guardar en BD
     await torre.save();
-    await torre.populate("id_refineria", "nombre").execPopulate(),
+    await torre.populate("idRefineria", "nombre").execPopulate(),
       res.json({
         torre,
       });
@@ -72,7 +72,7 @@ const torrePut = async (req, res = response) => {
   const { _id, ...resto } = req.body;
   const torre = await Torre.findByIdAndUpdate(id, resto, {
     new: true,
-  }).populate("id_refineria", "nombre");
+  }).populate("idRefineria", "nombre");
 
   res.json(torre);
 };

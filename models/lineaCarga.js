@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 
-const linea_cargaSchema = Schema(
+const lineaCargaSchema = Schema(
   {
     ubicacion: {
       type: String,
@@ -12,12 +12,12 @@ const linea_cargaSchema = Schema(
       required: [true, "Nombre de linea obligatorio"],
     },
 
-    id_refineria: {
+    idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
       required: true,
     },
-    id_recepcion: {
+    idRecepcion: {
       type: Schema.Types.ObjectId,
       ref: "Recepcion",
       required: true,
@@ -37,11 +37,11 @@ const linea_cargaSchema = Schema(
   }
 );
 
-linea_cargaSchema.set("toJSON", {
+lineaCargaSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;
     delete returnedObject.__v;
   },
 });
-module.exports = model("Linea_carga", linea_cargaSchema);
+module.exports = model("LineaCarga", lineaCargaSchema);

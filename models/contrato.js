@@ -12,23 +12,23 @@ const ContratoSchema = Schema(
       required: [false, "La Descripcion es Obligatoria"],
       unique: false,
     },
-    estado_contrato: {
+    estadoContrato: {
       type: String,
       enum: ["Adjudicado", "Activo", "Inactivo"],
       default: "Inactivo",
     },
-    id_refineria: {
+    idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
       required: false,
     },
-    id_contacto: {
+    idContacto: {
       type: Schema.Types.ObjectId,
       ref: "Contacto",
       required: false,
     },
 
-    id_items: [{ type: Schema.Types.ObjectId, ref: "ContratoItems" }], // Array de IDs,
+    idItems: [{ type: Schema.Types.ObjectId, ref: "ContratoItems" }], // Array de IDs,
 
     fechaInicio: {
       type: Date,

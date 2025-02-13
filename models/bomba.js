@@ -2,7 +2,7 @@ const { Schema, model } = require("mongoose");
 
 const BombaSchema = Schema(
   {
-    id_refineria: {
+    idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
       required: true,
