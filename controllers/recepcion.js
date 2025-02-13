@@ -2,13 +2,13 @@ const { response, request } = require("express");
 const Recepcion = require("../models/recepcion");
 const Contrato = require("../models/contrato");
 
-// Obtener todas las recepciones con paginación y población de referencias
+// Obtener todas las recepcions con paginación y población de referencias
 const recepcionGets = async (req = request, res = response) => {
   const { limite = 5, desde = 0 } = req.query;
   const query = {};
 
   try {
-    const [total, recepciones] = await Promise.all([
+    const [total, recepcions] = await Promise.all([
       Recepcion.countDocuments(query),
       Recepcion.find(query)
         .skip(Number(desde))
@@ -19,7 +19,7 @@ const recepcionGets = async (req = request, res = response) => {
 
     // Poblar idRefineria e idContacto de cada recepción
     await Promise.all(
-      recepciones.map(async (recepcion) => {
+      recepcions.map(async (recepcion) => {
         await recepcion
           .populate({
             path: "idContrato",
@@ -54,7 +54,7 @@ const recepcionGets = async (req = request, res = response) => {
 
     res.json({
       total,
-      recepciones,
+      recepcions,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
