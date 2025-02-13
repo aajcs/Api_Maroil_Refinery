@@ -1,37 +1,27 @@
 const { response, request } = require("express");
-const Refinacion = require("../models/refinacion");
-//const Contrato = require("../models/contrato");
+const Refinacion = require("../models/refinacion_bk");
 
-// Obtener todas las refinacion con paginación y población de referencias
+// Obtener todas las refinaciones con paginación y población de referencias
 const refinacionGets = async (req = request, res = response) => {
   const { limite = 5, desde = 0 } = req.query;
   const query = {};
 
   try {
-    const [total, refinacion] = await Promise.all([
+    const [total, refinaciones] = await Promise.all([
       Refinacion.countDocuments(query),
       Refinacion.find(query)
         .skip(Number(desde))
         .limit(Number(limite))
-        .populate("idContrato"),
+        .populate("idTanque"),
     ]);
 
-    // Poblar idRefineria e idContacto de cada recepción
+    // Poblar idTanque y otros campos relacionados de cada refinación
     await Promise.all(
-      refinacion.map(async (refinacion) => {
+      refinaciones.map(async (refinacion) => {
         await refinacion
           .populate({
-            path: "idContrato",
-            select: "idRefineria idContacto",
-            populate: [
-              { path: "idRefineria", select: "nombre" },
-              { path: "idContacto", select: "nombre" },
-            ],
-          })
-          .populate({
-            path: "idLinea",
+            path: "idTanque",
             select: "nombre",
-            populate: { path: "idLinea", select: "nombre" },
           })
           .execPopulate();
       })
@@ -39,38 +29,29 @@ const refinacionGets = async (req = request, res = response) => {
 
     res.json({
       total,
-      refinacion,
+      refinaciones,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// Obtener una recepción específica por ID
+// Obtener una refinación específica por ID
 const refinacionGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const refinacionActualizado = await Refinacion.findById(id)
+    const refinacion = await Refinacion.findById(id)
       .populate({
-        path: "idContrato",
-        select: "idRefineria idContacto",
-        populate: [
-          { path: "idRefineria", select: "nombre" },
-          { path: "idContacto", select: "nombre" },
-        ],
-      })
-      .populate({
-        path: "idLinea",
+        path: "idTanque",
         select: "nombre",
-        populate: { path: "idLinea", select: "nombre" },
       });
 
-    if (refinacionActualizado) {
-      res.json(refinacionActualizado);
+    if (refinacion) {
+      res.json(refinacion);
     } else {
       res.status(404).json({
-        msg: "Refinacion no encontrada",
+        msg: "Refinación no encontrada",
       });
     }
   } catch (err) {
@@ -78,42 +59,51 @@ const refinacionGet = async (req = request, res = response) => {
   }
 };
 
-// Crear una nueva refinacion
+// Crear una nueva refinación
 const refinacionPost = async (req, res = response) => {
   const {
-    // contrato,
-    cantidadProducida,
-    // precioUnitario,
-    // montoTotal,
-    // estado,
-    // fechaRecepcion,
-    // hora,
-    // id_lote,
-    // idContrato,
-    // idLinea,
-    // id_tanque,
-    // id_guia,
-    // placa,
-    // nombre_chofer,
-    // apellido_chofer,
+    idTanque,
+    materiaPrima,
+    cantidadRecibida,
+    fechaRecepcion,
+    proceso,
+    fechaInicio,
+    fechaFin,
+    temperatura,
+    presion,
+    duracionHoras,
+    derivados,
+    controlCalidad,
+    observaciones,
+    fechaRevision,
+    historialOperaciones,
+    fecha,
+    operacion,
+    usuario,
+    estado,
+
   } = req.body;
 
   const nuevaRefinacion = new Refinacion({
-    // contrato,
-    cantidadProducida,
-    // precioUnitario,
-    // montoTotal,
-    // estado,
-    // fechaRecepcion,
-    // hora,
-    // id_lote,
-    // idContrato,
-    // idLinea,
-    id_tanque,
-    // id_guia,
-    // placa,
-    // nombre_chofer,
-    // apellido_chofer,
+    idTanque,
+    materiaPrima,
+    cantidadRecibida,
+    fechaRecepcion,
+    proceso,
+    fechaInicio,
+    fechaFin,
+    temperatura,
+    presion,
+    duracionHoras,
+    derivados,
+    controlCalidad,
+    observaciones,
+    fechaRevision,
+    historialOperaciones,
+    fecha,
+    operacion,
+    usuario,
+    estado,
   });
 
   try {
@@ -121,54 +111,34 @@ const refinacionPost = async (req, res = response) => {
 
     await nuevaRefinacion
       .populate({
-        path: "idContrato",
-        select: "idRefineria idContacto",
-        populate: [
-          { path: "idRefineria", select: "nombre" },
-          { path: "idContacto", select: "nombre" },
-        ],
-      })
-      .populate({
-        path: "idLinea",
+        path: "idTanque",
         select: "nombre",
-        populate: { path: "idLinea", select: "nombre" },
       })
-      .execPopulate(),
-      res.json({ refinacion: nuevaRefinacion });
+      .execPopulate();
+
+    res.json({ refinacion: nuevaRefinacion });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-// Actualizar una refinacion existente
+// Actualizar una refinación existente
 const refinacionPut = async (req, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
   try {
-    const refinacionActualizada = await Refinacion.findByIdAndUpdate(
-      id,
-      resto,
-      {
-        new: true,
-      }
-    )
+    const refinacionActualizada = await Refinacion.findByIdAndUpdate(id, resto, {
+      new: true,
+    })
       .populate({
-        path: "idContrato",
-        select: "idRefineria idContacto",
-        populate: [
-          { path: "idRefineria", select: "nombre" },
-          { path: "idContacto", select: "nombre" },
-        ],
-      })
-      .populate({
-        path: "idLinea",
+        path: "idTanque",
         select: "nombre",
-        populate: { path: "idLinea", select: "nombre" },
       });
+
     if (!refinacionActualizada) {
       return res.status(404).json({
-        msg: "Refinacion no encontrada",
+        msg: "Refinación no encontrada",
       });
     }
 
@@ -178,7 +148,7 @@ const refinacionPut = async (req, res = response) => {
   }
 };
 
-// Eliminar (marcar como eliminado) una recepción
+// Eliminar (marcar como eliminado) una refinación
 const refinacionDelete = async (req, res = response) => {
   const { id } = req.params;
 
@@ -188,17 +158,13 @@ const refinacionDelete = async (req, res = response) => {
       { eliminado: true },
       { new: true }
     ).populate({
-      path: "idContrato",
-      select: "idRefineria idContacto",
-      populate: [
-        { path: "idRefineria", select: "nombre" },
-        { path: "idContacto", select: "nombre" },
-      ],
+      path: "idTanque",
+      select: "nombre",
     });
 
     if (!refinacion) {
       return res.status(404).json({
-        msg: "Refinacion no encontrado",
+        msg: "Refinación no encontrada",
       });
     }
 
@@ -210,7 +176,7 @@ const refinacionDelete = async (req, res = response) => {
 
 const refinacionPatch = (req, res = response) => {
   res.json({
-    msg: "patch API - usuariosPatch",
+    msg: "patch API - refinacionPatch",
   });
 };
 

@@ -9,10 +9,7 @@ const {
 } = require("../middlewares");
 
 const {
-  //esRoleValido,
-  // emailExiste,
-  // existeUsuarioPorId,
-  // nitExiste,
+  
   existeRefinacionPorId,
 } = require("../helpers/db-validators");
 

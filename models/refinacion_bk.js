@@ -22,19 +22,6 @@ const DerivadoSchema = new Schema({
   },
 });
 
-// Esquema para los registros de chequeo cada 24 horas
-const ChequeoSchema = new Schema({
-  fechaChequeo: {
-    type: Date,
-    default: Date.now,
-  },
-  cantidadProcesada: {
-    type: Number,
-    required: [true, "La cantidad procesada es obligatoria"],
-  },
-  derivados: [DerivadoSchema], // Array de derivados producidos durante el chequeo
-});
-
 // Esquema principal de refinación
 const RefinacionSchema = new Schema(
   {
@@ -85,8 +72,8 @@ const RefinacionSchema = new Schema(
       },
     },
 
-    // Chequeos cada 24 horas
-    chequeos: [ChequeoSchema], // Array de registros de chequeo cada 24 horas
+    // Derivados producidos
+    derivados: [DerivadoSchema], // Array de derivados producidos
 
     // Control de calidad
     controlCalidad: {
