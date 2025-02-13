@@ -94,7 +94,7 @@ class Server {
   }
   listen() {
     // Inicializar sockets
-    this.configurarSockets();
+    // this.configurarSockets();
     this.app.listen(this.port, () => {
       console.log("Servidor corriendo en puerto", this.port);
     });

@@ -147,6 +147,9 @@ const contratoPost = async (req, res = response) => {
   } = req.body;
 
   try {
+    // Asignar los valores correctos
+
+    const contactoId = idContacto.id;
     // 1. Crear el contrato
     const nuevoContrato = new Contrato({
       numeroContrato,
@@ -161,7 +164,7 @@ const contratoPost = async (req, res = response) => {
       fechaEnvio,
       estadoEntrega,
       clausulas,
-      idContacto,
+      idContacto: contactoId,
       abono,
     });
 
@@ -173,14 +176,14 @@ const contratoPost = async (req, res = response) => {
       items.map(async (item) => {
         const nuevoItem = new contratoItems({
           ...item, // Spread operator para copiar las propiedades del item
-          id_contrato: nuevoContrato._id, // Asignar el ID del contrato al item
+          idContrato: nuevoContrato.id, // Asignar el ID del contrato al item
         });
         return await nuevoItem.save();
       })
     );
 
     // 4. Actualizar el contrato con los IDs de los items
-    nuevoContrato.idItems = nuevosItems.map((item) => item._id);
+    nuevoContrato.idItems = nuevosItems.map((item) => item.id);
     await nuevoContrato.save();
 
     // 5. Populate para obtener los datos de refinería y contacto
@@ -201,7 +204,9 @@ const contratoPost = async (req, res = response) => {
 // Actualizar un contrato existente
 const contratoPut = async (req, res = response) => {
   const { id } = req.params;
-  const { _id, items, ...resto } = req.body;
+  const { _id, items, idItems, ...resto } = req.body;
+  resto.idRefineria = resto.idRefineria.id;
+  resto.idContacto = resto.idContacto.id;
   if (!items) {
     return res.status(404).json({
       msg: "Items no encontrado",
@@ -219,16 +224,16 @@ const contratoPut = async (req, res = response) => {
     // 2. Actualizar o crear los items asociados al contrato
     const nuevosItems = await Promise.all(
       items.map(async (item) => {
-        if (item._id) {
+        if (item.id) {
           // Si el item tiene un _id, actualizarlo
-          return await contratoItems.findByIdAndUpdate(item._id, item, {
+          return await contratoItems.findByIdAndUpdate(item.id, item, {
             new: true,
           });
         } else {
           // Si el item no tiene un _id, crearlo
           const nuevoItem = new contratoItems({
             ...item, // Spread operator para copiar las propiedades del item
-            id_contrato: id, // Asignar el ID del contrato al item
+            idContrato: id, // Asignar el ID del contrato al item
           });
           return await nuevoItem.save();
         }
@@ -236,7 +241,7 @@ const contratoPut = async (req, res = response) => {
     );
 
     // 3. Actualizar el contrato con los IDs de los items
-    contratoActualizado.idItems = nuevosItems.map((item) => item._id);
+    contratoActualizado.idItems = nuevosItems.map((item) => item.id);
     await contratoActualizado.save();
 
     // 4. Populate para obtener los datos de refinería y contacto

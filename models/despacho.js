@@ -18,7 +18,7 @@ const DespachoSchema = Schema(
 
     idLinea: {
       type: Schema.Types.ObjectId,
-      ref: "Linea_carga",
+      ref: "LineaCarga",
       required: true,
     },
 

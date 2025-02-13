@@ -13,7 +13,7 @@ const RecepcionSchema = new Schema(
     },
     idLinea: {
       type: Schema.Types.ObjectId,
-      ref: "Linea_carga",
+      ref: "LineaCarga",
     },
     idRefineria: {
       type: Schema.Types.ObjectId,
@@ -34,8 +34,8 @@ const RecepcionSchema = new Schema(
       default: "EN_TRANSITO",
     },
     estado: {
-      type: Boolean,
-      default: true,
+      type: String,
+      default: "true",
     },
 
     // Fechas

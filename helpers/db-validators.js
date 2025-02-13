@@ -4,7 +4,7 @@ const {
   Categoria,
   Producto,
   Refineria,
-  Linea_carga,
+  LineaCarga,
   Tanque,
   Bomba,
   Torre,
@@ -53,7 +53,7 @@ const existeRefineriaPorId = async (id) => {
 
 const existeLineaPorId = async (id) => {
   // Verificar si la linea existe
-  const existeLinea = await Linea_carga.findById(id);
+  const existeLinea = await LineaCarga.findById(id);
   if (!existeLinea) {
     throw new Error(`El id no existe ${id}`);
   }

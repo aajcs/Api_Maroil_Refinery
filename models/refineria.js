@@ -22,7 +22,7 @@ const RefineriaSchema = Schema(
     },
     estado: {
       type: String,
-      default: true,
+      default: "true",
     },
     eliminado: {
       type: Boolean,
