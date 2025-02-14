@@ -1,5 +1,5 @@
 const { response, request } = require("express");
-const Refinacion = require("../models/refinacion_bk");
+const Refinacion = require("../models/refinacion");
 
 // Obtener todas las refinaciones con paginación y población de referencias
 const refinacionGets = async (req = request, res = response) => {
