@@ -45,6 +45,12 @@ const RefinacionSchema = new Schema(
       required: [true, "El ID del tanque es obligatorio"],
     },
 
+    idTorre: {
+      type: Schema.Types.ObjectId,
+      ref: "Torre",
+      required: [true, "El ID de la torre es obligatorio"],
+    },
+
     // Información de la materia prima
     materiaPrima: {
       tipo: {
@@ -126,7 +132,7 @@ const RefinacionSchema = new Schema(
       type: Boolean,
       default: true,
     },
-    
+
     // Eliminación lógica
     eliminado: {
       type: Boolean,

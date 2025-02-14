@@ -12,7 +12,8 @@ const refinacionGets = async (req = request, res = response) => {
       Refinacion.find(query)
         .skip(Number(desde))
         .limit(Number(limite))
-        .populate("idTanque"),
+        .populate("idTanque")
+        .populate("idTorre"),
     ]);
 
     // Poblar idTanque y otros campos relacionados de cada refinación
@@ -21,6 +22,10 @@ const refinacionGets = async (req = request, res = response) => {
         await refinacion
           .populate({
             path: "idTanque",
+            select: "nombre",
+          })
+          .populate({
+            path: "idTorre",
             select: "nombre",
           })
           .execPopulate();
@@ -41,11 +46,13 @@ const refinacionGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const refinacion = await Refinacion.findById(id)
-      .populate({
+    const refinacion = await Refinacion.findById(id).populate({
+      path: "idTanque",
+      select: "nombre".populate({
         path: "idTanque",
         select: "nombre",
-      });
+      }),
+    });
 
     if (refinacion) {
       res.json(refinacion);
@@ -63,6 +70,7 @@ const refinacionGet = async (req = request, res = response) => {
 const refinacionPost = async (req, res = response) => {
   const {
     idTanque,
+    idTorre,
     materiaPrima,
     cantidadRecibida,
     fechaRecepcion,
@@ -81,11 +89,11 @@ const refinacionPost = async (req, res = response) => {
     operacion,
     usuario,
     estado,
-
   } = req.body;
 
   const nuevaRefinacion = new Refinacion({
     idTanque,
+    idTorre,
     materiaPrima,
     cantidadRecibida,
     fechaRecepcion,
@@ -114,6 +122,10 @@ const refinacionPost = async (req, res = response) => {
         path: "idTanque",
         select: "nombre",
       })
+      .populate({
+        path: "idTorre",
+        select: "nombre",
+      })
       .execPopulate();
 
     res.json({ refinacion: nuevaRefinacion });
@@ -128,11 +140,19 @@ const refinacionPut = async (req, res = response) => {
   const { _id, ...resto } = req.body;
 
   try {
-    const refinacionActualizada = await Refinacion.findByIdAndUpdate(id, resto, {
-      new: true,
-    })
+    const refinacionActualizada = await Refinacion.findByIdAndUpdate(
+      id,
+      resto,
+      {
+        new: true,
+      }
+    )
       .populate({
         path: "idTanque",
+        select: "nombre",
+      })
+      .populate({
+        path: "idTorre",
         select: "nombre",
       });
 
