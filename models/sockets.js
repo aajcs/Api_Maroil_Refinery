@@ -16,27 +16,28 @@ class Sockets {
   socketEvents() {
     // On connection
     this.io.on("connection", async (socket) => {
-      const [valido, uid] = comprobarJWT(socket.handshake.query["x-token"]);
+      const [valido, id] = comprobarJWT(socket.handshake.query["x-token"]);
 
       if (!valido) {
         console.log("socket no identificado");
         return socket.disconnect();
       }
 
-      await usuarioConectado(uid);
+      await usuarioConectado(id);
+      console.log("Cliente conectado", id);
 
       // Unir al usuario a una sala de socket.io
-      socket.join(uid);
+      // socket.join(id);
 
       // TODO: Validar el JWT
       // Si el token no es válido, desconectar
 
-      // TODO: Saber que usuario está activo mediante el UID
+      // TODO: Saber que usuario está activo mediante el id
 
       // TODO: Emitir todos los usuarios conectados
-      this.io.emit("lista-usuarios", await getUsuarios());
+      // this.io.emit("mensaje", "Hola me conecte");
 
-      // TODO: Socket join, uid
+      // TODO: Socket join, id
 
       // TODO: Escuchar cuando el cliente manda un mensaje
       // socket.on( 'mensaje-personal', async( payload ) => {
@@ -49,8 +50,9 @@ class Sockets {
       // Marcar en la BD que el usuario se desconecto
       // TODO: Emitir todos los usuarios conectados
       socket.on("disconnect", async () => {
-        await usuarioDesconectado(uid);
-        this.io.emit("lista-usuarios", await getUsuarios());
+        await usuarioDesconectado(id);
+        console.log("Cliente desconectado", id);
+        this.io.emit("mensaje-from-server");
       });
     });
   }

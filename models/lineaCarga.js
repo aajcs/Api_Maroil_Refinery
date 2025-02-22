@@ -17,11 +17,7 @@ const lineaCargaSchema = Schema(
       ref: "Refineria",
       required: true,
     },
-    idRecepcion: {
-      type: Schema.Types.ObjectId,
-      ref: "Recepcion",
-      required: true,
-    },
+
     estado: {
       type: String,
       default: true,

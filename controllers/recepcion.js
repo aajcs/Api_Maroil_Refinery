@@ -13,51 +13,63 @@ const recepcionGets = async (req = request, res = response) => {
       Recepcion.find(query)
         .skip(Number(desde))
         .limit(Number(limite))
-        .populate("idContrato")
-        .populate("idRefineria"),
+        .populate({
+          path: "idContrato",
+          select: "idRefineria idContacto idItems numeroContrato",
+          populate: [
+            { path: "idRefineria", select: "nombre" },
+            { path: "idContacto", select: "nombre" },
+            { path: "idItems" },
+          ],
+        })
+        .populate("idRefineria", "nombre")
+        .populate("idLinea", "nombre")
+        .populate("idTanque", "nombre")
+        .populate("idContratoItems"),
     ]);
-
+    2;
     // Poblar idRefineria e idContacto de cada recepción
-    await Promise.all(
-      recepcions.map(async (recepcion) => {
-        await recepcion
-          .populate({
-            path: "idContrato",
-            select: "idRefineria idContacto idItems numeroContrato",
-            populate: [
-              { path: "idRefineria", select: "nombre" },
-              { path: "idContacto", select: "nombre" },
-              { path: "idItems" },
-            ],
-          })
-          .populate({
-            path: "idContratoItems",
-            select: "producto cantidad",
-          })
-          .populate({
-            path: "idLinea",
-            select: "nombre",
-            populate: { path: "idLinea", select: "nombre" },
-          })
-          .populate({
-            path: "idRefineria",
-            select: "nombre",
-            populate: { path: "idRefineria", select: "nombre" },
-          })
-          .populate({
-            path: "idTanque",
-            select: "nombre",
-            populate: { path: "idTanque", select: "nombre" },
-          })
-          .execPopulate();
-      })
-    );
+    // await Promise.all(
+    //   recepcions.map(async (recepcion) => {
+    //     await recepcion
+    //       .populate({
+    //         path: "idContrato",
+    //         select: "idRefineria idContacto idItems numeroContrato",
+    //         populate: [
+    //           { path: "idRefineria", select: "nombre" },
+    //           { path: "idContacto", select: "nombre" },
+    //           { path: "idItems" },
+    //         ],
+    //       })
+    //       .populate({
+    //         path: "idContratoItems",
+    //         select: "producto cantidad",
+    //       })
+    //       .populate({
+    //         path: "idLinea",
+    //         select: "nombre",
+    //         populate: { path: "idLinea", select: "nombre" },
+    //       })
+    //       .populate({
+    //         path: "idRefineria",
+    //         select: "nombre",
+    //         populate: { path: "idRefineria", select: "nombre" },
+    //       })
+    //       .populate({
+    //         path: "idTanque",
+    //         select: "nombre",
+    //         populate: { path: "idTanque", select: "nombre" },
+    //       })
+    //       .execPopulate();
+    //   })
+    // );
 
     res.json({
       total,
       recepcions,
     });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -203,32 +215,45 @@ const recepcionPut = async (req, res = response) => {
     })
       .populate({
         path: "idContrato",
-        select: "idRefineria idContacto idContratoItems numeroContrato",
+        select: "idRefineria idContacto idItems numeroContrato",
         populate: [
           { path: "idRefineria", select: "nombre" },
           { path: "idContacto", select: "nombre" },
+          { path: "idItems" },
         ],
       })
-      .populate({
-        path: "idContratoItems",
-        select: "producto cantidad",
-      })
-      .populate({
-        path: "idLinea",
-        select: "nombre",
-        populate: { path: "idLinea", select: "nombre" },
-      })
-      .populate({
-        path: "idRefineria",
-        select: "nombre",
-        populate: { path: "idRefineria", select: "nombre" },
-      });
+      .populate("idRefineria", "nombre")
+      .populate("idLinea", "nombre")
+      .populate("idTanque", "nombre")
+      .populate("idContratoItems");
+    // .populate({
+    //   path: "idContrato",
+    //   select: "idRefineria idContacto idContratoItems numeroContrato",
+    //   populate: [
+    //     { path: "idRefineria", select: "nombre" },
+    //     { path: "idContacto", select: "nombre" },
+    //   ],
+    // })
+    // .populate({
+    //   path: "idContratoItems",
+    //   select: "producto cantidad",
+    // })
+    // .populate({
+    //   path: "idLinea",
+    //   select: "nombre",
+    //   populate: { path: "idLinea", select: "nombre" },
+    // })
+    // .populate({
+    //   path: "idRefineria",
+    //   select: "nombre",
+    //   populate: { path: "idRefineria", select: "nombre" },
+    // });
     if (!recepcionActualizada) {
       return res.status(404).json({
         msg: "Recepción no encontrada",
       });
     }
-
+    req.io.emit("recepcion-modificada", recepcionActualizada);
     res.json(recepcionActualizada);
   } catch (err) {
     res.status(400).json({ error: err.message });

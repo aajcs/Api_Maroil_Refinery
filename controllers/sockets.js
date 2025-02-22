@@ -1,16 +1,22 @@
 const Usuario = require("../models/usuario");
 // const Mensaje = require("../models/mensaje");
 
-const usuarioConectado = async (uid) => {
-  const usuario = await Usuario.findById(uid);
+const usuarioConectado = async (id) => {
+  const usuario = await Usuario.findById(id);
+  if (!usuario) {
+    return false;
+  }
   usuario.online = true;
   await usuario.save();
 
   return usuario;
 };
 
-const usuarioDesconectado = async (uid) => {
-  const usuario = await Usuario.findById(uid);
+const usuarioDesconectado = async (id) => {
+  const usuario = await Usuario.findById(id);
+  if (!usuario) {
+    return false;
+  }
   usuario.online = false;
   await usuario.save();
 

@@ -127,6 +127,7 @@ const despachoPut = async (req, res) => {
     );
     if (!despachoActualizado)
       return res.status(404).json({ message: "Despacho no encontrado" });
+    req.io.emit("despacho-modificado", despachoActualizado);
     res.json(despachoActualizado);
   } catch (error) {
     res.status(400).json({ message: error.message });

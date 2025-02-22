@@ -57,7 +57,8 @@ const refineriasPut = async (req, res = response) => {
   const { _id, ...resto } = req.body;
 
   const refineria = await Refineria.findByIdAndUpdate(id, resto, { new: true });
-
+  // Emitir evento a todos los clientes conectados
+  req.io.emit("refineria-modificada", refineria);
   res.json(refineria);
 };
 

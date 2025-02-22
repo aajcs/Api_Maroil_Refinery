@@ -34,15 +34,22 @@ class Server {
     // Conectar a base de datos
     this.conectarDB();
     // Http server
+    this.middlewares();
     this.server = http.createServer(this.app);
 
+    // Middlewares
     // Configuraciones de sockets
     this.io = socketio(this.server, {
-      /* configuraciones */
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+      },
+      transports: ["websocket", "polling"], // Acepta WebSocket y polling
     });
-    // Middlewares
-    this.middlewares();
-
+    this.app.use((req, res, next) => {
+      req.io = this.io;
+      next();
+    });
     // Rutas de mi aplicación
     this.routes();
   }
@@ -94,8 +101,8 @@ class Server {
   }
   listen() {
     // Inicializar sockets
-    // this.configurarSockets();
-    this.app.listen(this.port, () => {
+    this.configurarSockets();
+    this.server.listen(this.port, () => {
       console.log("Servidor corriendo en puerto", this.port);
     });
   }
