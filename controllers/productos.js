@@ -1,96 +1,179 @@
-const { response } = require("express");
-const { Producto } = require("../models");
+const { response, request } = require("express");
+const Producto = require("../models/producto");
 
-const obtenerProductos = async (req, res = response) => {
-  const { limite = 5, desde = 1 } = req.query;
-  const desdeNumber = Number(desde);
-  const skip = desdeNumber > 0 ? (desdeNumber - 1) * Number(limite) : 0;
+// Obtener todos los productos con paginación y población de referencias
+const obtenerProductos = async (req = request, res = response) => {
+  const { limite = 5, desde = 0 } = req.query;
+  const query = { estado: true };
 
-  const [total, productos] = await Promise.all([
-    Producto.countDocuments(query),
-    Producto.find(query)
-      .populate("usuario", "nombre")
-      .populate("categoria", "nombre")
-      .skip(Number(desde))
-      .limit(Number(limite)),
-  ]);
+  try {
+    const [total, productos] = await Promise.all([
+      Producto.countDocuments(query),
+      Producto.find(query)
+        .skip(Number(desde))
+        .limit(Number(limite))
+        .populate({
+          path: "usuario",
+          select: "nombre",
+        })
+        .populate({
+          path: "categoria",
+          select: "nombre",
+        }),
+    ]);
 
-  res.json({
-    total,
-    productos,
-  });
+    res.json({
+      total,
+      productos,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
-const obtenerProducto = async (req, res = response) => {
+// Obtener un producto específico por ID
+const obtenerProducto = async (req = request, res = response) => {
   const { id } = req.params;
-  const producto = await Producto.findById(id)
-    .populate("usuario", "nombre")
-    .populate("categoria", "nombre");
 
-  res.json(producto);
+  try {
+    const producto = await Producto.findOne({
+      _id: id,
+      estado: true,
+    })
+      .populate({
+        path: "usuario",
+        select: "nombre",
+      })
+      .populate({
+        path: "categoria",
+        select: "nombre",
+      });
+
+    if (!producto) {
+      return res.status(404).json({ msg: "Producto no encontrado" });
+    }
+
+    res.json(producto);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
-const crearProducto = async (req, res = response) => {
+// Crear un nuevo producto
+const crearProducto = async (req = request, res = response) => {
   const { estado, usuario, ...body } = req.body;
 
-  const productoDB = await Producto.findOne({
-    nombre: body.nombre.toUpperCase(),
-  });
-
-  if (productoDB) {
-    return res.status(400).json({
-      msg: `El producto ${productoDB.nombre}, ya existe`,
+  try {
+    const productoDB = await Producto.findOne({
+      nombre: body.nombre.toUpperCase(),
     });
+
+    if (productoDB) {
+      return res.status(400).json({
+        msg: `El producto ${productoDB.nombre} ya existe`,
+      });
+    }
+
+    const data = {
+      ...body,
+      nombre: body.nombre.toUpperCase(),
+      usuario: req.usuario._id,
+    };
+
+    const producto = new Producto(data);
+    await producto.save();
+
+    await producto
+      .populate({
+        path: "usuario",
+        select: "nombre",
+      })
+      .populate({
+        path: "categoria",
+        select: "nombre",
+      });
+
+    res.status(201).json(producto);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
   }
-
-  // Generar la data a guardar
-  const data = {
-    ...body,
-    nombre: body.nombre.toUpperCase(),
-    usuario: req.usuario._id,
-  };
-
-  const producto = new Producto(data);
-
-  // Guardar DB
-  const nuevoProducto = await producto.save();
-  await nuevoProducto
-    .populate("usuario", "nombre")
-    .populate("categoria", "nombre")
-    .execPopulate();
-
-  res.status(201).json(nuevoProducto);
 };
 
-const actualizarProducto = async (req, res = response) => {
+// Actualizar un producto existente
+const actualizarProducto = async (req = request, res = response) => {
   const { id } = req.params;
   const { estado, usuario, ...data } = req.body;
 
-  if (data.nombre) {
-    data.nombre = data.nombre.toUpperCase();
+  try {
+    if (data.nombre) {
+      data.nombre = data.nombre.toUpperCase();
+    }
+
+    data.usuario = req.usuario._id;
+
+    const producto = await Producto.findOneAndUpdate(
+      { _id: id, estado: true },
+      data,
+      { new: true }
+    )
+      .populate({
+        path: "usuario",
+        select: "nombre",
+      })
+      .populate({
+        path: "categoria",
+        select: "nombre",
+      });
+
+    if (!producto) {
+      return res.status(404).json({ msg: "Producto no encontrado" });
+    }
+
+    res.json(producto);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
   }
-
-  data.usuario = req.usuario._id;
-
-  const producto = await Producto.findByIdAndUpdate(id, data, { new: true });
-
-  await producto
-    .populate("usuario", "nombre")
-    .populate("categoria", "nombre")
-    .execPopulate();
-
-  res.json(producto);
 };
 
-const borrarProducto = async (req, res = response) => {
+// Eliminar (marcar como eliminado) un producto
+const borrarProducto = async (req = request, res = response) => {
   const { id } = req.params;
-  const productoBorrado = await Producto.findByIdAndUpdate(
-    id,
-    { estado: false },
-    { new: true }
-  );
 
-  res.json(productoBorrado);
+  try {
+    const producto = await Producto.findOneAndUpdate(
+      { _id: id, estado: true },
+      { estado: false },
+      { new: true }
+    )
+      .populate({
+        path: "usuario",
+        select: "nombre",
+      })
+      .populate({
+        path: "categoria",
+        select: "nombre",
+      });
+
+    if (!producto) {
+      return res.status(404).json({ msg: "Producto no encontrado" });
+    }
+
+    res.json(producto);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Parchear un producto (ejemplo básico)
+const productoPatch = (req = request, res = response) => {
+  res.json({
+    msg: "patch API - productoPatch",
+  });
 };
 
 module.exports = {
@@ -99,4 +182,5 @@ module.exports = {
   obtenerProducto,
   actualizarProducto,
   borrarProducto,
+  productoPatch,
 };

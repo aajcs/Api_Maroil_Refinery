@@ -1,81 +1,165 @@
 const { response, request } = require("express");
-
 const Refineria = require("../models/refineria");
 
+// Obtener todas las refinerías con paginación y población de referencias
 const refineriasGets = async (req = request, res = response) => {
   const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
-  const [total, refinerias] = await Promise.all([
-    Refineria.countDocuments(query),
-    Refineria.find(query).skip(Number(desde)).limit(Number(limite)),
-  ]);
-
-  res.json({
-    total,
-    refinerias,
-  });
-};
-
-const refineriasGet = async (req = request, res = response) => {
-  const { id } = req.params;
-  const refineria = await Refineria.findById(id);
-
-  // Verificar si el campo eliminado es falso
-  if (refineria && !refineria.eliminado) {
-    res.json(refineria);
-  } else {
-    // Enviar una respuesta apropiada si el refineria no existe o está marcado como eliminado
-    res.status(404).json({
-      msg: "Refineria no encontrado o eliminado",
-    });
-  }
-};
-
-const refineriasPost = async (req, res = response) => {
-  const { ubicacion, nombre, nit, img } = req.body;
-  const refineria = new Refineria({
-    ubicacion,
-    nombre,
-    nit,
-    img,
-  });
   try {
-    // Guardar en BD
-    await refineria.save();
+    const [total, refinerias] = await Promise.all([
+      Refineria.countDocuments(query),
+      Refineria.find(query)
+        .skip(Number(desde))
+        .limit(Number(limite))
+        .populate({
+          path: "idContacto",
+          select: "nombre",
+        })
+        .populate({
+          path: "idLinea",
+          select: "nombre",
+        }),
+    ]);
 
     res.json({
-      refineria,
+      total,
+      refinerias,
     });
   } catch (err) {
-    res.status(400).json({ error: err });
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
 
-const refineriasPut = async (req, res = response) => {
+// Obtener una refinería específica por ID
+const refineriasGet = async (req = request, res = response) => {
+  const { id } = req.params;
+
+  try {
+    const refineria = await Refineria.findOne({
+      _id: id,
+      eliminado: false,
+    })
+      .populate({
+        path: "idContacto",
+        select: "nombre",
+      })
+      .populate({
+        path: "idLinea",
+        select: "nombre",
+      });
+
+    if (!refineria) {
+      return res.status(404).json({ msg: "Refinería no encontrada" });
+    }
+
+    res.json(refineria);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Crear una nueva refinería
+const refineriasPost = async (req = request, res = response) => {
+  const { ubicacion, nombre, nit, img, idContacto, idLinea } = req.body;
+
+  try {
+    const nuevaRefineria = new Refineria({
+      ubicacion,
+      nombre,
+      nit,
+      img,
+      idContacto,
+      idLinea,
+    });
+
+    await nuevaRefineria.save();
+
+    await nuevaRefineria
+      .populate({
+        path: "idContacto",
+        select: "nombre",
+      })
+      .populate({
+        path: "idLinea",
+        select: "nombre",
+      });
+
+    res.status(201).json(nuevaRefineria);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Actualizar una refinería existente
+const refineriasPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
-  const refineria = await Refineria.findByIdAndUpdate(id, resto, { new: true });
-  // Emitir evento a todos los clientes conectados
-  req.io.emit("refineria-modificada", refineria);
-  res.json(refineria);
+  try {
+    const refineriaActualizada = await Refineria.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      resto,
+      { new: true }
+    )
+      .populate({
+        path: "idContacto",
+        select: "nombre",
+      })
+      .populate({
+        path: "idLinea",
+        select: "nombre",
+      });
+
+    if (!refineriaActualizada) {
+      return res.status(404).json({ msg: "Refinería no encontrada" });
+    }
+
+    req.io.emit("refineria-modificada", refineriaActualizada);
+    res.json(refineriaActualizada);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
 };
 
-const refineriasDelete = async (req, res = response) => {
+// Eliminar (marcar como eliminado) una refinería
+const refineriasDelete = async (req = request, res = response) => {
   const { id } = req.params;
-  const refineria = await Refineria.findByIdAndUpdate(
-    id,
-    { eliminado: true },
-    { new: true }
-  );
 
-  res.json(refineria);
+  try {
+    const refineria = await Refineria.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { eliminado: true },
+      { new: true }
+    )
+      .populate({
+        path: "idContacto",
+        select: "nombre",
+      })
+      .populate({
+        path: "idLinea",
+        select: "nombre",
+      });
+
+    if (!refineria) {
+      return res.status(404).json({ msg: "Refinería no encontrada" });
+    }
+
+    res.json(refineria);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
-const refineriasPatch = (req, res = response) => {
+// Parchear una refinería (ejemplo básico)
+const refineriasPatch = (req = request, res = response) => {
   res.json({
-    msg: "patch API - usuariosPatch",
+    msg: "patch API - refineriasPatch",
   });
 };
 

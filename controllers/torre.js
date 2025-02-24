@@ -1,96 +1,141 @@
-const { response, request } = require("express");
-
+// const { response, request } = require("express");
 const Torre = require("../models/torre");
 
+// Obtener todas las torres con paginación y población de referencias
 const torreGets = async (req = request, res = response) => {
   const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
-  const [total, torres] = await Promise.all([
-    Torre.countDocuments(query),
-    Torre.find(query)
-      .skip(Number(desde))
-      .limit(Number(limite))
-      .populate("idRefineria", "nombre"),
-  ]);
+  try {
+    const [total, torres] = await Promise.all([
+      Torre.countDocuments(query),
+      Torre.find(query)
+        .skip(Number(desde))
+        .limit(Number(limite))
+        .populate({
+          path: "idRefineria",
+          select: "nombre",
+        }),
+    ]);
 
-  res.json({
-    total,
-    torres,
-  });
+    res.json({
+      total,
+      torres,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
+// Obtener una torre específica por ID
 const torreGet = async (req = request, res = response) => {
   const { id } = req.params;
-  const torre = await Torre.findById(id).populate("idRefineria", "nombre");
 
-  // Verificar si el campo eliminado es falso
-  if (torre && !torre.eliminado) {
-    res.json(torre);
-  } else {
-    // Enviar una respuesta apropiada si el torre no existe o está marcado como eliminado
-    res.status(404).json({
-      msg: "Torre no encontrado o eliminado",
-    });
-  }
-};
-
-const torrePost = async (req, res = response) => {
-  const {
-    nombre,
-    ubicacion,
-    capacidad,
-    material,
-    almacenamiento,
-    numero,
-    idRefineria,
-  } = req.body;
-  const torre = new Torre({
-    nombre,
-    ubicacion,
-    capacidad,
-    material,
-    almacenamiento,
-    numero,
-    idRefineria,
-  });
-  console.log(torre);
   try {
-    // Guardar en BD
-    await torre.save();
-    await torre.populate("idRefineria", "nombre").execPopulate(),
-      res.json({
-        torre,
-      });
+    const torre = await Torre.findOne({
+      _id: id,
+      eliminado: false,
+    }).populate({
+      path: "idRefineria",
+      select: "nombre",
+    });
+
+    if (!torre) {
+      return res.status(404).json({ msg: "Torre no encontrada" });
+    }
+
+    res.json(torre);
   } catch (err) {
-    res.status(400).json({ error: err });
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
 
-const torrePut = async (req, res = response) => {
+// Crear una nueva torre
+const torrePost = async (req = request, res = response) => {
+  const { nombre, ubicacion, capacidad, material, almacenamiento, numero, idRefineria } = req.body;
+
+  try {
+    const nuevaTorre = new Torre({
+      nombre,
+      ubicacion,
+      capacidad,
+      material,
+      almacenamiento,
+      numero,
+      idRefineria,
+    });
+
+    await nuevaTorre.save();
+
+    await nuevaTorre.populate({
+      path: "idRefineria",
+      select: "nombre",
+    });
+
+    res.status(201).json(nuevaTorre);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Actualizar una torre existente
+const torrePut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
-  const torre = await Torre.findByIdAndUpdate(id, resto, {
-    new: true,
-  }).populate("idRefineria", "nombre");
 
-  res.json(torre);
+  try {
+    const torreActualizada = await Torre.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      resto,
+      { new: true }
+    ).populate({
+      path: "idRefineria",
+      select: "nombre",
+    });
+
+    if (!torreActualizada) {
+      return res.status(404).json({ msg: "Torre no encontrada" });
+    }
+
+    res.json(torreActualizada);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
 };
 
-const torreDelete = async (req, res = response) => {
+// Eliminar (marcar como eliminado) una torre
+const torreDelete = async (req = request, res = response) => {
   const { id } = req.params;
-  const torre = await Torre.findByIdAndUpdate(
-    id,
-    { eliminado: true },
-    { new: true }
-  );
 
-  res.json(torre);
+  try {
+    const torre = await Torre.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { eliminado: true },
+      { new: true }
+    ).populate({
+      path: "idRefineria",
+      select: "nombre",
+    });
+
+    if (!torre) {
+      return res.status(404).json({ msg: "Torre no encontrada" });
+    }
+
+    res.json(torre);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
-const torrePatch = (req, res = response) => {
+// Parchear una torre (ejemplo básico)
+const torrePatch = (req = request, res = response) => {
   res.json({
-    msg: "patch API - usuariosPatch",
+    msg: "patch API - torrePatch",
   });
 };
 

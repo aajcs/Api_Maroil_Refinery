@@ -1,94 +1,140 @@
 const { response, request } = require("express");
-
 const Tanque = require("../models/tanque");
 
+// Obtener todos los tanques con paginación y población de referencias
 const tanqueGets = async (req = request, res = response) => {
   const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
-  const [total, tanques] = await Promise.all([
-    Tanque.countDocuments(query),
-    Tanque.find(query)
-      .skip(Number(desde))
-      .limit(Number(limite))
-      .populate("idRefineria", "nombre"),
-  ]);
-
-  res.json({
-    total,
-    tanques,
-  });
-};
-
-const tanqueGet = async (req = request, res = response) => {
-  const { id } = req.params;
-  const tanque = await Tanque.findById(id).populate("idRefineria", "nombre");
-
-  // Verificar si el campo eliminado es falso
-  if (tanque && !tanque.eliminado) {
-    res.json(tanque);
-  } else {
-    // Enviar una respuesta apropiada si el tanque no existe o está marcado como eliminado
-    res.status(404).json({
-      msg: "Tanque no encontrado o eliminado",
-    });
-  }
-};
-
-const tanquePost = async (req, res = response) => {
-  const {
-    nombre,
-    ubicacion,
-    capacidad,
-    material,
-    almacenamiento,
-    idRefineria,
-  } = req.body;
-  const tanque = new Tanque({
-    nombre,
-    ubicacion,
-    capacidad,
-    material,
-    almacenamiento,
-    idRefineria,
-  });
-  console.log(tanque);
   try {
-    // Guardar en BD
-    await tanque.save();
-    await tanque.populate("idRefineria", "nombre").execPopulate();
+    const [total, tanques] = await Promise.all([
+      Tanque.countDocuments(query),
+      Tanque.find(query)
+        .skip(Number(desde))
+        .limit(Number(limite))
+        .populate({
+          path: "idRefineria",
+          select: "nombre",
+        }),
+    ]);
+
     res.json({
-      tanque,
+      total,
+      tanques,
     });
   } catch (err) {
-    res.status(400).json({ error: err });
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
 
-const tanquePut = async (req, res = response) => {
+// Obtener un tanque específico por ID
+const tanqueGet = async (req = request, res = response) => {
+  const { id } = req.params;
+
+  try {
+    const tanque = await Tanque.findOne({
+      _id: id,
+      eliminado: false,
+    }).populate({
+      path: "idRefineria",
+      select: "nombre",
+    });
+
+    if (!tanque) {
+      return res.status(404).json({ msg: "Tanque no encontrado" });
+    }
+
+    res.json(tanque);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Crear un nuevo tanque
+const tanquePost = async (req = request, res = response) => {
+  const { nombre, ubicacion, capacidad, material, almacenamiento, idRefineria } = req.body;
+
+  try {
+    const nuevoTanque = new Tanque({
+      nombre,
+      ubicacion,
+      capacidad,
+      material,
+      almacenamiento,
+      idRefineria,
+    });
+
+    await nuevoTanque.save();
+
+    await nuevoTanque.populate({
+      path: "idRefineria",
+      select: "nombre",
+    });
+
+    res.status(201).json(nuevoTanque);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Actualizar un tanque existente
+const tanquePut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
-  const tanque = await Tanque.findByIdAndUpdate(id, resto, {
-    new: true,
-  }).populate("idRefineria", "nombre");
 
-  res.json(tanque);
+  try {
+    const tanqueActualizado = await Tanque.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      resto,
+      { new: true }
+    ).populate({
+      path: "idRefineria",
+      select: "nombre",
+    });
+
+    if (!tanqueActualizado) {
+      return res.status(404).json({ msg: "Tanque no encontrado" });
+    }
+
+    res.json(tanqueActualizado);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
 };
 
-const tanqueDelete = async (req, res = response) => {
+// Eliminar (marcar como eliminado) un tanque
+const tanqueDelete = async (req = request, res = response) => {
   const { id } = req.params;
-  const tanque = await Tanque.findByIdAndUpdate(
-    id,
-    { eliminado: true },
-    { new: true }
-  );
 
-  res.json(tanque);
+  try {
+    const tanque = await Tanque.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { eliminado: true },
+      { new: true }
+    ).populate({
+      path: "idRefineria",
+      select: "nombre",
+    });
+
+    if (!tanque) {
+      return res.status(404).json({ msg: "Tanque no encontrado" });
+    }
+
+    res.json(tanque);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
-const tanquePatch = (req, res = response) => {
+// Parchear un tanque (ejemplo básico)
+const tanquePatch = (req = request, res = response) => {
   res.json({
-    msg: "patch API - usuariosPatch",
+    msg: "patch API - tanquePatch",
   });
 };
 
