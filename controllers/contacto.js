@@ -1,105 +1,140 @@
 const { response, request } = require("express");
 const Contacto = require("../models/contacto");
 
+// Obtener todos los contactos con paginación
 const contactoGets = async (req = request, res = response) => {
   const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
-  const [total, contactos] = await Promise.all([
-    Contacto.countDocuments(query),
-    Contacto.find(query)
-      .skip(Number(desde))
-      .limit(Number(limite))
-      .populate("idRefineria", "nombre"),
-  ]);
-
-  res.json({
-    total,
-    contactos,
-  });
-};
-
-const contactoGet = async (req = request, res = response) => {
-  const { id } = req.params;
-  const contacto = await Contacto.findById(id).populate(
-    "idRefineria",
-    "nombre"
-  );
-
-  if (contacto && !contacto.eliminado) {
-    res.json(contacto);
-  } else {
-    res.status(404).json({
-      msg: "Contacto no encontrado o eliminado",
-    });
-  }
-};
-
-const contactoPost = async (req, res = response) => {
   try {
-    const {
-      nombre,
-      ubicacion,
-      infoContacto,
-      tipo,
-      cuentasBancarias,
-      cuentasPorPagar,
-      cuentasPorCobrar,
-      compras,
-      ventas,
-      historialModificaciones,
-      idRefineria,
-    } = req.body;
+    let limiteNum = Number(limite);
+    let desdeNum = Number(desde);
+    limiteNum = Math.min(limiteNum, 100); // Límite máximo de 100
+    desdeNum = Math.max(desdeNum, 0); // No permitir valores negativos
 
-    const nuevoContacto = new Contacto({
-      nombre,
-      ubicacion,
-      infoContacto,
-      tipo,
-      cuentasBancarias,
-      cuentasPorPagar,
-      cuentasPorCobrar,
-      compras,
-      ventas,
-      historialModificaciones,
-      idRefineria,
-    });
+    const [total, contactos] = await Promise.all([
+      Contacto.countDocuments(query),
+      Contacto.find(query)
+        .skip(desdeNum)
+        .limit(limiteNum)
+        .populate({
+          path: "idRefineria",
+          select: "nombre",
+        })
+    ]);
 
-    await nuevoContacto.save();
-    await nuevoContacto.populate("idRefineria", "nombre").execPopulate();
     res.json({
-      nuevoContacto,
+      total,
+      contactos,
     });
   } catch (err) {
-    console.log(err);
-    res.status(400).json({ error: err });
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
 
-const contactoPut = async (req, res = response) => {
+// Obtener un contacto específico por ID
+const contactoGet = async (req = request, res = response) => {
   const { id } = req.params;
-  const { _id, ...resto } = req.body;
-  const contacto = await Contacto.findByIdAndUpdate(id, resto, {
-    new: true,
-  }).populate("idRefineria", "nombre");
 
-  res.json(contacto);
+  try {
+    const contacto = await Contacto.findOne({
+      _id: id,
+      eliminado: false
+    }).populate({
+      path: "idRefineria",
+      select: "nombre",
+    });
+
+    if (!contacto) {
+      return res.status(404).json({ msg: "Contacto no encontrado" });
+    }
+
+    res.json(contacto);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
+// Crear un nuevo contacto
+const contactoPost = async (req, res = response) => {
+  try {
+    const { nombre, idRefineria } = req.body;
+
+    if (!nombre || !idRefineria) {
+      return res.status(400).json({ error: "Nombre y Refinería son requeridos" });
+    }
+
+    const nuevoContacto = await Contacto.create({
+      ...req.body,
+    });
+
+    await nuevoContacto.populate({
+      path: "idRefineria",
+      select: "nombre",
+    });
+
+    res.status(201).json(nuevoContacto);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Actualizar un contacto existente
+const contactoPut = async (req, res = response) => {
+  const { id } = req.params;
+
+  try {
+    const contactoActualizado = await Contacto.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      req.body,
+      { new: true }
+    ).populate({
+      path: "idRefineria",
+      select: "nombre",
+    });
+
+    if (!contactoActualizado) {
+      return res.status(404).json({ msg: "Contacto no encontrado" });
+    }
+
+    res.json(contactoActualizado);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Eliminar (marcar como eliminado) un contacto
 const contactoDelete = async (req, res = response) => {
   const { id } = req.params;
-  const contacto = await Contacto.findByIdAndUpdate(
-    id,
-    { eliminado: true },
-    { new: true }
-  );
 
-  res.json(contacto);
+  try {
+    const contacto = await Contacto.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { eliminado: true },
+      { new: true }
+    ).populate({
+      path: "idRefineria",
+      select: "nombre",
+    });
+
+    if (!contacto) {
+      return res.status(404).json({ msg: "Contacto no encontrado" });
+    }
+
+    res.json(contacto);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 const contactoPatch = (req, res = response) => {
   res.json({
-    msg: "patch API - usuariosPatch",
+    msg: "patch API - contactoPatch",
   });
 };
 

@@ -1,57 +1,76 @@
-const { validationResult } = require("express-validator");
+const { response, request } = require("express");
 const Despacho = require("../models/despacho");
 
-// Obtener todos los despachos
-const despachoGets = async (req, res) => {
+// Obtener todos los despachos con paginación y población de referencias
+const despachoGets = async (req = request, res = response) => {
+  const { limite = 5, desde = 0 } = req.query;
+  const query = { eliminado: false };
+
   try {
-    const despachos = await Despacho.find()
-      .populate("id_lote")
-      .populate("id_linea")
-      .populate("id_empresa");
-    res.json(despachos);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const [total, despachos] = await Promise.all([
+      Despacho.countDocuments(query),
+      Despacho.find(query)
+        .skip(Number(desde))
+        .limit(Number(limite))
+        .populate({
+          path: "id_lote",
+          select: "nombre",
+        })
+        .populate({
+          path: "id_linea",
+          select: "nombre",
+        })
+        .populate({
+          path: "id_empresa",
+          select: "nombre",
+        }),
+    ]);
+
+    res.json({
+      total,
+      despachos,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
 
-// Obtener un despacho por ID
-const despachoGet = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+// Obtener un despacho específico por ID
+const despachoGet = async (req = request, res = response) => {
+  const { id } = req.params;
 
   try {
-    const despacho = await Despacho.findById(req.params.id)
-      .populate("id_lote")
-      .populate("id_linea")
-      .populate("id_empresa");
-    if (!despacho)
-      return res.status(404).json({ message: "Despacho no encontrado" });
+    const despacho = await Despacho.findOne({
+      _id: id,
+      eliminado: false,
+    })
+      .populate({
+        path: "id_lote",
+        select: "nombre",
+      })
+      .populate({
+        path: "id_linea",
+        select: "nombre",
+      })
+      .populate({
+        path: "id_empresa",
+        select: "nombre",
+      });
+
+    if (!despacho) {
+      return res.status(404).json({ msg: "Despacho no encontrado" });
+    }
+
     res.json(despacho);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
 
 // Crear un nuevo despacho
-
-// const createDespacho = async (req, res) => {
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//         return res.status(400).json({ errors: errors.array() });
-//     }
-
-//     const nuevoDespacho = new Despacho(req.body);
-//     try {
-//         const despachoGuardado = await nuevoDespacho.save();
-//         res.status(201).json(despachoGuardado);
-//     } catch (error) {
-//         res.status(400).json({ message: error.message });
-//     }
-// };
-// Crear una nueva recepción
-const despachoPost = async (req, res = response) => {
+const despachoPost = async (req = request, res = response) => {
   const {
     fecha,
     hora,
@@ -64,95 +83,116 @@ const despachoPost = async (req, res = response) => {
     apellido_chofer,
   } = req.body;
 
-  const nuevoDespacho = new Despacho({
-    // contrato,
-    // cantidadRecibida,
-    // precioUnitario,
-    // montoTotal,
-    // estado,
-    // fechaRecepcion,
-    // hora,
-    // id_lote,
-    // id_contrato,
-    // id_linea,
-    // id_tanque,
-    // id_guia,
-
-    fecha,
-    hora,
-    id_lote,
-    id_linea,
-    id_empresa,
-    numero_guia,
-    placa,
-    nombre_chofer,
-    apellido_chofer,
-  });
-
   try {
+    const nuevoDespacho = new Despacho({
+      fecha,
+      hora,
+      id_lote,
+      id_linea,
+      id_empresa,
+      numero_guia,
+      placa,
+      nombre_chofer,
+      apellido_chofer,
+    });
+
     await nuevoDespacho.save();
 
     await nuevoDespacho
       .populate({
-        path: "id_contrato",
-        select: "idRefineria id_contacto",
-        populate: [
-          { path: "idRefineria", select: "nombre" },
-          { path: "idContacto", select: "nombre" },
-        ],
+        path: "id_lote",
+        select: "nombre",
       })
       .populate({
         path: "id_linea",
         select: "nombre",
-        populate: { path: "id_linea", select: "nombre" },
       })
-      .execPopulate(),
-      res.json({ despacho: nuevoDespacho });
+      .populate({
+        path: "id_empresa",
+        select: "nombre",
+      });
+
+    res.status(201).json(nuevoDespacho);
   } catch (err) {
+    console.error(err);
     res.status(400).json({ error: err.message });
   }
 };
+
 // Actualizar un despacho existente
-const despachoPut = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+const despachoPut = async (req = request, res = response) => {
+  const { id } = req.params;
+  const { _id, ...resto } = req.body;
 
   try {
-    const despachoActualizado = await Despacho.findByIdAndUpdate(
-      req.params.id,
-      req.body,
+    const despachoActualizado = await Despacho.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      resto,
       { new: true }
-    );
-    if (!despachoActualizado)
-      return res.status(404).json({ message: "Despacho no encontrado" });
+    )
+      .populate({
+        path: "id_lote",
+        select: "nombre",
+      })
+      .populate({
+        path: "id_linea",
+        select: "nombre",
+      })
+      .populate({
+        path: "id_empresa",
+        select: "nombre",
+      });
+
+    if (!despachoActualizado) {
+      return res.status(404).json({ msg: "Despacho no encontrado" });
+    }
+
     req.io.emit("despacho-modificado", despachoActualizado);
     res.json(despachoActualizado);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
   }
 };
 
-// Eliminar un despacho
-const despachoDelete = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+// Eliminar (marcar como eliminado) un despacho
+const despachoDelete = async (req = request, res = response) => {
+  const { id } = req.params;
 
   try {
-    const despacho = await Despacho.findByIdAndDelete(req.params.id);
-    if (!despacho)
-      return res.status(404).json({ message: "Despacho no encontrado" });
-    res.json({ message: "Despacho eliminado" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const despacho = await Despacho.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { eliminado: true },
+      { new: true }
+    )
+      .populate({
+        path: "id_lote",
+        select: "nombre",
+      })
+      .populate({
+        path: "id_linea",
+        select: "nombre",
+      })
+      .populate({
+        path: "id_empresa",
+        select: "nombre",
+      });
+
+    if (!despacho) {
+      return res.status(404).json({ msg: "Despacho no encontrado" });
+    }
+
+    res.json(despacho);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
-const despachoPatch = (req, res = response) => {
+
+// Parchear un despacho (ejemplo básico)
+const despachoPatch = (req = request, res = response) => {
   res.json({
-    msg: "patch API - usuariosPatch",
+    msg: "patch API - despachoPatch",
   });
 };
 
