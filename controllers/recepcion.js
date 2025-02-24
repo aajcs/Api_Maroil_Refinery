@@ -139,6 +139,7 @@ const recepcionPost = async (req, res = response) => {
     // Fechas
     fechaInicio,
     fechaFin,
+    fechaDespacho,
 
     // Información del transporte
     idGuia,
@@ -163,6 +164,7 @@ const recepcionPost = async (req, res = response) => {
     // Fechas
     fechaInicio,
     fechaFin,
+    fechaDespacho,
 
     // Información del transporte
     idGuia,

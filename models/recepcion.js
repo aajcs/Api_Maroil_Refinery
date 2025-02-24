@@ -45,6 +45,9 @@ const RecepcionSchema = new Schema(
     fechaFin: {
       type: Date,
     },
+    fechaDespacho: {
+      type: Date,
+    },
 
     // Información del transporte
     idGuia: {
