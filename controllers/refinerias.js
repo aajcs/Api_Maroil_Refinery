@@ -9,17 +9,15 @@ const refineriasGets = async (req = request, res = response) => {
   try {
     const [total, refinerias] = await Promise.all([
       Refineria.countDocuments(query),
-      Refineria.find(query)
-        .skip(Number(desde))
-        .limit(Number(limite))
-        .populate({
-          path: "idContacto",
-          select: "nombre",
-        })
-        .populate({
-          path: "idLinea",
-          select: "nombre",
-        }),
+      Refineria.find(query).skip(Number(desde)).limit(Number(limite)),
+      // .populate({
+      //   path: "idContacto",
+      //   select: "nombre",
+      // })
+      // .populate({
+      //   path: "idLinea",
+      //   select: "nombre",
+      // }),
     ]);
 
     res.json({
@@ -40,15 +38,15 @@ const refineriasGet = async (req = request, res = response) => {
     const refineria = await Refineria.findOne({
       _id: id,
       eliminado: false,
-    })
-      .populate({
-        path: "idContacto",
-        select: "nombre",
-      })
-      .populate({
-        path: "idLinea",
-        select: "nombre",
-      });
+    });
+    // .populate({
+    //   path: "idContacto",
+    //   select: "nombre",
+    // })
+    // .populate({
+    //   path: "idLinea",
+    //   select: "nombre",
+    // });
 
     if (!refineria) {
       return res.status(404).json({ msg: "Refinería no encontrada" });
