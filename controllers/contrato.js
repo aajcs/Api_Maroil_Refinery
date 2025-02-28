@@ -126,18 +126,11 @@ const contratoPost = async (req, res = response) => {
     await nuevoContrato.save();
 
     // 5. Populate para obtener los datos de refinería y contacto
-    await nuevoContrato
-      .populate({
-        path: "idRefineria",
-        select: "nombre",
-      })
-      .populate({
-        path: "idContacto",
-        select: "nombre",
-      })
-      .populate({
-        path: "idItems",
-      });
+    await nuevoContrato.populate([
+      { path: "idRefineria", select: "nombre" },
+      { path: "idContacto", select: "nombre" },
+      { path: "idItems" },
+    ]);
 
     res.status(201).json(nuevoContrato);
   } catch (err) {
@@ -149,7 +142,8 @@ const contratoPost = async (req, res = response) => {
 // Actualizar un contrato existente
 const contratoPut = async (req, res = response) => {
   const { id } = req.params;
-  const { _id, items, ...resto } = req.body;
+  const { items, idItems, ...resto } = req.body;
+  console.log("tengo items?", resto, id);
 
   try {
     // 1. Actualizar el contrato
@@ -158,15 +152,16 @@ const contratoPut = async (req, res = response) => {
       resto,
       { new: true }
     );
+    console.log("llego aqui?", contratoActualizado);
 
     if (!contratoActualizado) {
       return res.status(404).json({ msg: "Contrato no encontrado" });
     }
-
     // 2. Actualizar o crear los items asociados al contrato
     const nuevosItems = await Promise.all(
       items.map(async (item) => {
         if (item.id) {
+          console.log("lo actuailizo");
           // Si el item tiene un _id, actualizarlo
           return await contratoItems.findByIdAndUpdate(item.id, item, {
             new: true,
@@ -181,28 +176,21 @@ const contratoPut = async (req, res = response) => {
         }
       })
     );
-
+    // console.log(nuevosItems);
     // 3. Actualizar el contrato con los IDs de los items
     contratoActualizado.idItems = nuevosItems.map((item) => item.id);
     await contratoActualizado.save();
 
     // 4. Populate para obtener los datos de refinería y contacto
-    await contratoActualizado
-      .populate({
-        path: "idRefineria",
-        select: "nombre",
-      })
-      .populate({
-        path: "idContacto",
-        select: "nombre",
-      })
-      .populate({
-        path: "idItems",
-      });
+    await contratoActualizado.populate([
+      { path: "idRefineria", select: "nombre" },
+      { path: "idContacto", select: "nombre" },
+      { path: "idItems" },
+    ]);
 
     res.json(contratoActualizado);
   } catch (err) {
-    console.error(err);
+    // console.error(err);
     res.status(400).json({ error: err.message });
   }
 };
