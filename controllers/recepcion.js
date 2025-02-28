@@ -4,7 +4,7 @@ const Contrato = require("../models/contrato");
 
 // Obtener todas las recepcions con paginación y población de referencias
 const recepcionGets = async (req = request, res = response) => {
-  const { limite = 5, desde = 0 } = req.query;
+  const { limite = 5000, desde = 0 } = req.query;
   const query = {};
 
   try {
