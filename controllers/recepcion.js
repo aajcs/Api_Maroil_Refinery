@@ -178,7 +178,15 @@ const recepcionPost = async (req, res = response) => {
 
     await nuevaRecepcion.populate([
       { path: "idRefineria", select: "nombre" },
-      { path: "idContrato", select: "numeroContrato" },
+      {
+        path: "idContrato",
+        select: "numeroContrato idRefineria idContacto idItems",
+        populate: [
+          { path: "idRefineria", select: "nombre" },
+          { path: "idContacto", select: "nombre" },
+          { path: "idItems" },
+        ],
+      },
       { path: "idLinea", select: "nombre" },
       { path: "idTanque", select: "nombre" },
       { path: "idContratoItems" },
