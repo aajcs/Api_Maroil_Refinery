@@ -23,7 +23,6 @@ const contratoGets = async (req = request, res = response) => {
         })
         .populate({
           path: "idItems",
-          select: "producto cantidad",
         }),
     ]);
 
@@ -56,7 +55,6 @@ const contratoGet = async (req = request, res = response) => {
       })
       .populate({
         path: "idItems",
-        select: "producto cantidad",
       });
 
     if (!contrato) {
@@ -139,7 +137,6 @@ const contratoPost = async (req, res = response) => {
       })
       .populate({
         path: "idItems",
-        select: "producto cantidad",
       });
 
     res.status(201).json(nuevoContrato);
@@ -201,7 +198,6 @@ const contratoPut = async (req, res = response) => {
       })
       .populate({
         path: "idItems",
-        select: "producto cantidad",
       });
 
     res.json(contratoActualizado);
@@ -231,7 +227,6 @@ const contratoDelete = async (req, res = response) => {
       })
       .populate({
         path: "idItems",
-        select: "producto cantidad",
       });
 
     if (!contrato) {
