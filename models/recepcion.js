@@ -28,6 +28,11 @@ const RecepcionSchema = new Schema(
     cantidadRecibida: {
       type: Number,
     },
+
+    cantidadEnviada: {
+      type: Number,
+    },
+
     estadoCarga: {
       type: String,
       enum: ["EN_TRANSITO", "ENTREGADO"],
