@@ -75,6 +75,7 @@ const recepcionGets = async (req = request, res = response) => {
 };
 
 // Obtener una recepción específica por ID
+
 const recepcionGet = async (req = request, res = response) => {
   const { id } = req.params;
 
@@ -96,17 +97,15 @@ const recepcionGet = async (req = request, res = response) => {
       .populate({
         path: "idLinea",
         select: "nombre",
-        populate: { path: "idLinea", select: "nombre" },
       })
       .populate({
         path: "idRefineria",
         select: "nombre",
-        populate: { path: "idRefineria", select: "nombre" },
       })
       .populate({
         path: "idTanque",
         select: "nombre",
-        populate: { path: "idTanque", select: "nombre" },
+        // Eliminamos el path idTanque ya que no es necesario poblarlo dos veces
       });
 
     if (recepcionActualizada) {
