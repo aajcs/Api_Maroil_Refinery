@@ -61,7 +61,6 @@ const refinacionGet = async (req = request, res = response) => {
   }
 };
 
-// Crear una nueva refinación
 const refinacionPost = async (req = request, res = response) => {
   const {
     idTanque,
@@ -87,6 +86,7 @@ const refinacionPost = async (req = request, res = response) => {
   } = req.body;
 
   try {
+    // Crear la nueva refinación
     const nuevaRefinacion = new Refinacion({
       idTanque,
       idTorre,
@@ -110,19 +110,22 @@ const refinacionPost = async (req = request, res = response) => {
       estado,
     });
 
+    // Guardar la refinación en la base de datos
     await nuevaRefinacion.save();
 
-    await nuevaRefinacion
+    // Obtener la refinación con las referencias pobladas
+    const refinacionPoblada = await Refinacion.findById(nuevaRefinacion._id)
       .populate({
         path: "idTanque",
-        select: "nombre",
+        select: "nombre", // Selecciona solo el campo "nombre" del tanque
       })
       .populate({
         path: "idTorre",
-        select: "nombre",
+        select: "nombre", // Selecciona solo el campo "nombre" de la torre
       });
 
-    res.status(201).json(nuevaRefinacion);
+    // Responder con el documento poblado
+    res.status(201).json(refinacionPoblada);
   } catch (err) {
     console.error(err);
     res.status(400).json({ error: err.message });
