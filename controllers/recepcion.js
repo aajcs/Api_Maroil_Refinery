@@ -133,6 +133,7 @@ const recepcionPost = async (req, res = response) => {
 
     // Información de la recepción
     cantidadRecibida,
+    cantidadEnviada,
     estadoCarga,
     estado,
 
@@ -158,6 +159,7 @@ const recepcionPost = async (req, res = response) => {
 
     // Información de la recepción
     cantidadRecibida,
+    cantidadEnviada,
     estadoCarga,
     estado,
 
