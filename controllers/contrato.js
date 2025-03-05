@@ -74,6 +74,7 @@ const contratoPost = async (req, res = response) => {
     numeroContrato,
     descripcion,
     estadoContrato,
+    tipoContrato,
     idRefineria,
     fechaInicio,
     fechaFin,
@@ -93,6 +94,7 @@ const contratoPost = async (req, res = response) => {
     const nuevoContrato = new Contrato({
       numeroContrato,
       descripcion,
+      tipoContrato,
       estadoContrato,
       idRefineria,
       fechaInicio,

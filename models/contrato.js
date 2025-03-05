@@ -12,6 +12,12 @@ const ContratoSchema = Schema(
       required: [false, "La Descripcion es Obligatoria"],
       unique: false,
     },
+    tipoContrato: {
+      type: String,
+      enum: ["Compra", "Venta"],
+      default: "Compra",
+    },
+
     estadoContrato: {
       type: String,
       enum: ["Adjudicado", "Activo", "Inactivo"],
