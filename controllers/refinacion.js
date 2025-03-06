@@ -155,8 +155,15 @@ const refinacionPost = async (req = request, res = response) => {
         select: "nombre", // Selecciona solo el campo "nombre" de la torre
       })
       .populate({
-        path: "derivados", // Populate para los derivados
+        path: "derivados",
+        populate: {
+          path: "idTanque",
+          select: "nombre"  // Selecciona los campos que deseas obtener del tanque
+        }
       })
+      // .populate({
+      //   path: "derivados", // Populate para los derivados
+      // })
       .populate({
         path: "idRefineria",
         select: "nombre", // Populate para la refineria

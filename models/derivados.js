@@ -18,6 +18,11 @@ const DerivadoSchema = Schema({
     type: Date,
     default: Date.now,
   },
+  idTanque: {
+    type: Schema.Types.ObjectId,
+    ref: "Tanque",
+    required: false,
+  },
   estado: {
     type: String,
     default: true,
