@@ -8,11 +8,13 @@ const ContactoSchema = new Schema({
   },
   nombre: { type: String, required: false },
   ubicacion: { type: String, required: false },
-  infoContacto: {
-    telefono: { type: String, required: false },
-    email: { type: String, required: false },
-    direccion: { type: String, required: false },
-  },
+  identificacionFiscal: { type: String, required: false },
+  representanteLegal: { type: String, required: false },
+  telefono: { type: String, required: false },
+  correo: { type: String, required: false },
+  email: { type: String, required: false },
+  direccion: { type: String, required: false },
+
   tipo: {
     type: String,
     enum: ["cliente", "proveedor"],
