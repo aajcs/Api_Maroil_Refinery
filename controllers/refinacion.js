@@ -20,6 +20,10 @@ const refinacionGets = async (req = request, res = response) => {
         .populate({
           path: "idTorre",
           select: "nombre",
+        })
+        .populate({
+          path: "idRefineria",
+          select: "nombre",  // Populate para la refineria
         }),
     ]);
 
@@ -49,6 +53,10 @@ const refinacionGet = async (req = request, res = response) => {
       .populate({
         path: "idTorre",
         select: "nombre",
+      })
+      .populate({
+        path: "idRefineria",
+        select: "nombre",  // Populate para la refineria
       });
 
     if (!refinacion) {
@@ -181,6 +189,10 @@ const refinacionPut = async (req = request, res = response) => {
       .populate({
         path: "idTorre",
         select: "nombre",
+      })
+      .populate({
+        path: "idRefineria",
+        select: "nombre",  // Populate para la refineria
       });
 
     if (!refinacionActualizada) {
