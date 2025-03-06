@@ -1,15 +1,18 @@
 // const { response, request } = require("express");
 const Refinacion = require("../models/refinacion");
+const Derivado = require("../models/derivados");
 
 // Obtener todas las refinaciones con paginación y población de referencias
 const refinacionGets = async (req = request, res = response) => {
+  const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
   try {
     const [total, refinaciones] = await Promise.all([
       Refinacion.countDocuments(query),
       Refinacion.find(query)
-
+        .skip(Number(desde))
+        .limit(Number(limite))
         .populate({
           path: "idTanque",
           select: "nombre",
@@ -72,7 +75,7 @@ const refinacionPost = async (req = request, res = response) => {
     temperatura,
     presion,
     duracionHoras,
-    nombreDerivado,
+    derivados, // Asegúrate de que este campo esté correctamente nombrado en req.body
     controlCalidad,
     observaciones,
     fechaRevision,
@@ -82,8 +85,6 @@ const refinacionPost = async (req = request, res = response) => {
     usuario,
     estado,
   } = req.body;
-
-  console.log("Datos recibidos:", req.body);
 
   try {
     // Crear la nueva refinación
@@ -99,7 +100,6 @@ const refinacionPost = async (req = request, res = response) => {
       temperatura,
       presion,
       duracionHoras,
-      nombreDerivado,
       controlCalidad,
       observaciones,
       fechaRevision,
@@ -113,6 +113,24 @@ const refinacionPost = async (req = request, res = response) => {
     // Guardar la refinación en la base de datos
     await nuevaRefinacion.save();
 
+    // Verificar que el campo derivados esté definido y sea un array
+    if (Array.isArray(derivados)) {
+      // Crear y guardar los derivados asociados a la refinación
+      const nuevosDerivados = await Promise.all(
+        derivados.map(async (derivado) => {
+          const nuevoDerivado = new Derivado({
+            ...derivado, // Spread operator para copiar las propiedades del derivado
+            idRefinacion: nuevaRefinacion._id, // Asignar el ID de refinación al derivado
+          });
+          return await nuevoDerivado.save();
+        })
+      );
+
+      // Actualizar la refinación con los IDs de los derivados
+      nuevaRefinacion.derivados = nuevosDerivados.map((derivado) => derivado._id);
+      await nuevaRefinacion.save();
+    }
+
     // Obtener la refinación con las referencias pobladas
     const refinacionPoblada = await Refinacion.findById(nuevaRefinacion._id)
       .populate({
@@ -122,10 +140,16 @@ const refinacionPost = async (req = request, res = response) => {
       .populate({
         path: "idTorre",
         select: "nombre", // Selecciona solo el campo "nombre" de la torre
+      })
+      .populate({
+        path: "derivados", // Populate para los derivados
       });
 
     // Responder con el documento poblado
-    res.status(201).json(refinacionPoblada);
+    res.status(201).json({
+      message: "Refinación creada exitosamente",
+      refinacion: refinacionPoblada,
+    });
   } catch (err) {
     console.error(err);
     res.status(400).json({ error: err.message });

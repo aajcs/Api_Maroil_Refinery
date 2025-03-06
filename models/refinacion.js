@@ -1,40 +1,4 @@
 const { Schema, model } = require("mongoose");
-
-// Esquema para los derivados producidos
-const DerivadoSchema = new Schema({
-  nombreDerivado: {
-    type: String,
-    required: [true, "El nombre del derivado es obligatorio"],
-    enum: ["Gasolina", "Diesel", "Jet Fuel", "Asfalto"], // Lista de derivados
-  },
-  cantidadProducida: {
-    type: Number,
-    required: [true, "La cantidad producida es obligatoria"],
-  },
-  calidad: {
-    type: String,
-    enum: ["Alta", "Media", "Baja"],
-    default: "Alta",
-  },
-  fechaProduccion: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-// Esquema para los registros de chequeo cada 24 horas
-const ChequeoSchema = new Schema({
-  fechaChequeo: {
-    type: Date,
-    default: Date.now,
-  },
-  cantidadProcesada: {
-    type: Number,
-    required: [true, "La cantidad procesada es obligatoria"],
-  },
-  derivados: [DerivadoSchema], // Array de derivados producidos durante el chequeo
-});
-
 // Esquema principal de refinación
 const RefinacionSchema = new Schema(
   {
@@ -49,6 +13,13 @@ const RefinacionSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Torre",
       required: [true, "El ID de la torre es obligatorio"],
+    },
+
+    // idDerivados: [{ type: Schema.Types.ObjectId, ref: "Derivados" }], // Array de IDs,
+    derivados: [{ type: Schema.Types.ObjectId, ref: "Derivado" }],
+    estado: {
+      type: Boolean,
+      default: true,
     },
 
     // Información de la materia prima
@@ -67,7 +38,7 @@ const RefinacionSchema = new Schema(
         default: Date.now,
       },
     },
-
+    
     // Información del proceso
     proceso: {
       fechaInicio: {
@@ -90,9 +61,10 @@ const RefinacionSchema = new Schema(
         required: [true, "La duración del proceso es obligatoria"],
       },
     },
+    
 
-    // Chequeos cada 24 horas
-    chequeos: [ChequeoSchema], // Array de registros de chequeo cada 24 horas
+    // // Chequeos cada 24 horas
+    // chequeos: [ChequeoSchema], // Array de registros de chequeo cada 24 horas
 
     // Control de calidad
     controlCalidad: {
