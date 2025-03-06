@@ -3,19 +3,16 @@ const Torre = require("../models/torre");
 
 // Obtener todas las torres con paginación y población de referencias
 const torreGets = async (req = request, res = response) => {
-  const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
   try {
     const [total, torres] = await Promise.all([
       Torre.countDocuments(query),
       Torre.find(query)
-        .skip(Number(desde))
-        .limit(Number(limite))
-        .populate({
-          path: "idRefineria",
-          select: "nombre",
-        }),
+      .populate({
+        path: "idRefineria",
+        select: "nombre",
+      }),
     ]);
 
     res.json({
@@ -54,7 +51,15 @@ const torreGet = async (req = request, res = response) => {
 
 // Crear una nueva torre
 const torrePost = async (req = request, res = response) => {
-  const { nombre, ubicacion, capacidad, material, almacenamiento, numero, idRefineria } = req.body;
+  const {
+    nombre,
+    ubicacion,
+    capacidad,
+    material,
+    almacenamiento,
+    numero,
+    idRefineria,
+  } = req.body;
 
   try {
     const nuevaTorre = new Torre({

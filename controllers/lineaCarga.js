@@ -3,19 +3,16 @@ const LineaCarga = require("../models/lineaCarga");
 
 // Obtener todas las líneas de carga con paginación y población de referencias
 const lineaCargaGets = async (req = request, res = response) => {
-  const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
   try {
     const [total, lineaCargas] = await Promise.all([
       LineaCarga.countDocuments(query),
       LineaCarga.find(query)
-        .skip(Number(desde))
-        .limit(Number(limite))
-        .populate({
-          path: "idRefineria",
-          select: "nombre",
-        }),
+      .populate({
+        path: "idRefineria",
+        select: "nombre",
+      }),
     ]);
 
     res.json({

@@ -3,7 +3,7 @@
 
 // // Obtener todas las refinaciones con paginación y población de referencias
 // const refinacionGets = async (req = request, res = response) => {
-//   const { limite = 5, desde = 0 } = req.query;
+//
 //   const query = {};
 
 //   try {

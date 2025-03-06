@@ -3,7 +3,7 @@
 // const Refineria = require("../models/refineria");
 
 // const refineriasGets = async (req = request, res = response) => {
-//   const { limite = 5, desde = 0 } = req.query;
+//
 //   const query = { eliminado: false };
 
 //   const [total, refinerias] = await Promise.all([

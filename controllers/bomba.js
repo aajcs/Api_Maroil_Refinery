@@ -3,15 +3,12 @@ const { response, request } = require("express");
 const Bomba = require("../models/bomba");
 
 const bombaGets = async (req = request, res = response) => {
-  const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
   const [total, bombas] = await Promise.all([
     Bomba.countDocuments(query),
     Bomba.find(query)
-      .skip(Number(desde))
-      .limit(Number(limite))
-      .populate("idRefineria", "nombre"),
+    .populate("idRefineria", "nombre"),
   ]);
 
   res.json({

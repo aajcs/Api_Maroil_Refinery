@@ -11,8 +11,6 @@ const recepcionGets = async (req = request, res = response) => {
     const [total, recepcions] = await Promise.all([
       Recepcion.countDocuments(query),
       Recepcion.find(query)
-        .skip(Number(desde))
-        .limit(Number(limite))
         .populate({
           path: "idContrato",
           select: "idRefineria idContacto idItems numeroContrato",

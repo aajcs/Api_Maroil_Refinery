@@ -3,15 +3,13 @@ const Despacho = require("../models/despacho");
 
 // Obtener todos los despachos con paginación y población de referencias
 const despachoGets = async (req = request, res = response) => {
-  const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
   try {
     const [total, despachos] = await Promise.all([
       Despacho.countDocuments(query),
       Despacho.find(query)
-        .skip(Number(desde))
-        .limit(Number(limite))
+
         .populate({
           path: "id_lote",
           select: "nombre",

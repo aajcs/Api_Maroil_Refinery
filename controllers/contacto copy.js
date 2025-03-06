@@ -2,7 +2,7 @@
 // const Contacto = require("../models/contacto");
 
 // const contactoGets = async (req = request, res = response) => {
-//   const { limite = 5, desde = 0 } = req.query;
+//
 //   const query = { eliminado: false };
 
 //   const [total, contactos] = await Promise.all([

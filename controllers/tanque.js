@@ -3,19 +3,16 @@ const Tanque = require("../models/tanque");
 
 // Obtener todos los tanques con paginación y población de referencias
 const tanqueGets = async (req = request, res = response) => {
-  const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
   try {
     const [total, tanques] = await Promise.all([
       Tanque.countDocuments(query),
       Tanque.find(query)
-        .skip(Number(desde))
-        .limit(Number(limite))
-        .populate({
-          path: "idRefineria",
-          select: "nombre",
-        }),
+      .populate({
+        path: "idRefineria",
+        select: "nombre",
+      }),
     ]);
 
     res.json({
@@ -54,7 +51,14 @@ const tanqueGet = async (req = request, res = response) => {
 
 // Crear un nuevo tanque
 const tanquePost = async (req = request, res = response) => {
-  const { nombre, ubicacion, capacidad, material, almacenamiento, idRefineria } = req.body;
+  const {
+    nombre,
+    ubicacion,
+    capacidad,
+    material,
+    almacenamiento,
+    idRefineria,
+  } = req.body;
 
   try {
     const nuevoTanque = new Tanque({

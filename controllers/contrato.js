@@ -4,15 +4,13 @@ const contratoItems = require("../models/contratoItems");
 
 // Obtener todos los contratos con paginación y población de referencias
 const contratoGets = async (req = request, res = response) => {
-  const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
   try {
     const [total, contratos] = await Promise.all([
       Contrato.countDocuments(query),
       Contrato.find(query)
-        .skip(Number(desde))
-        .limit(Number(limite))
+
         .populate({
           path: "idRefineria",
           select: "nombre",

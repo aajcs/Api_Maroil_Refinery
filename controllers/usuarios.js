@@ -5,12 +5,11 @@ const Usuario = require("../models/usuario");
 const { generarJWT } = require("../helpers");
 
 const usuariosGets = async (req = request, res = response) => {
-  const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
   const [total, usuarios] = await Promise.all([
     Usuario.countDocuments(query),
-    Usuario.find(query).skip(Number(desde)).limit(Number(limite)),
+    Usuario.find(query),
   ]);
 
   res.json({

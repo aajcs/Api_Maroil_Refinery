@@ -4,7 +4,7 @@
 
 // // Obtener todos los contratos con paginación y población de referencias
 // const contratoGets = async (req = request, res = response) => {
-//   const { limite = 5, desde = 0 } = req.query;
+//
 //   const query = { eliminado: false };
 
 //   try {

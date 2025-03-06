@@ -3,7 +3,6 @@ const Contacto = require("../models/contacto");
 
 // Obtener todos los contactos con paginación
 const contactoGets = async (req = request, res = response) => {
-  const { limite = 5, desde = 0 } = req.query;
   const query = { eliminado: false };
 
   try {
@@ -14,13 +13,10 @@ const contactoGets = async (req = request, res = response) => {
 
     const [total, contactos] = await Promise.all([
       Contacto.countDocuments(query),
-      Contacto.find(query)
-        .skip(desdeNum)
-        .limit(limiteNum)
-        .populate({
-          path: "idRefineria",
-          select: "nombre",
-        })
+      Contacto.find(query).skip(desdeNum).limit(limiteNum).populate({
+        path: "idRefineria",
+        select: "nombre",
+      }),
     ]);
 
     res.json({
@@ -40,7 +36,7 @@ const contactoGet = async (req = request, res = response) => {
   try {
     const contacto = await Contacto.findOne({
       _id: id,
-      eliminado: false
+      eliminado: false,
     }).populate({
       path: "idRefineria",
       select: "nombre",
@@ -63,7 +59,9 @@ const contactoPost = async (req, res = response) => {
     const { nombre, idRefineria } = req.body;
 
     if (!nombre || !idRefineria) {
-      return res.status(400).json({ error: "Nombre y Refinería son requeridos" });
+      return res
+        .status(400)
+        .json({ error: "Nombre y Refinería son requeridos" });
     }
 
     const nuevoContacto = await Contacto.create({
