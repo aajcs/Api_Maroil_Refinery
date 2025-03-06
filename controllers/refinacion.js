@@ -100,6 +100,7 @@ const refinacionPost = async (req = request, res = response) => {
       temperatura,
       presion,
       duracionHoras,
+      // derivados,
       controlCalidad,
       observaciones,
       fechaRevision,
