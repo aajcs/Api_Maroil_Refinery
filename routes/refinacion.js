@@ -9,7 +9,9 @@ const {
 } = require("../middlewares");
 
 const { existeRefinacionPorId } = require("../helpers/db-validators");
-
+const { existeRefineriaPorId } = require("../helpers/db-validators");
+const { existeTorrePorId } = require("../helpers/db-validators");
+const { existeTanquePorId } = require("../helpers/db-validators");
 const {
   refinacionGet,
   refinacionPut,
@@ -26,6 +28,9 @@ router.get(
   "/:id",
   [
     check("id", "No es un id de Mongo válido").isMongoId(),
+    check("idRefineria").custom(existeRefineriaPorId),
+    check("idTanque").custom(existeTanquePorId),
+    check("idTorre").custom(existeTorrePorId),
     // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
@@ -36,6 +41,9 @@ router.put(
   [
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeRefinacionPorId),
+    check("idRefineria").custom(existeRefineriaPorId),
+    check("idTanque").custom(existeTanquePorId),
+    check("idTorre").custom(existeTorrePorId),
     //check("rol").custom(esRoleValido), subiendo cambioos
     validarCampos,
   ],
@@ -49,6 +57,9 @@ router.post(
     // check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),
     // check("nit", "El NIT es obligatorio").not().isEmpty(),
     // check("img", "El logotipo de la refineria es obligatorio").not().isEmpty(),
+    check("idRefineria").custom(existeRefineriaPorId),
+    check("idTanque").custom(existeTanquePorId),
+    check("idTorre").custom(existeTorrePorId),
     validarCampos,
   ],
   refinacionPost
@@ -61,7 +72,9 @@ router.delete(
     // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeRefinacionPorId),
+    check("idRefineria").custom(existeRefineriaPorId),
+    check("idTanque").custom(existeTanquePorId),
+    check("idTorre").custom(existeTorrePorId),
     validarCampos,
   ],
   refinacionDelete

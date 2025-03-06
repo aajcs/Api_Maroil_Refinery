@@ -45,14 +45,16 @@ const existeUsuarioPorId = async (id) => {
 
 const existeRefineriaPorId = async (id) => {
   // Verificar si la refineria existe
+
   const existeRefineria = await Refineria.findById(id);
   if (!existeRefineria) {
-    throw new Error(`El id no existe ${id}`);
+    throw new Error(`La refineria no existe ${id}`);
   }
 };
 
 const existeLineaPorId = async (id) => {
   // Verificar si la linea existe
+
   const existeLinea = await LineaCarga.findById(id);
   if (!existeLinea) {
     throw new Error(`El id no existe ${id}`);
@@ -70,7 +72,7 @@ const existeTanquePorId = async (id) => {
   // Verificar si el Tanque existe
   const existeTanque = await Tanque.findById(id);
   if (!existeTanque) {
-    throw new Error(`El id no existe ${id}`);
+    throw new Error(`El id de Tanque no existe ${id}`);
   }
 };
 
@@ -78,7 +80,7 @@ const existeTorrePorId = async (id) => {
   // Verificar si torre existe
   const existeTorre = await Torre.findById(id);
   if (!existeTorre) {
-    throw new Error(`El id no existe ${id}`);
+    throw new Error(`El id de Torre no existe ${id}`);
   }
 };
 
@@ -165,3 +167,8 @@ module.exports = {
   existeRecepcionPorId,
   existeRefinacionPorId,
 };
+
+// SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO
+// if (id === undefined) {
+//   return true;
+// }

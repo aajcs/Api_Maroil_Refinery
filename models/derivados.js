@@ -18,6 +18,14 @@ const DerivadoSchema = Schema({
     type: Date,
     default: Date.now,
   },
+  estado: {
+    type: String,
+    default: true,
+  },
+  eliminado: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 DerivadoSchema.set("toJSON", {

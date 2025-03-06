@@ -23,7 +23,7 @@ const refinacionGets = async (req = request, res = response) => {
         })
         .populate({
           path: "idRefineria",
-          select: "nombre",  // Populate para la refineria
+          select: "nombre", // Populate para la refineria
         }),
     ]);
 
@@ -56,7 +56,7 @@ const refinacionGet = async (req = request, res = response) => {
       })
       .populate({
         path: "idRefineria",
-        select: "nombre",  // Populate para la refineria
+        select: "nombre", // Populate para la refineria
       });
 
     if (!refinacion) {
@@ -138,7 +138,9 @@ const refinacionPost = async (req = request, res = response) => {
       );
 
       // Actualizar la refinación con los IDs de los derivados
-      nuevaRefinacion.derivados = nuevosDerivados.map((derivado) => derivado._id);
+      nuevaRefinacion.derivados = nuevosDerivados.map(
+        (derivado) => derivado._id
+      );
       await nuevaRefinacion.save();
     }
 
@@ -157,7 +159,7 @@ const refinacionPost = async (req = request, res = response) => {
       })
       .populate({
         path: "idRefineria",
-        select: "nombre",  // Populate para la refineria
+        select: "nombre", // Populate para la refineria
       });
 
     // Responder con el documento poblado
@@ -192,7 +194,7 @@ const refinacionPut = async (req = request, res = response) => {
       })
       .populate({
         path: "idRefineria",
-        select: "nombre",  // Populate para la refineria
+        select: "nombre", // Populate para la refineria
       });
 
     if (!refinacionActualizada) {
