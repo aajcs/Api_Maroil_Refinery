@@ -66,6 +66,7 @@ const refinacionPost = async (req = request, res = response) => {
   const {
     idTanque,
     idTorre,
+    idRefineria,
     materiaPrima,
     cantidadRecibida,
     fechaRecepcion,
@@ -91,6 +92,7 @@ const refinacionPost = async (req = request, res = response) => {
     const nuevaRefinacion = new Refinacion({
       idTanque,
       idTorre,
+      idRefineria,
       materiaPrima,
       cantidadRecibida,
       fechaRecepcion,
@@ -144,6 +146,10 @@ const refinacionPost = async (req = request, res = response) => {
       })
       .populate({
         path: "derivados", // Populate para los derivados
+      })
+      .populate({
+        path: "idRefineria",
+        select: "nombre",  // Populate para la refineria
       });
 
     // Responder con el documento poblado

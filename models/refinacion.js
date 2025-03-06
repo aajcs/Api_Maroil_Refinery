@@ -21,6 +21,12 @@ const RefinacionSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    
+    // Información de la refineria
+    idRefineria: {
+      type: Schema.Types.ObjectId,
+      ref: "Refineria",
+      required: false,},
 
     // Información de la materia prima
     materiaPrima: {
