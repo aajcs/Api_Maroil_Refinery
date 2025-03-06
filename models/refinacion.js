@@ -62,7 +62,6 @@ const RefinacionSchema = new Schema(
       },
     },
     
-
     // // Chequeos cada 24 horas
     // chequeos: [ChequeoSchema], // Array de registros de chequeo cada 24 horas
 
