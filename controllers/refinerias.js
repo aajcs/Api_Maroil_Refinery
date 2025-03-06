@@ -74,16 +74,6 @@ const refineriasPost = async (req = request, res = response) => {
 
     await nuevaRefineria.save();
 
-    await nuevaRefineria
-      .populate({
-        path: "idContacto",
-        select: "nombre",
-      })
-      .populate({
-        path: "idLinea",
-        select: "nombre",
-      });
-
     res.status(201).json(nuevaRefineria);
   } catch (err) {
     console.error(err);
@@ -101,15 +91,7 @@ const refineriasPut = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       resto,
       { new: true }
-    )
-      .populate({
-        path: "idContacto",
-        select: "nombre",
-      })
-      .populate({
-        path: "idLinea",
-        select: "nombre",
-      });
+    );
 
     if (!refineriaActualizada) {
       return res.status(404).json({ msg: "Refinería no encontrada" });
@@ -132,15 +114,7 @@ const refineriasDelete = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       { eliminado: true },
       { new: true }
-    )
-      .populate({
-        path: "idContacto",
-        select: "nombre",
-      })
-      .populate({
-        path: "idLinea",
-        select: "nombre",
-      });
+    );
 
     if (!refineria) {
       return res.status(404).json({ msg: "Refinería no encontrada" });
