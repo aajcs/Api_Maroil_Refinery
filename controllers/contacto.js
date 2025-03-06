@@ -6,14 +6,10 @@ const contactoGets = async (req = request, res = response) => {
   const query = { eliminado: false };
 
   try {
-    let limiteNum = Number(limite);
-    let desdeNum = Number(desde);
-    limiteNum = Math.min(limiteNum, 100); // Límite máximo de 100
-    desdeNum = Math.max(desdeNum, 0); // No permitir valores negativos
-
     const [total, contactos] = await Promise.all([
       Contacto.countDocuments(query),
-      Contacto.find(query).skip(desdeNum).limit(limiteNum).populate({
+      Contacto.find(query)
+      .populate({
         path: "idRefineria",
         select: "nombre",
       }),
