@@ -74,7 +74,7 @@ const refinacionPost = async (req = request, res = response) => {
     temperatura,
     presion,
     duracionHoras,
-    derivados,
+    nombreDerivado,
     controlCalidad,
     observaciones,
     fechaRevision,
@@ -84,6 +84,8 @@ const refinacionPost = async (req = request, res = response) => {
     usuario,
     estado,
   } = req.body;
+
+  console.log("Datos recibidos:", req.body);
 
   try {
     // Crear la nueva refinación
@@ -99,7 +101,7 @@ const refinacionPost = async (req = request, res = response) => {
       temperatura,
       presion,
       duracionHoras,
-      derivados,
+      nombreDerivado,
       controlCalidad,
       observaciones,
       fechaRevision,

@@ -2,7 +2,7 @@ const { Schema, model } = require("mongoose");
 
 // Esquema para los derivados producidos
 const DerivadoSchema = new Schema({
-  nombre: {
+  nombreDerivado: {
     type: String,
     required: [true, "El nombre del derivado es obligatorio"],
     enum: ["Gasolina", "Diesel", "Jet Fuel", "Asfalto"], // Lista de derivados
