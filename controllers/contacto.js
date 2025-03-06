@@ -8,8 +8,7 @@ const contactoGets = async (req = request, res = response) => {
   try {
     const [total, contactos] = await Promise.all([
       Contacto.countDocuments(query),
-      Contacto.find(query)
-      .populate({
+      Contacto.find(query).populate({
         path: "idRefineria",
         select: "nombre",
       }),
@@ -79,11 +78,12 @@ const contactoPost = async (req, res = response) => {
 // Actualizar un contacto existente
 const contactoPut = async (req, res = response) => {
   const { id } = req.params;
-
+  const { ...resto } = req.body;
+  console.log(resto);
   try {
     const contactoActualizado = await Contacto.findOneAndUpdate(
       { _id: id, eliminado: false },
-      req.body,
+      resto,
       { new: true }
     ).populate({
       path: "idRefineria",
