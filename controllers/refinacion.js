@@ -22,6 +22,13 @@ const refinacionGets = async (req = request, res = response) => {
           select: "nombre",
         })
         .populate({
+          path: "derivados",
+          populate: {
+            path: "idTanque",
+            select: "nombre"  // Selecciona los campos que deseas obtener del tanque
+          }
+        })
+        .populate({
           path: "idRefineria",
           select: "nombre", // Populate para la refineria
         }),
@@ -53,6 +60,13 @@ const refinacionGet = async (req = request, res = response) => {
       .populate({
         path: "idTorre",
         select: "nombre",
+      })
+      .populate({
+        path: "derivados",
+        populate: {
+          path: "idTanque",
+          select: "nombre"  // Selecciona los campos que deseas obtener del tanque
+        }
       })
       .populate({
         path: "idRefineria",
@@ -184,13 +198,11 @@ const refinacionPost = async (req = request, res = response) => {
 const refinacionPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
-
+ console.log(llego);
   try {
-    const refinacionActualizada = await Refinacion.findOneAndUpdate(
-      { _id: id, eliminado: false },
-      resto,
-      { new: true }
-    )
+    const refinacionActualizada = await Refinacion.findByIdAndUpdate(id, resto, {
+      new: true},
+      )
       .populate({
         path: "idTanque",
         select: "nombre",
@@ -198,6 +210,13 @@ const refinacionPut = async (req = request, res = response) => {
       .populate({
         path: "idTorre",
         select: "nombre",
+      })
+      .populate({
+        path: "derivados",
+        populate: {
+          path: "idTanque",
+          select: "nombre"  // Selecciona los campos que deseas obtener del tanque
+        }
       })
       .populate({
         path: "idRefineria",
@@ -228,6 +247,13 @@ const refinacionDelete = async (req = request, res = response) => {
       .populate({
         path: "idTanque",
         select: "nombre",
+      })
+      .populate({
+        path: "derivados",
+        populate: {
+          path: "idTanque",
+          select: "nombre"  // Selecciona los campos que deseas obtener del tanque
+        }
       })
       .populate({
         path: "idTorre",

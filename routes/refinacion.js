@@ -28,10 +28,6 @@ router.get(
   "/:id",
   [
     check("id", "No es un id de Mongo válido").isMongoId(),
-    check("idRefineria").custom(existeRefineriaPorId),
-    check("idTanque").custom(existeTanquePorId),
-    check("idTorre").custom(existeTorrePorId),
-    // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
   refinacionGet
@@ -41,9 +37,9 @@ router.put(
   [
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeRefinacionPorId),
-    check("idRefineria").custom(existeRefineriaPorId),
-    check("idTanque").custom(existeTanquePorId),
-    check("idTorre").custom(existeTorrePorId),
+    // check("idRefineria").custom(existeRefineriaPorId),
+    // check("idTanque").custom(existeTanquePorId),
+    // check("idTorre").custom(existeTorrePorId),
     //check("rol").custom(esRoleValido), subiendo cambioos
     validarCampos,
   ],
@@ -72,9 +68,9 @@ router.delete(
     // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("idRefineria").custom(existeRefineriaPorId),
-    check("idTanque").custom(existeTanquePorId),
-    check("idTorre").custom(existeTorrePorId),
+    // check("idRefineria").custom(existeRefineriaPorId),
+    // check("idTanque").custom(existeTanquePorId),
+    // check("idTorre").custom(existeTorrePorId),
     validarCampos,
   ],
   refinacionDelete
