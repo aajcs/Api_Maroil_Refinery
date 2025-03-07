@@ -1,4 +1,4 @@
-// const { response, request } = require("express");
+const { response, request } = require("express");
 const Refinacion = require("../models/refinacion");
 const Derivado = require("../models/derivados");
 
@@ -196,10 +196,9 @@ const refinacionPost = async (req = request, res = response) => {
 
 // Actualizar una refinación existente
 const refinacionPut = async (req = request, res = response) => {
-  const { id } = req.params;
+const { id } = req.params;
   const { _id, ...resto } = req.body;
- console.log(llego);
-  try {
+   try {
     const refinacionActualizada = await Refinacion.findByIdAndUpdate(id, resto, {
       new: true},
       )
@@ -226,11 +225,10 @@ const refinacionPut = async (req = request, res = response) => {
     if (!refinacionActualizada) {
       return res.status(404).json({ msg: "Refinación no encontrada" });
     }
-
+    req.io.emit("refinacion-modificada", refinacionActualizada);
     res.json(refinacionActualizada);
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ error: "mierda"});
   }
 };
 

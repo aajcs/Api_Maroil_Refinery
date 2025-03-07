@@ -9,9 +9,9 @@ const {
 } = require("../middlewares");
 
 const { existeRefinacionPorId } = require("../helpers/db-validators");
-const { existeRefineriaPorId } = require("../helpers/db-validators");
-const { existeTorrePorId } = require("../helpers/db-validators");
-const { existeTanquePorId } = require("../helpers/db-validators");
+// const { existeRefineriaPorId } = require("../helpers/db-validators");
+// const { existeTorrePorId } = require("../helpers/db-validators");
+// const { existeTanquePorId } = require("../helpers/db-validators");
 const {
   refinacionGet,
   refinacionPut,
@@ -49,13 +49,10 @@ router.put(
 router.post(
   "/",
   [
-    // check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    // check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),
-    // check("nit", "El NIT es obligatorio").not().isEmpty(),
-    // check("img", "El logotipo de la refineria es obligatorio").not().isEmpty(),
-    check("idRefineria").custom(existeRefineriaPorId),
-    check("idTanque").custom(existeTanquePorId),
-    check("idTorre").custom(existeTorrePorId),
+    
+    // // check("idRefineria").custom(existeRefineriaPorId),
+    // // check("idTanque").custom(existeTanquePorId),
+    // // check("idTorre").custom(existeTorrePorId),
     validarCampos,
   ],
   refinacionPost
