@@ -26,10 +26,7 @@ const router = Router();
 router.get("/", refinacionGets);
 router.get(
   "/:id",
-  [
-    check("id", "No es un id de Mongo válido").isMongoId(),
-    validarCampos,
-  ],
+  [check("id", "No es un id de Mongo válido").isMongoId(), validarCampos],
   refinacionGet
 );
 router.put(
@@ -49,7 +46,6 @@ router.put(
 router.post(
   "/",
   [
-    
     // // check("idRefineria").custom(existeRefineriaPorId),
     // // check("idTanque").custom(existeTanquePorId),
     // // check("idTorre").custom(existeTorrePorId),

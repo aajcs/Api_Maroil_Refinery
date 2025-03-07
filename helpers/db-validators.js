@@ -11,6 +11,7 @@ const {
   Contrato,
   Contacto,
   Recepcion,
+  Refinacion,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -130,6 +131,7 @@ const existeProductoPorId = async (id) => {
 };
 const existeRefinacionPorId = async (id) => {
   // Verificar si refinacion existe
+  console.log(id);
   const existeRefinacion = await Refinacion.findById(id);
   if (!existeRefinacion) {
     throw new Error(`El id no existe ${id}`);
