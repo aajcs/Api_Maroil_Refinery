@@ -12,6 +12,8 @@ const {
   Contacto,
   Recepcion,
   Refinacion,
+  ChequeoCalidad,
+  ChequeoCantidad,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -137,6 +139,22 @@ const existeRefinacionPorId = async (id) => {
     throw new Error(`El id no existe ${id}`);
   }
 };
+const existeChequeoCalidadPorId = async (id) => {
+  // Verificar si la refineria existe
+
+  const existeChequeoCalidad = await ChequeoCalidad.findById(id);
+  if (!existeChequeoCalidad) {
+    throw new Error(`El chequeo no existe ${id}`);
+  }
+};
+const existeChequeoCantidadPorId = async (id) => {
+  // Verificar si la refineria existe
+
+  const existeChequeoCantidad = await ChequeoCantidad.findById(id);
+  if (!existeChequeoCantidad) {
+    throw new Error(`El chequeo no existe ${id}`);
+  }
+};
 
 /**
  * Validar colecciones permitidas
@@ -168,6 +186,8 @@ module.exports = {
   existeContactoPorId,
   existeRecepcionPorId,
   existeRefinacionPorId,
+  existeChequeoCalidadPorId,
+  existeChequeoCantidadPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

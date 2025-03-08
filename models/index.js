@@ -13,6 +13,8 @@ const Contacto = require("./contacto");
 const Recepcion = require("./recepcion");
 const Refinacion = require("./refinacion");
 const Despacho = require("./despacho");
+const ChequeoCalidad = require("./chequeoCalidad");
+const ChequeoCantidad = require("./chequeoCantidad");
 /*const contactos = require ('./contactos');
 const bombas = require('./bombas');
 const inspeccion_tanque = require('./inspeccion_tanque');
@@ -37,6 +39,8 @@ module.exports = {
   Contacto,
   Recepcion,
   Refinacion,
+  ChequeoCalidad,
+  ChequeoCantidad,
 
   /*contactos,
     bombas,

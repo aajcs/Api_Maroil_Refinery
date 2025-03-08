@@ -16,7 +16,7 @@ class Server {
       auth: "/api/auth",
       buscar: "/api/buscar",
       categorias: "/api/categorias",
-      productos: "/api/productos",
+      producto: "/api/producto",
       usuarios: "/api/usuarios",
       uploads: "/api/uploads",
       refinerias: "/api/refinerias",
@@ -29,6 +29,8 @@ class Server {
       recepcion: "/api/recepcion",
       refinacion: "/api/refinacion",
       despacho: "/api/despacho",
+      chequeoCalidad: "/api/chequeoCalidad",
+      chequeoCantidad: "/api/chequeoCantidad",
     };
 
     // Conectar a base de datos
@@ -82,7 +84,7 @@ class Server {
     this.app.use(this.paths.auth, require("../routes/auth"));
     this.app.use(this.paths.buscar, require("../routes/buscar"));
     this.app.use(this.paths.categorias, require("../routes/categorias"));
-    this.app.use(this.paths.productos, require("../routes/productos"));
+    this.app.use(this.paths.producto, require("../routes/producto"));
     this.app.use(this.paths.usuarios, require("../routes/usuarios"));
     this.app.use(this.paths.uploads, require("../routes/uploads"));
     this.app.use(this.paths.refinerias, require("../routes/refinerias"));
@@ -95,6 +97,8 @@ class Server {
     this.app.use(this.paths.recepcion, require("../routes/recepcion"));
     this.app.use(this.paths.refinacion, require("../routes/refinacion"));
     this.app.use(this.paths.despacho, require("../routes/despacho"));
+    this.app.use(this.paths.chequeoCalidad, require("../routes/chequeoCalidad"));
+    this.app.use(this.paths.chequeoCantidad, require("../routes/chequeoCantidad"));
   }
   configurarSockets() {
     new Sockets(this.io);

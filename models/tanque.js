@@ -18,7 +18,7 @@ const TanqueSchema = Schema(
       type: [String],
       required: [
         false,
-        "El tipo de material que almacena el torre es obligatorio",
+        "El tipo de material que almacena el tanque es obligatorio",
       ],
     },
     almacenamiento: {
