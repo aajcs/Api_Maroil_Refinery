@@ -14,6 +14,7 @@ const {
   Refinacion,
   ChequeoCalidad,
   ChequeoCantidad,
+  Historial,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -156,6 +157,15 @@ const existeChequeoCantidadPorId = async (id) => {
   }
 };
 
+const existeHistorialPorId = async (id) => {
+  // Verificar si la refineria existe
+
+  const existeHistorial = await Historial.findById(id);
+  if (!existeHistorial) {
+    throw new Error(`El chequeo no existe ${id}`);
+  }
+};
+
 /**
  * Validar colecciones permitidas
  */
@@ -188,6 +198,7 @@ module.exports = {
   existeRefinacionPorId,
   existeChequeoCalidadPorId,
   existeChequeoCantidadPorId,
+  existeHistorialPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

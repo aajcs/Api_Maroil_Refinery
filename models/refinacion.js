@@ -41,7 +41,13 @@ const RefinacionSchema = new Schema(
     ],
 
     // historialOperaciones: [
-    //   //  crear el modelo
+    //  {
+    //   idHistorial: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "Historial",
+    //     required: [false, "Historiales faltantes"],
+    //   },
+    // },
     // ],
     derivado: [
       {
