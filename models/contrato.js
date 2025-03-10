@@ -26,7 +26,7 @@ const ContratoSchema = Schema(
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
-      required: false,
+      required: true,
     },
     idContacto: {
       type: Schema.Types.ObjectId,
@@ -89,6 +89,7 @@ const ContratoSchema = Schema(
         cambios: { type: String, required: true },
       },
     ],
+
     estado: {
       type: String,
       default: true,

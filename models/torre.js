@@ -42,7 +42,7 @@ const TorreSchema = Schema(
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
-      required: false,
+      required: true,
     },
   },
 

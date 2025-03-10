@@ -6,7 +6,7 @@ const chequeoCantidadGets = async (req = request, res = response) => {
   const query = { estado: true, eliminado: false };
 
   try {
-    const [total, chequeoCantidad] = await Promise.all([
+    const [total, chequeoCantidads] = await Promise.all([
       ChequeoCantidad.countDocuments(query),
       ChequeoCantidad.find(query)
         .populate({
@@ -19,7 +19,7 @@ const chequeoCantidadGets = async (req = request, res = response) => {
         })
         .populate({
           path: "idTorre",
-          select: "ubicacion",
+          select: "nombre",
         })
         .populate({
           path: "idRefineria",
@@ -29,7 +29,7 @@ const chequeoCantidadGets = async (req = request, res = response) => {
 
     res.json({
       total,
-      chequeoCantidad,
+      chequeoCantidads,
     });
   } catch (err) {
     console.error(err);
@@ -57,7 +57,7 @@ const chequeoCantidadGet = async (req = request, res = response) => {
       })
       .populate({
         path: "idTorre",
-        select: "ubicacion",
+        select: "nombre",
       })
       .populate({
         path: "idRefineria",
@@ -103,7 +103,7 @@ const chequeoCantidadPost = async (req = request, res = response) => {
     await nuevoChequeoCantidad.populate([
       { path: "idProducto", select: "nombre" },
       { path: "idTanque", select: "nombre" },
-      { path: "idTorre", select: "ubicacion" },
+      { path: "idTorre", select: "nombre" },
       { path: "idRefineria", select: "nombre" },
     ]);
 
@@ -135,7 +135,7 @@ const chequeoCantidadPut = async (req = request, res = response) => {
       })
       .populate({
         path: "idTorre",
-        select: "ubicacion",
+        select: "nombre",
       })
       .populate({
         path: "idRefineria",
@@ -207,16 +207,6 @@ module.exports = {
   chequeoCantidadPatch,
 };
 
-
-
-
-
-
-
-
-
-
-
 // const { response, request } = require("express");
 // const ChequeoCantidad = require("../models/chequeoCantidad");
 
@@ -232,7 +222,6 @@ module.exports = {
 //         select: "nombre",
 //       }),
 
-       
 //     ]);
 
 //     res.json({
@@ -275,17 +264,17 @@ module.exports = {
 // const chequeoCalidadPost = async (req = request, res = response) => {
 //    try {
 //       const { idRefineria } = req.body;
-  
+
 //       if (!idRefineria) {
 //         return res
 //           .status(400)
 //           .json({ error: "Nombre y Refinería son requeridos" });
 //       }
-  
+
 //       const nuevoChequeoCalidad = await ChequeoCalidad.create({
 //         ...req.body,
 //       });
-  
+
 //       await nuevoChequeoCalidad
 //       .populate({
 //         path: "idRefineria",
@@ -302,7 +291,7 @@ module.exports = {
 //         path: "idTorre",
 //         select: "nombre",
 //       });
-  
+
 //       res.status(201).json(nuevoChequeoCalidad);
 //     } catch (err) {
 //       console.error(err);
@@ -349,11 +338,11 @@ module.exports = {
 //         path: "idRefineria",
 //         select: "nombre",
 //       });
-  
+
 //       if (!chequeoCalidad) {
 //         return res.status(404).json({ msg: "ChequeoCalidad no encontrado" });
 //       }
-  
+
 //       res.json(chequeoCalidad);
 //     } catch (err) {
 //       console.error(err);

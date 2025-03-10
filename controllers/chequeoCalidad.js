@@ -3,10 +3,10 @@ const ChequeoCalidad = require("../models/chequeoCalidad");
 
 // Obtener todos los chequeos de calidad con paginación y población de referencias
 const chequeoCalidadGets = async (req = request, res = response) => {
-  const query = { estado: true, eliminado: false };
+  const query = { eliminado: false };
 
   try {
-    const [total, chequeoCalidad] = await Promise.all([
+    const [total, chequeoCalidads] = await Promise.all([
       ChequeoCalidad.countDocuments(query),
       ChequeoCalidad.find(query)
         .populate({
@@ -29,7 +29,7 @@ const chequeoCalidadGets = async (req = request, res = response) => {
 
     res.json({
       total,
-      chequeoCalidad,
+      chequeoCalidads,
     });
   } catch (err) {
     console.error(err);
@@ -117,7 +117,7 @@ const chequeoCalidadPost = async (req = request, res = response) => {
     await nuevoChequeoCalidad.populate([
       { path: "idProducto", select: "nombre" },
       { path: "idTanque", select: "nombre" },
-      { path: "idTorre", select: "ubicacion" },
+      { path: "idTorre", select: "nombre" },
       { path: "idRefineria", select: "nombre" },
     ]);
 
@@ -221,16 +221,6 @@ module.exports = {
   chequeoCalidadPatch,
 };
 
-
-
-
-
-
-
-
-
-
-
 // const { response, request } = require("express");
 // const ChequeoCalidad = require("../models/chequeoCalidad");
 
@@ -246,7 +236,6 @@ module.exports = {
 //         select: "nombre",
 //       }),
 
-       
 //     ]);
 
 //     res.json({
@@ -289,17 +278,17 @@ module.exports = {
 // const chequeoCalidadPost = async (req = request, res = response) => {
 //    try {
 //       const { idRefineria } = req.body;
-  
+
 //       if (!idRefineria) {
 //         return res
 //           .status(400)
 //           .json({ error: "Nombre y Refinería son requeridos" });
 //       }
-  
+
 //       const nuevoChequeoCalidad = await ChequeoCalidad.create({
 //         ...req.body,
 //       });
-  
+
 //       await nuevoChequeoCalidad
 //       .populate({
 //         path: "idRefineria",
@@ -316,7 +305,7 @@ module.exports = {
 //         path: "idTorre",
 //         select: "nombre",
 //       });
-  
+
 //       res.status(201).json(nuevoChequeoCalidad);
 //     } catch (err) {
 //       console.error(err);
@@ -363,11 +352,11 @@ module.exports = {
 //         path: "idRefineria",
 //         select: "nombre",
 //       });
-  
+
 //       if (!chequeoCalidad) {
 //         return res.status(404).json({ msg: "ChequeoCalidad no encontrado" });
 //       }
-  
+
 //       res.json(chequeoCalidad);
 //     } catch (err) {
 //       console.error(err);

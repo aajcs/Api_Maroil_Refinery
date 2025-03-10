@@ -1,32 +1,35 @@
 const { Schema, model } = require("mongoose");
 
-const ProductoSchema = Schema({
-  idRefineria: {
-    type: Schema.Types.ObjectId,
-    ref: "Refineria",
-    required: false,
+const ProductoSchema = Schema(
+  {
+    idRefineria: {
+      type: Schema.Types.ObjectId,
+      ref: "Refineria",
+      required: true,
+    },
+    nombre: {
+      type: String,
+
+      required: [true, "El nombre del producto es obligatorio"],
+    },
+    posicion: {
+      type: Number,
+      required: [true, "La posicion del producto es olbigatorio"],
+    },
+    estado: {
+      type: String,
+      default: true,
+    },
+    eliminado: {
+      type: Boolean,
+      default: false,
+    },
   },
-  nombre: {
-    type: String,
-    enum: [
-      "Nafta",
-      "Queroseno",
-      "Fuel Oil 4 (MGO)",
-      "Fuel Oil 6 (Fondo)",
-      "Petroleo Crudo",
-    ],
-    required: [false, "El nombre del producto es obligatorio"],
-  },
-  estado: {
-    type: Boolean,
-    default: true,
-    required: true,
-  },
-  eliminado: {
-    type: Boolean,
-    default: false,
-  },
-});
+  {
+    timestamps: true, // Añade createdAt y updatedAt automáticamente
+    versionKey: false, // Elimina el campo __v
+  }
+);
 
 ProductoSchema.set("toJSON", {
   transform: (document, returnedObject) => {
