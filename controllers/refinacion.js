@@ -7,8 +7,11 @@ const populateOptions = [
   { path: "idChequeoCalidad", select: "nombre" },
   { path: "idChequeoCantidad", select: "nombre" },
   { path: "idRefineria", select: "nombre" },
-  { path: "material.idProducto", select: "nombre" },
-  { path: "material.idTanque", select: "nombre" },
+  { path: "idTanque", select: "nombre" },
+  { path: "idProducto", select: "nombre" },
+  { path: "derivado.idProducto", select: "nombre" },
+  { path: "idChequeoCalidad", select: "operador" },
+  { path: "idChequeoCantidad", select: "operador" },
 ];
 
 // Obtener todas las refinaciones con paginación y población de referencias
@@ -16,21 +19,21 @@ const refinacionGets = async (req = request, res = response) => {
   const query = { estado: true, eliminado: false };
 
   try {
-    const [total, refinaciones] = await Promise.all([
+    const [total, refinacions] = await Promise.all([
       Refinacion.countDocuments(query), // Contar documentos
       Refinacion.find(query).populate(populateOptions), // Poblar referencias y convertir a JSON
     ]);
 
     // Validar si hay datos
-    if (refinaciones.length === 0) {
+    if (refinacions.length === 0) {
       return res.status(404).json({
         message:
-          "No se encontraron refinaciones con los criterios proporcionados.",
+          "No se encontraron refinacions con los criterios proporcionados.",
       });
     }
 
     // Respuesta exitosa
-    res.json({ total, refinaciones });
+    res.json({ total, refinacions });
   } catch (err) {
     console.error("Error en refinacionGets:", err);
 
@@ -84,10 +87,14 @@ const refinacionPost = async (req = request, res = response) => {
     idTorre,
     idChequeoCalidad,
     idChequeoCantidad,
-    cantidadRecibida,
+    cantidadTotal,
     idRefineria,
     historialOperaciones,
-    material,
+    derivado,
+    idTanque,
+    fechaInicio,
+    fechaFin,
+    operador,
   } = req.body;
 
   try {
@@ -95,10 +102,14 @@ const refinacionPost = async (req = request, res = response) => {
       idTorre,
       idChequeoCalidad,
       idChequeoCantidad,
-      cantidadRecibida,
+      cantidadTotal,
       idRefineria,
       historialOperaciones,
-      material,
+      derivado,
+      idTanque,
+      fechaInicio,
+      fechaFin,
+      operador,
     });
 
     await nuevaRefinacion.save();
