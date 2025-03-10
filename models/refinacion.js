@@ -3,11 +3,11 @@ const { Schema, model } = require("mongoose");
 const RefinacionSchema = new Schema(
   {
     // Relaciones con otros modelos (referencias)
-    idTanque: {
-      type: Schema.Types.ObjectId,
-      ref: "Tanque",
-      required: [true, "El ID del tanque es obligatorio"],
-    },
+    // idTanque: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "Tanque",
+    //   required: [true, "El ID del tanque es obligatorio"],
+    // },
 
     idTorre: {
       type: Schema.Types.ObjectId,
@@ -33,8 +33,9 @@ const RefinacionSchema = new Schema(
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
-      required: false,},
-     
+      required: false,
+    },
+
     historialOperaciones: [
       {
         proceso: {
@@ -54,7 +55,7 @@ const RefinacionSchema = new Schema(
             required: [true, "La duración del proceso es obligatoria"],
           },
         },
-          operador: {
+        operador: {
           type: String,
           required: [true, "El operador es obligatorio"],
         },
@@ -62,14 +63,16 @@ const RefinacionSchema = new Schema(
     ],
     material: [
       {
-        nombre: { type: String, required: false },
-        posicion: { type: String, required: false },
+        idProducto: {
+          type: Schema.Types.ObjectId,
+          ref: "Producto",
+          required: [false, "El ID del tanque del derivado es obligatorio"],
+        },
         porcentaje: { type: Number, required: false },
-        estadoMaterial: { type: String, required: false },
         idTanque: {
           type: Schema.Types.ObjectId,
           ref: "Tanque",
-          required: [true, "El ID del tanque del derivado es obligatorio"],
+          required: [false, "El ID del tanque del derivado es obligatorio"],
         },
       },
     ],

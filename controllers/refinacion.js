@@ -1,36 +1,34 @@
 const { response, request } = require("express");
 const Refinacion = require("../models/refinacion");
-const Derivado = require("../models/derivados");
+//const Derivado = require("../models/derivados");
 
 // Obtener todas las refinaciones con paginación y población de referencias
 const refinacionGets = async (req = request, res = response) => {
-  const { limite = 5, desde = 0 } = req.query;
-  const query = { eliminado: false };
+  const query = { estado: true, eliminado: false };
 
   try {
     const [total, refinaciones] = await Promise.all([
       Refinacion.countDocuments(query),
       Refinacion.find(query)
-        .skip(Number(desde))
-        .limit(Number(limite))
-        .populate({
-          path: "idTanque",
-          select: "nombre",
-        })
+        // .populate({
+        //   path: "idTanque",
+        //   select: "nombre",
+        // })
         .populate({
           path: "idTorre",
           select: "nombre",
         })
         .populate({
-          path: "derivados",
-          populate: {
-            path: "idTanque",
-            select: "nombre", // Selecciona los campos que deseas obtener del tanque
-          },
+          path: "idChequeoCalidad",
+          select: "nombre",
+        })
+        .populate({
+          path: "idChequeoCantidad",
+          select: "nombre",
         })
         .populate({
           path: "idRefineria",
-          select: "nombre", // Populate para la refineria
+          select: "nombre",
         }),
     ]);
 
@@ -51,26 +49,28 @@ const refinacionGet = async (req = request, res = response) => {
   try {
     const refinacion = await Refinacion.findOne({
       _id: id,
+      estado: true,
       eliminado: false,
     })
-      .populate({
-        path: "idTanque",
-        select: "nombre",
-      })
+      // .populate({
+      //   path: "idTanque",
+      //   select: "nombre",
+      // })
       .populate({
         path: "idTorre",
         select: "nombre",
       })
       .populate({
-        path: "derivados",
-        populate: {
-          path: "idTanque",
-          select: "nombre", // Selecciona los campos que deseas obtener del tanque
-        },
+        path: "idChequeoCalidad",
+        select: "nombre",
+      })
+      .populate({
+        path: "idChequeoCantidad",
+        select: "nombre",
       })
       .populate({
         path: "idRefineria",
-        select: "nombre", // Populate para la refineria
+        select: "nombre",
       });
 
     if (!refinacion) {
@@ -84,110 +84,48 @@ const refinacionGet = async (req = request, res = response) => {
   }
 };
 
+// Crear una nueva refinación
 const refinacionPost = async (req = request, res = response) => {
   const {
-    idTanque,
     idTorre,
-    idRefineria,
-    materiaPrima,
+    idChequeoCalidad,
+    idChequeoCantidad,
     cantidadRecibida,
-    fechaRecepcion,
-    proceso,
-    fechaInicio,
-    fechaFin,
-    temperatura,
-    presion,
-    duracionHoras,
-    derivados, // Asegúrate de que este campo esté correctamente nombrado en req.body
-    controlCalidad,
-    observaciones,
-    fechaRevision,
+    idRefineria,
     historialOperaciones,
-    fecha,
-    operacion,
-    usuario,
-    estado,
+    material,
   } = req.body;
 
   try {
-    // Crear la nueva refinación
     const nuevaRefinacion = new Refinacion({
-      idTanque,
       idTorre,
-      idRefineria,
-      materiaPrima,
+      idChequeoCalidad,
+      idChequeoCantidad,
       cantidadRecibida,
-      fechaRecepcion,
-      proceso,
-      fechaInicio,
-      fechaFin,
-      temperatura,
-      presion,
-      duracionHoras,
-      // derivados,
-      controlCalidad,
-      observaciones,
-      fechaRevision,
+      idRefineria,
       historialOperaciones,
-      fecha,
-      operacion,
-      usuario,
-      estado,
+      material,
     });
 
-    // Guardar la refinación en la base de datos
     await nuevaRefinacion.save();
 
-    // Verificar que el campo derivados esté definido y sea un array
-    if (Array.isArray(derivados)) {
-      // Crear y guardar los derivados asociados a la refinación
-      const nuevosDerivados = await Promise.all(
-        derivados.map(async (derivado) => {
-          const nuevoDerivado = new Derivado({
-            ...derivado, // Spread operator para copiar las propiedades del derivado
-            idRefinacion: nuevaRefinacion._id, // Asignar el ID de refinación al derivado
-          });
-          return await nuevoDerivado.save();
-        })
-      );
+    await nuevaRefinacion.populate([
+      { path: "idTorre", select: "nombre" },
+      { path: "idChequeoCalidad", select: "nombre" },
+      { path: "idChequeoCantidad", select: "nombre" },
+      { path: "idRefineria", select: "nombre" },
+      { path: "material.idTanque", select: "nombre" },
+      // {
+      //   path: "material",
+      //   select: "idTanque",
+      //   populate: {
+      //     path: "idTanque",
+      //     select: "nombre", // Selecciona los campos que deseas obtener del tanque
+      //   },
+      // },
+    ]);
 
-      // Actualizar la refinación con los IDs de los derivados
-      nuevaRefinacion.derivados = nuevosDerivados.map(
-        (derivado) => derivado._id
-      );
-      await nuevaRefinacion.save();
-    }
-
-    // Obtener la refinación con las referencias pobladas
-    const refinacionPoblada = await Refinacion.findById(nuevaRefinacion._id)
-      .populate({
-        path: "idTanque",
-        select: "nombre", // Selecciona solo el campo "nombre" del tanque
-      })
-      .populate({
-        path: "idTorre",
-        select: "nombre", // Selecciona solo el campo "nombre" de la torre
-      })
-      .populate({
-        path: "derivados",
-        populate: {
-          path: "idTanque",
-          select: "nombre", // Selecciona los campos que deseas obtener del tanque
-        },
-      })
-      // .populate({
-      //   path: "derivados", // Populate para los derivados
-      // })
-      .populate({
-        path: "idRefineria",
-        select: "nombre", // Populate para la refineria
-      });
-
-    // Responder con el documento poblado
-    res.status(201).json({
-      message: "Refinación creada exitosamente",
-      refinacion: refinacionPoblada,
-    });
+    res.status(201).json(nuevaRefinacion);
   } catch (err) {
     console.error(err);
     res.status(400).json({ error: err.message });
@@ -198,42 +136,41 @@ const refinacionPost = async (req = request, res = response) => {
 const refinacionPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
+
   try {
-    const refinacionActualizada = await Refinacion.findByIdAndUpdate(
-      id,
+    const refinacionActualizada = await Refinacion.findOneAndUpdate(
+      { _id: id, eliminado: false },
       resto,
-      {
-        new: true,
-      }
+      { new: true }
     )
-      .populate({
-        path: "idTanque",
-        select: "nombre",
-      })
+      // .populate({
+      //   path: "idTanque",
+      //   select: "nombre",
+      // })
       .populate({
         path: "idTorre",
         select: "nombre",
       })
       .populate({
-        path: "derivados",
-        populate: {
-          path: "idTanque",
-          select: "nombre", // Selecciona los campos que deseas obtener del tanque
-        },
+        path: "idChequeoCalidad",
+        select: "nombre",
+      })
+      .populate({
+        path: "idChequeoCantidad",
+        select: "nombre",
       })
       .populate({
         path: "idRefineria",
-        select: "nombre", // Populate para la refineria
+        select: "nombre",
       });
-    console.log("entre aqui");
 
     if (!refinacionActualizada) {
       return res.status(404).json({ msg: "Refinación no encontrada" });
     }
-    req.io.emit("refinacion-modificada", refinacionActualizada);
+
     res.json(refinacionActualizada);
   } catch (err) {
-    console.log(err.message);
+    console.error(err);
     res.status(400).json({ error: err.message });
   }
 };
@@ -253,14 +190,19 @@ const refinacionDelete = async (req = request, res = response) => {
         select: "nombre",
       })
       .populate({
-        path: "derivados",
-        populate: {
-          path: "idTanque",
-          select: "nombre", // Selecciona los campos que deseas obtener del tanque
-        },
+        path: "idTorre",
+        select: "nombre",
       })
       .populate({
-        path: "idTorre",
+        path: "idChequeoCalidad",
+        select: "nombre",
+      })
+      .populate({
+        path: "idChequeoCantidad",
+        select: "nombre",
+      })
+      .populate({
+        path: "idRefineria",
         select: "nombre",
       });
 
@@ -283,9 +225,9 @@ const refinacionPatch = (req = request, res = response) => {
 };
 
 module.exports = {
-  refinacionPost,
-  refinacionGet,
   refinacionGets,
+  refinacionGet,
+  refinacionPost,
   refinacionPut,
   refinacionDelete,
   refinacionPatch,
