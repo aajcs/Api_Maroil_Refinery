@@ -8,8 +8,7 @@ const lineaCargaGets = async (req = request, res = response) => {
   try {
     const [total, lineaCargas] = await Promise.all([
       LineaCarga.countDocuments(query),
-      LineaCarga.find(query)
-      .populate({
+      LineaCarga.find(query).populate({
         path: "idRefineria",
         select: "nombre",
       }),
