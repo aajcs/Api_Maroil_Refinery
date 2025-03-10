@@ -1,6 +1,15 @@
 const { response, request } = require("express");
 const Refinacion = require("../models/refinacion");
-//const Derivado = require("../models/derivados");
+
+// Opciones de populate reutilizables
+const populateOptions = [
+  { path: "idTorre", select: "nombre" },
+  { path: "idChequeoCalidad", select: "nombre" },
+  { path: "idChequeoCantidad", select: "nombre" },
+  { path: "idRefineria", select: "nombre" },
+  { path: "material.idProducto", select: "nombre" },
+  { path: "material.idTanque", select: "nombre" },
+];
 
 // Obtener todas las refinaciones con paginación y población de referencias
 const refinacionGets = async (req = request, res = response) => {
@@ -8,37 +17,34 @@ const refinacionGets = async (req = request, res = response) => {
 
   try {
     const [total, refinaciones] = await Promise.all([
-      Refinacion.countDocuments(query),
-      Refinacion.find(query)
-        // .populate({
-        //   path: "idTanque",
-        //   select: "nombre",
-        // })
-        .populate({
-          path: "idTorre",
-          select: "nombre",
-        })
-        .populate({
-          path: "idChequeoCalidad",
-          select: "nombre",
-        })
-        .populate({
-          path: "idChequeoCantidad",
-          select: "nombre",
-        })
-        .populate({
-          path: "idRefineria",
-          select: "nombre",
-        }),
+      Refinacion.countDocuments(query), // Contar documentos
+      Refinacion.find(query).populate(populateOptions), // Poblar referencias y convertir a JSON
     ]);
 
-    res.json({
-      total,
-      refinaciones,
-    });
+    // Validar si hay datos
+    if (refinaciones.length === 0) {
+      return res.status(404).json({
+        message:
+          "No se encontraron refinaciones con los criterios proporcionados.",
+      });
+    }
+
+    // Respuesta exitosa
+    res.json({ total, refinaciones });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.error("Error en refinacionGets:", err);
+
+    // Manejo de errores específicos
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        error: "Error en las referencias. Verifica que los IDs sean válidos.",
+      });
+    }
+
+    // Error genérico
+    res.status(500).json({
+      error: "Error interno del servidor al obtener las refinaciones.",
+    });
   }
 };
 
@@ -51,36 +57,24 @@ const refinacionGet = async (req = request, res = response) => {
       _id: id,
       estado: true,
       eliminado: false,
-    })
-      // .populate({
-      //   path: "idTanque",
-      //   select: "nombre",
-      // })
-      .populate({
-        path: "idTorre",
-        select: "nombre",
-      })
-      .populate({
-        path: "idChequeoCalidad",
-        select: "nombre",
-      })
-      .populate({
-        path: "idChequeoCantidad",
-        select: "nombre",
-      })
-      .populate({
-        path: "idRefineria",
-        select: "nombre",
-      });
-
+    }).populate(populateOptions); // Poblar referencias // Convertir a JSON
     if (!refinacion) {
       return res.status(404).json({ msg: "Refinación no encontrada" });
     }
 
     res.json(refinacion);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.error("Error en refinacionGet:", err);
+
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        error: "ID de refinación no válido.",
+      });
+    }
+
+    res.status(500).json({
+      error: "Error interno del servidor al obtener la refinación.",
+    });
   }
 };
 
@@ -109,26 +103,22 @@ const refinacionPost = async (req = request, res = response) => {
 
     await nuevaRefinacion.save();
 
-    await nuevaRefinacion.populate([
-      { path: "idTorre", select: "nombre" },
-      { path: "idChequeoCalidad", select: "nombre" },
-      { path: "idChequeoCantidad", select: "nombre" },
-      { path: "idRefineria", select: "nombre" },
-      { path: "material.idTanque", select: "nombre" },
-      // {
-      //   path: "material",
-      //   select: "idTanque",
-      //   populate: {
-      //     path: "idTanque",
-      //     select: "nombre", // Selecciona los campos que deseas obtener del tanque
-      //   },
-      // },
-    ]);
+    // Poblar referencias después de guardar
+    await nuevaRefinacion.populate(populateOptions);
 
     res.status(201).json(nuevaRefinacion);
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    console.error("Error en refinacionPost:", err);
+
+    if (err.name === "ValidationError") {
+      return res.status(400).json({
+        error: "Datos de refinación no válidos.",
+      });
+    }
+
+    res.status(500).json({
+      error: "Error interno del servidor al crear la refinación.",
+    });
   }
 };
 
@@ -142,36 +132,24 @@ const refinacionPut = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       resto,
       { new: true }
-    )
-      // .populate({
-      //   path: "idTanque",
-      //   select: "nombre",
-      // })
-      .populate({
-        path: "idTorre",
-        select: "nombre",
-      })
-      .populate({
-        path: "idChequeoCalidad",
-        select: "nombre",
-      })
-      .populate({
-        path: "idChequeoCantidad",
-        select: "nombre",
-      })
-      .populate({
-        path: "idRefineria",
-        select: "nombre",
-      });
-
+    ).populate(populateOptions); // Poblar referencias // Convertir a JSON
     if (!refinacionActualizada) {
       return res.status(404).json({ msg: "Refinación no encontrada" });
     }
 
     res.json(refinacionActualizada);
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    console.error("Error en refinacionPut:", err);
+
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        error: "ID de refinación no válido.",
+      });
+    }
+
+    res.status(500).json({
+      error: "Error interno del servidor al actualizar la refinación.",
+    });
   }
 };
 
@@ -184,36 +162,24 @@ const refinacionDelete = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       { eliminado: true },
       { new: true }
-    )
-      .populate({
-        path: "idTanque",
-        select: "nombre",
-      })
-      .populate({
-        path: "idTorre",
-        select: "nombre",
-      })
-      .populate({
-        path: "idChequeoCalidad",
-        select: "nombre",
-      })
-      .populate({
-        path: "idChequeoCantidad",
-        select: "nombre",
-      })
-      .populate({
-        path: "idRefineria",
-        select: "nombre",
-      });
-
+    ).populate(populateOptions); // Poblar referencias // Convertir a JSON
     if (!refinacion) {
       return res.status(404).json({ msg: "Refinación no encontrada" });
     }
 
     res.json(refinacion);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.error("Error en refinacionDelete:", err);
+
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        error: "ID de refinación no válido.",
+      });
+    }
+
+    res.status(500).json({
+      error: "Error interno del servidor al eliminar la refinación.",
+    });
   }
 };
 
