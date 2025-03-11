@@ -4,19 +4,24 @@ const Refinacion = require("../models/refinacion");
 // Opciones de populate reutilizables
 const populateOptions = [
   { path: "idTorre", select: "nombre" },
-  { path: "idChequeoCalidad", select: "nombre" },
-  { path: "idChequeoCantidad", select: "nombre" },
+  {
+    path: "idChequeoCalidad",
+    populate: [
+      { path: "idProducto" },
+      { path: "idTanque", select: "nombre" },
+      { path: "idTorre", select: "nombre" },
+    ],
+  },
+  { path: "idChequeoCantidad", select: "nombre fechaChequeo" },
   { path: "idRefineria", select: "nombre" },
   { path: "idTanque", select: "nombre" },
   { path: "idProducto", select: "nombre" },
   { path: "derivado.idProducto", select: "nombre" },
-  { path: "idChequeoCalidad", select: "operador" },
-  { path: "idChequeoCantidad", select: "operador" },
 ];
 
 // Obtener todas las refinaciones con paginación y población de referencias
 const refinacionGets = async (req = request, res = response) => {
-  const query = { estado: true, eliminado: false };
+  const query = { eliminado: false };
 
   try {
     const [total, refinacions] = await Promise.all([
