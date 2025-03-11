@@ -15,6 +15,7 @@ const {
   ChequeoCalidad,
   ChequeoCantidad,
   Historial,
+  Costo,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -132,6 +133,15 @@ const existeProductoPorId = async (id) => {
     throw new Error(`El id no existe ${id}`);
   }
 };
+
+const existeCostoPorId = async (id) => {
+  // Verificar si el correo existe
+  const existeCosto = await Costo.findById(id);
+  if (!existeCosto) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+
 const existeRefinacionPorId = async (id) => {
   // Verificar si refinacion existe
   console.log(id);
@@ -199,6 +209,7 @@ module.exports = {
   existeChequeoCalidadPorId,
   existeChequeoCantidadPorId,
   existeHistorialPorId,
+  existeCostoPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

@@ -32,6 +32,7 @@ class Server {
       chequeoCalidad: "/api/chequeoCalidad",
       chequeoCantidad: "/api/chequeoCantidad",
       historial: "/api/historial",
+      costo: "/api/costo",
     };
 
     // Conectar a base de datos
@@ -107,6 +108,7 @@ class Server {
       require("../routes/chequeoCantidad")
     );
     this.app.use(this.paths.historial, require("../routes/historial"));
+    this.app.use(this.paths.costo, require("../routes/costo"));
   }
   configurarSockets() {
     new Sockets(this.io);
