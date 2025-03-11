@@ -2,16 +2,19 @@ const { response, request } = require("express");
 const Producto = require("../models/producto");
 
 // Obtener todos los productos con paginación y población de referencias
+const populateOptions = [
+  {
+    path: "idRefineria",
+    select: "nombre",
+  },
+];
 const productoGets = async (req = request, res = response) => {
   const query = { estado: true };
 
   try {
     const [total, productos] = await Promise.all([
       Producto.countDocuments(query),
-      Producto.find(query).populate({
-        path: "idRefineria",
-        select: "nombre",
-      }),
+      Producto.find(query).populate(populateOptions).sort({ posicion: 1 }),
     ]);
 
     res.json({
@@ -33,10 +36,7 @@ const productoGet = async (req = request, res = response) => {
       _id: id,
       estado: true,
       eliminado: false,
-    }).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    }).populate(populateOptions);
 
     if (!producto) {
       return res.status(404).json({ msg: "Producto no encontrado" });
@@ -52,7 +52,7 @@ const productoGet = async (req = request, res = response) => {
 // Crear un nuevo producto
 const productoPost = async (req = request, res = response) => {
   try {
-    const { nombre, idRefineria } = req.body;
+    const { nombre, idRefineria, posicion, color, estado } = req.body;
 
     if (!nombre || !idRefineria) {
       return res
@@ -60,14 +60,15 @@ const productoPost = async (req = request, res = response) => {
         .json({ error: "Nombre y Refinería son requeridos" });
     }
 
-    const nuevoProducto = await Producto.create({
-      ...req.body,
+    const nuevoProducto = new Producto({
+      nombre,
+      idRefineria,
+      posicion,
+      color,
+      estado,
     });
-
-    await nuevoProducto.populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    await nuevoProducto.save();
+    await nuevoProducto.populate(populateOptions);
 
     res.status(201).json(nuevoProducto);
   } catch (err) {
@@ -85,10 +86,7 @@ const productoPut = async (req, res = response) => {
       { _id: id, eliminado: false },
       resto,
       { new: true }
-    ).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    ).populate(populateOptions);
 
     if (!productoActualizado) {
       return res.status(404).json({ msg: "Producto no encontrado" });
@@ -110,10 +108,7 @@ const productoDelete = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       { eliminado: true },
       { new: true }
-    ).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    ).populate(populateOptions);
 
     if (!producto) {
       return res.status(404).json({ msg: "Producto no encontrado" });

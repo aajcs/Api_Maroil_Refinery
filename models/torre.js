@@ -21,8 +21,11 @@ const TorreSchema = Schema(
     },
     material: [
       {
-        nombre: { type: String, required: false },
-        posicion: { type: String, required: false },
+        idProducto: {
+          type: Schema.Types.ObjectId,
+          ref: "Producto",
+          required: [false, "El ID del Producto del derivado es obligatorio"],
+        },
         estadoMaterial: { type: String, required: false },
       },
     ],

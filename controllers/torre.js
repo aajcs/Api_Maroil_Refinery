@@ -1,6 +1,11 @@
 // const { response, request } = require("express");
 const Torre = require("../models/torre");
 
+const populateOptions = [
+  { path: "idRefineria", select: "nombre" },
+  { path: "material.idProducto", select: "nombre posicion color" },
+];
+
 // Obtener todas las torres con paginación y población de referencias
 const torreGets = async (req = request, res = response) => {
   const query = { eliminado: false };
@@ -8,11 +13,7 @@ const torreGets = async (req = request, res = response) => {
   try {
     const [total, torres] = await Promise.all([
       Torre.countDocuments(query),
-      Torre.find(query)
-      .populate({
-        path: "idRefineria",
-        select: "nombre",
-      }),
+      Torre.find(query).populate(populateOptions),
     ]);
 
     res.json({
@@ -33,10 +34,7 @@ const torreGet = async (req = request, res = response) => {
     const torre = await Torre.findOne({
       _id: id,
       eliminado: false,
-    }).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    }).populate(populateOptions);
 
     if (!torre) {
       return res.status(404).json({ msg: "Torre no encontrada" });
@@ -74,10 +72,7 @@ const torrePost = async (req = request, res = response) => {
 
     await nuevaTorre.save();
 
-    await nuevaTorre.populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    await nuevaTorre.populate(populateOptions);
 
     res.status(201).json(nuevaTorre);
   } catch (err) {
@@ -96,10 +91,7 @@ const torrePut = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       resto,
       { new: true }
-    ).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    ).populate(populateOptions);
 
     if (!torreActualizada) {
       return res.status(404).json({ msg: "Torre no encontrada" });
@@ -121,10 +113,7 @@ const torreDelete = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       { eliminado: true },
       { new: true }
-    ).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    ).populate(populateOptions);
 
     if (!torre) {
       return res.status(404).json({ msg: "Torre no encontrada" });

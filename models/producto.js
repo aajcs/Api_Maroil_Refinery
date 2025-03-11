@@ -16,6 +16,10 @@ const ProductoSchema = Schema(
       type: Number,
       required: [true, "La posicion del producto es olbigatorio"],
     },
+    color: {
+      type: String,
+      required: [true, "El color del producto es obligatorio"],
+    },
     estado: {
       type: String,
       default: true,

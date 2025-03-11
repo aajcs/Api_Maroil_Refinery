@@ -12,7 +12,14 @@ const populateOptions = [
       { path: "idTorre", select: "nombre" },
     ],
   },
-  { path: "idChequeoCantidad", select: "nombre fechaChequeo" },
+  {
+    path: "idChequeoCantidad",
+    populate: [
+      { path: "idProducto" },
+      { path: "idTanque", select: "nombre" },
+      { path: "idTorre", select: "nombre" },
+    ],
+  },
   { path: "idRefineria", select: "nombre" },
   { path: "idTanque", select: "nombre" },
   { path: "idProducto", select: "nombre" },
