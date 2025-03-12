@@ -133,7 +133,7 @@ const chequeoCantidadPost = async (req = request, res = response) => {
 const chequeoCantidadPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { idRefinacion, ...resto } = req.body;
-
+  console.log(idRefinacion);
   try {
     const chequeoCantidadActualizado = await ChequeoCantidad.findOneAndUpdate(
       { _id: id, eliminado: false },
@@ -146,13 +146,13 @@ const chequeoCantidadPut = async (req = request, res = response) => {
     }
     if (idRefinacion) {
       await Refinacion.updateMany(
-        { idChequedoCantidad: id },
-        { $pull: { idChequedoCantidad: id } }
+        { idChequeoCantidad: id },
+        { $pull: { idChequeoCantidad: id } }
       );
 
       await Refinacion.findByIdAndUpdate(
         idRefinacion,
-        { $push: { idChequedoCantidad: id } },
+        { $push: { idChequeoCantidad: id } },
         { new: true }
       );
     }
