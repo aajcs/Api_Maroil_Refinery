@@ -1,7 +1,11 @@
 const { Schema, model } = require("mongoose");
+const Counter = require("./counter");
 // Esquema principal de refinación
 const RefinacionSchema = new Schema(
   {
+    numeroRefinacion: {
+      type: Number,
+    },
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
@@ -114,6 +118,36 @@ RefinacionSchema.set("toJSON", {
     delete returnedObject._id; // Elimina _id
     delete returnedObject.__v; // Elimina __v (si no lo has desactivado en las opciones del esquema)
   },
+});
+
+RefinacionSchema.pre("save", async function (next) {
+  if (this.isNew && this.idRefineria) {
+    try {
+      // Generar la clave del contador específico para cada refinería
+      const counterKey = `chequeoCalidad_${this.idRefineria.toString()}`;
+
+      // Buscar el contador
+      let refineriaCounter = await Counter.findOne({ _id: counterKey });
+
+      // Si el contador no existe, crearlo con el valor inicial de 1000
+      if (!refineriaCounter) {
+        refineriaCounter = new Counter({ _id: counterKey, seq: 999 });
+        await refineriaCounter.save();
+      }
+
+      // Incrementar el contador en 1
+      refineriaCounter.seq += 1;
+      await refineriaCounter.save();
+
+      // Asignar el valor actualizado al campo "numeroRefinacion"
+      this.numeroRefinacion = refineriaCounter.seq;
+      next();
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    next();
+  }
 });
 
 module.exports = model("Refinacion", RefinacionSchema);
