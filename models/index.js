@@ -17,6 +17,7 @@ const ChequeoCalidad = require("./chequeoCalidad");
 const ChequeoCantidad = require("./chequeoCantidad");
 const Historial = require("./historial");
 const Costo = require("./costo");
+const RefinacionSalida = require("./refinacionSalida");
 /*const contactos = require ('./contactos');
 const bombas = require('./bombas');
 const inspeccion_tanque = require('./inspeccion_tanque');
@@ -45,6 +46,7 @@ module.exports = {
   ChequeoCantidad,
   Historial,
   Costo,
+  RefinacionSalida,
 
   /*contactos,
     bombas,
