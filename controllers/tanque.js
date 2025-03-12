@@ -1,6 +1,14 @@
 const { response, request } = require("express");
 const Tanque = require("../models/tanque");
 
+const populateOptions = [
+  {
+    path: "idRefineria",
+    select: "nombre",
+  },
+  { path: "idProducto", select: "nombre color" },
+];
+
 // Obtener todos los tanques con paginación y población de referencias
 const tanqueGets = async (req = request, res = response) => {
   const query = { eliminado: false };
@@ -8,11 +16,7 @@ const tanqueGets = async (req = request, res = response) => {
   try {
     const [total, tanques] = await Promise.all([
       Tanque.countDocuments(query),
-      Tanque.find(query)
-      .populate({
-        path: "idRefineria",
-        select: "nombre",
-      }),
+      Tanque.find(query).populate(populateOptions),
     ]);
 
     res.json({
@@ -33,10 +37,7 @@ const tanqueGet = async (req = request, res = response) => {
     const tanque = await Tanque.findOne({
       _id: id,
       eliminado: false,
-    }).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    }).populate(populateOptions);
 
     if (!tanque) {
       return res.status(404).json({ msg: "Tanque no encontrado" });
@@ -57,7 +58,9 @@ const tanquePost = async (req = request, res = response) => {
     capacidad,
     material,
     almacenamiento,
+    almacenamientoMateriaPrimaria,
     idRefineria,
+    idProducto,
   } = req.body;
 
   try {
@@ -67,15 +70,14 @@ const tanquePost = async (req = request, res = response) => {
       capacidad,
       material,
       almacenamiento,
+      almacenamientoMateriaPrimaria,
       idRefineria,
+      idProducto,
     });
 
     await nuevoTanque.save();
 
-    await nuevoTanque.populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    await nuevoTanque.populate(populateOptions);
 
     res.status(201).json(nuevoTanque);
   } catch (err) {
@@ -94,10 +96,7 @@ const tanquePut = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       resto,
       { new: true }
-    ).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    ).populate(populateOptions);
 
     if (!tanqueActualizado) {
       return res.status(404).json({ msg: "Tanque no encontrado" });
@@ -119,10 +118,7 @@ const tanqueDelete = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       { eliminado: true },
       { new: true }
-    ).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    ).populate(populateOptions);
 
     if (!tanque) {
       return res.status(404).json({ msg: "Tanque no encontrado" });

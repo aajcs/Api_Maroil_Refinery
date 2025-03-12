@@ -21,6 +21,16 @@ const TanqueSchema = Schema(
         "El tipo de material que almacena el tanque es obligatorio",
       ],
     },
+    almacenamientoMateriaPrimaria: {
+      type: Boolean,
+      required: [true, "El almacenamiento de materia prima es obligatorio"],
+      default: false,
+    },
+    idProducto: {
+      type: Schema.Types.ObjectId,
+      ref: "Producto",
+      required: [true, "El ID del Producto del derivado es obligatorio"],
+    },
     almacenamiento: {
       type: Number,
       required: [true, "El porcentaje de almacenamiento es obligatorio"],

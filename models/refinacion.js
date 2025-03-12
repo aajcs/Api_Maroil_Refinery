@@ -79,7 +79,7 @@ const RefinacionSchema = new Schema(
       default: false,
     },
     estado: {
-      type: Boolean,
+      type: String,
       default: true,
     },
   },
