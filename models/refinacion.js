@@ -29,6 +29,10 @@ const RefinacionSchema = new Schema(
     },
     descripcion: {
       type: String,
+      required: [
+        true,
+        "La descripción del proceso de refinación es obligatoria.",
+      ],
     },
 
     idChequeoCalidad: [
@@ -83,7 +87,7 @@ const RefinacionSchema = new Schema(
       default: false,
     },
 
-    fase: {
+    estadoRefinacion: {
       type: String,
       enum: ["En Cola", "En Proceso", "Finalizado", "Pausado"],
       required: [
