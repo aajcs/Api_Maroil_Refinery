@@ -1,5 +1,30 @@
 const { response, request } = require("express");
 const ChequeoCantidad = require("../models/chequeoCantidad");
+const { Refinacion } = require("../models");
+
+// Opciones de populate reutilizables
+const populateOptions = [
+  {
+    path: "idProducto",
+    select: "nombre",
+  },
+  {
+    path: "idTanque",
+    select: "nombre",
+  },
+  {
+    path: "idTorre",
+    select: "nombre",
+  },
+  {
+    path: "idRefineria",
+    select: "nombre",
+  },
+  {
+    path: "idRefinacion",
+    select: "descripcion",
+  },
+];
 
 // Obtener todos los chequeos de cantidad con paginación y población de referencias
 const chequeoCantidadGets = async (req = request, res = response) => {
@@ -8,23 +33,7 @@ const chequeoCantidadGets = async (req = request, res = response) => {
   try {
     const [total, chequeoCantidads] = await Promise.all([
       ChequeoCantidad.countDocuments(query),
-      ChequeoCantidad.find(query)
-        .populate({
-          path: "idProducto",
-          select: "nombre",
-        })
-        .populate({
-          path: "idTanque",
-          select: "nombre",
-        })
-        .populate({
-          path: "idTorre",
-          select: "nombre",
-        })
-        .populate({
-          path: "idRefineria",
-          select: "nombre",
-        }),
+      ChequeoCantidad.find(query).populate(populateOptions),
     ]);
 
     res.json({
@@ -62,6 +71,10 @@ const chequeoCantidadGet = async (req = request, res = response) => {
       .populate({
         path: "idRefineria",
         select: "nombre",
+      })
+      .populate({
+        path: "idRefinacion",
+        select: "descripcion",
       });
 
     if (!chequeoCantidad) {
@@ -85,6 +98,7 @@ const chequeoCantidadPost = async (req = request, res = response) => {
     operador,
     fechaChequeo,
     cantidad,
+    idRefinacion,
   } = req.body;
 
   try {
@@ -96,17 +110,18 @@ const chequeoCantidadPost = async (req = request, res = response) => {
       operador,
       fechaChequeo,
       cantidad,
+      idRefinacion,
     });
 
     await nuevoChequeoCantidad.save();
 
-    await nuevoChequeoCantidad.populate([
-      { path: "idProducto", select: "nombre" },
-      { path: "idTanque", select: "nombre" },
-      { path: "idTorre", select: "nombre" },
-      { path: "idRefineria", select: "nombre" },
-    ]);
+    await Refinacion.findByIdAndUpdate(
+      idRefinacion,
+      { $push: { idChequeoCantidad: nuevoChequeoCantidad._id } },
+      { new: true }
+    );
 
+    await nuevoChequeoCantidad.populate(populateOptions);
     res.status(201).json(nuevoChequeoCantidad);
   } catch (err) {
     console.error(err);
@@ -117,35 +132,30 @@ const chequeoCantidadPost = async (req = request, res = response) => {
 // Actualizar un chequeo de cantidad existente
 const chequeoCantidadPut = async (req = request, res = response) => {
   const { id } = req.params;
-  const { _id, ...resto } = req.body;
+  const { idRefinacion, ...resto } = req.body;
 
   try {
     const chequeoCantidadActualizado = await ChequeoCantidad.findOneAndUpdate(
       { _id: id, eliminado: false },
       resto,
       { new: true }
-    )
-      .populate({
-        path: "idProducto",
-        select: "nombre",
-      })
-      .populate({
-        path: "idTanque",
-        select: "nombre",
-      })
-      .populate({
-        path: "idTorre",
-        select: "nombre",
-      })
-      .populate({
-        path: "idRefineria",
-        select: "nombre",
-      });
+    ).populate(populateOptions);
 
     if (!chequeoCantidadActualizado) {
-      return res.status(404).json({ msg: "Chequeo de cantidad no encontrado" });
+      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
     }
+    if (idRefinacion) {
+      await Refinacion.updateMany(
+        { idChequedoCantidad: id },
+        { $pull: { idChequedoCantidad: id } }
+      );
 
+      await Refinacion.findByIdAndUpdate(
+        idRefinacion,
+        { $push: { idChequedoCantidad: id } },
+        { new: true }
+      );
+    }
     res.json(chequeoCantidadActualizado);
   } catch (err) {
     console.error(err);
@@ -153,7 +163,7 @@ const chequeoCantidadPut = async (req = request, res = response) => {
   }
 };
 
-// Eliminar (marcar como eliminado) un chequeo de cantidad
+// Eliminar (marcar como eliminado) un chequeo de calidad
 const chequeoCantidadDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
@@ -162,27 +172,16 @@ const chequeoCantidadDelete = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       { eliminado: true },
       { new: true }
-    )
-      .populate({
-        path: "idProducto",
-        select: "nombre",
-      })
-      .populate({
-        path: "idTanque",
-        select: "nombre",
-      })
-      .populate({
-        path: "idTorre",
-        select: "nombre",
-      })
-      .populate({
-        path: "idRefineria",
-        select: "nombre",
-      });
+    ).populate(populateOptions);
 
     if (!chequeoCantidad) {
-      return res.status(404).json({ msg: "Chequeo de cantidad no encontrado" });
+      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
     }
+    // Eliminar la referencia en la colección de refinación
+    await Refinacion.updateMany(
+      { idChequeoCantidad: id },
+      { $pull: { idChequeoCantidad: id } }
+    );
 
     res.json(chequeoCantidad);
   } catch (err) {
@@ -191,7 +190,7 @@ const chequeoCantidadDelete = async (req = request, res = response) => {
   }
 };
 
-// Parchear un chequeo de cantidad (ejemplo básico)
+// Parchear un chequeo de calidad (ejemplo básico)
 const chequeoCantidadPatch = (req = request, res = response) => {
   res.json({
     msg: "patch API - chequeoCantidadPatch",
@@ -206,162 +205,3 @@ module.exports = {
   chequeoCantidadDelete,
   chequeoCantidadPatch,
 };
-
-// const { response, request } = require("express");
-// const ChequeoCantidad = require("../models/chequeoCantidad");
-
-// // Obtener todos los chequeoCalidads con paginación y población de referencias
-// const chequeoCalidadGets = async (req = request, res = response) => {
-//   const query = { estado: true };
-
-//   try {
-//     const [total, chequeoCalidads] = await Promise.all([
-//       ChequeoCalidad.countDocuments(query),
-//       ChequeoCalidad.find(query).populate({
-//         path: "idRefineria",
-//         select: "nombre",
-//       }),
-
-//     ]);
-
-//     res.json({
-//       total,
-//       chequeoCalidads,
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-// // Obtener un chequeoCalidad específico por ID
-// const  chequeoCalidadGet = async (req = request, res = response) => {
-//   const { id } = req.params;
-
-//   try {
-//     const chequeoCalidad = await ChequeoCalidad.findOne({
-//       _id: id,
-//       estado: true,
-//       eliminado: false,
-//     })
-//     .populate({
-//       path: "idRefineria",
-//       select: "nombre",
-//     });
-
-//     if (!chequeoCalidad) {
-//       return res.status(404).json({ msg: "ChequeoCalidad no encontrado" });
-//     }
-
-//     res.json(chequeoCalidad);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-// // Crear un nuevo chequeoCalidad
-// const chequeoCalidadPost = async (req = request, res = response) => {
-//    try {
-//       const { idRefineria } = req.body;
-
-//       if (!idRefineria) {
-//         return res
-//           .status(400)
-//           .json({ error: "Nombre y Refinería son requeridos" });
-//       }
-
-//       const nuevoChequeoCalidad = await ChequeoCalidad.create({
-//         ...req.body,
-//       });
-
-//       await nuevoChequeoCalidad
-//       .populate({
-//         path: "idRefineria",
-//         select: "nombre",
-//       })
-//       .populate({
-//         path: "idTanque",
-//         select: "nombre",
-//       })
-//       .populate({
-//         path: "idProducto",
-//       })
-//       .populate({
-//         path: "idTorre",
-//         select: "nombre",
-//       });
-
-//       res.status(201).json(nuevoChequeoCalidad);
-//     } catch (err) {
-//       console.error(err);
-//       res.status(400).json({ error: err.message });
-//     }
-//   };
-
-// // Actualizar un chequeoCalidad existente
-// const chequeoCalidadPut = async (req, res = response) => {
-//   const { id } = req.params;
-//   const { ...resto } = req.body;
-//   console.log(resto);
-//   try {
-//     const chequeoCalidadActualizado = await ChequeoCalidad.findOneAndUpdate(
-//       { _id: id, eliminado: false },
-//       resto,
-//       { new: true }
-//     ).populate({
-//       path: "idRefineria",
-//       select: "nombre",
-//     });
-
-//     if (!chequeoCalidadActualizado) {
-//       return res.status(404).json({ msg: "ChequeoCalidad no encontrado" });
-//     }
-
-//     res.json(chequeoCalidadActualizado);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(400).json({ error: err.message });
-//   }
-// };
-
-// // Eliminar (marcar como eliminado) un chequeoCalidad
-// const chequeoCalidadDelete = async (req = request, res = response) => {
-//   const { id } = req.params;
-
-//   try {
-//       const chequeoCalidad = await ChequeoCalidad.findOneAndUpdate(
-//         { _id: id, eliminado: false },
-//         { eliminado: true },
-//         { new: true }
-//       ).populate({
-//         path: "idRefineria",
-//         select: "nombre",
-//       });
-
-//       if (!chequeoCalidad) {
-//         return res.status(404).json({ msg: "ChequeoCalidad no encontrado" });
-//       }
-
-//       res.json(chequeoCalidad);
-//     } catch (err) {
-//       console.error(err);
-//       res.status(500).json({ error: err.message });
-//     }
-//   };
-
-// // Parchear un chequeoCalidad (ejemplo básico)
-// const chequeoCalidadPatch = (req = request, res = response) => {
-//   res.json({
-//     msg: "patch API - chequeoCalidadPatch",
-//   });
-// };
-
-// module.exports = {
-//   chequeoCalidadPost,
-//   chequeoCalidadGet,
-//   chequeoCalidadGets,
-//   chequeoCalidadPut,
-//   chequeoCalidadDelete,
-//   chequeoCalidadPatch,
-// };

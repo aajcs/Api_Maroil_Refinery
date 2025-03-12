@@ -27,6 +27,12 @@ const ChequeoCantidadSchema = Schema(
       ref: "Torre",
       required: true,
     },
+
+    idRefinacion: {
+      type: Schema.Types.ObjectId,
+      ref: "Refinacion",
+      required: true,
+    },
     //Nombre del operador
     operador: {
       type: String,
