@@ -109,6 +109,7 @@ const refinacionPost = async (req = request, res = response) => {
     fechaFin,
     operador,
     fase,
+    descripcion,
   } = req.body;
 
   try {
@@ -126,6 +127,7 @@ const refinacionPost = async (req = request, res = response) => {
       fechaFin,
       operador,
       fase,
+      descripcion,
     });
 
     await nuevaRefinacion.save();

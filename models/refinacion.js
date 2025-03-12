@@ -27,6 +27,10 @@ const RefinacionSchema = new Schema(
       type: Number,
       required: [true, "La cantidad recibida es obligatoria"],
     },
+    descripcion: {
+      type: String,
+    },
+
     idChequeoCalidad: [
       {
         type: Schema.Types.ObjectId,
