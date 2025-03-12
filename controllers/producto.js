@@ -52,7 +52,8 @@ const productoGet = async (req = request, res = response) => {
 // Crear un nuevo producto
 const productoPost = async (req = request, res = response) => {
   try {
-    const { nombre, idRefineria, posicion, color, estado } = req.body;
+    const { nombre, idRefineria, posicion, color, estado, tipoProducto } =
+      req.body;
 
     if (!nombre || !idRefineria) {
       return res
@@ -66,6 +67,7 @@ const productoPost = async (req = request, res = response) => {
       posicion,
       color,
       estado,
+      tipoProducto,
     });
     await nuevoProducto.save();
     await nuevoProducto.populate(populateOptions);

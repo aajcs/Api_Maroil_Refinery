@@ -78,6 +78,16 @@ const RefinacionSchema = new Schema(
       type: Boolean,
       default: false,
     },
+
+    fase: {
+      type: String,
+      enum: ["En Cola", "En Proceso", "Finalizado", "Pausado"],
+      required: [
+        false,
+        "Seleccione en que fase se encuentra el proceso de refinación.",
+      ],
+    },
+
     estado: {
       type: String,
       default: true,
