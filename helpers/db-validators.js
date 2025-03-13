@@ -17,6 +17,7 @@ const {
   Historial,
   Costo,
   RefinacionSalida,
+  Balance,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -186,6 +187,15 @@ const existeRefinacionSalidaPorId = async (id) => {
   }
 };
 
+const existeBalancePorId = async (id) => {
+  // Verificar si la refineria existe
+
+  const existeBalance = await Balance.findById(id);
+  if (!existeBalance) {
+    throw new Error(`Balance no existe ${id}`);
+  }
+};
+
 /**
  * Validar colecciones permitidas
  */
@@ -221,6 +231,7 @@ module.exports = {
   existeHistorialPorId,
   existeCostoPorId,
   existeRefinacionSalidaPorId,
+  existeBalancePorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

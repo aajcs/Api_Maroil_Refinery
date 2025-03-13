@@ -6,6 +6,7 @@ const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
+const balance = require("./balance");
 
 class Server {
   constructor() {
@@ -34,6 +35,7 @@ class Server {
       historial: "/api/historial",
       costo: "/api/costo",
       refinacionSalida: "/api/refinacionSalida",
+      balance: "/api/balance",
     };
 
     // Conectar a base de datos
@@ -114,6 +116,7 @@ class Server {
       this.paths.refinacionSalida,
       require("../routes/refinacionSalida")
     );
+    this.app.use(this.paths.balance, require("../routes/balance"));
   }
   configurarSockets() {
     new Sockets(this.io);

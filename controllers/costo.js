@@ -4,7 +4,7 @@ const Costo = require("../models/costo");
 // Opciones de populate reutilizables
 const populateOptions = [
   { path: "idRefineria", select: "nombre" },
-  { path: "idContrato", select: "numeroContrato descripcion" },
+  { path: "idContrato" },
 ];
 
 // Obtener todas las costoes con paginación y población de referencias
@@ -75,12 +75,12 @@ const costoGet = async (req = request, res = response) => {
 
 // Crear una nueva refinación
 const costoPost = async (req = request, res = response) => {
-  const { idRefineria, idContrato, costos, costoTotal } = req.body;
+  const { idRefineria, idContratoCompra, costos, costoTotal } = req.body;
 
   try {
     const nuevaCosto = new Costo({
       idRefineria,
-      idContrato,
+      idContratoCompra,
       costos,
       costoTotal,
     });

@@ -34,7 +34,20 @@ const ContratoSchema = Schema(
       required: false,
     },
 
-    idItems: [{ type: Schema.Types.ObjectId, ref: "ContratoItems" }], // Array de IDs,
+    //ASIGNACIÓN ID DE CONTRATO SEGUN TIPO "COMPRA O VENTA"
+    // idContratoCompra: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "Contrato",
+    //   required: false,
+    // },
+    // idContratoVenta: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "Contrato",
+    //   required: false,
+    // },
+
+    // Array de IDs,
+    idItems: [{ type: Schema.Types.ObjectId, ref: "ContratoItems" }],
 
     fechaInicio: {
       type: Date,
@@ -56,6 +69,16 @@ const ContratoSchema = Schema(
         type: Number, // Días de plazo si es crédito
         default: 0,
       },
+    },
+
+    montoTransporte: {
+      type: Number,
+      required: [false, "El Monto del transporte es Requerido"],
+    },
+
+    montoTotal: {
+      type: Number,
+      required: [false, "El Monto total es requerido"],
     },
 
     abono: [
@@ -107,7 +130,7 @@ const ContratoSchema = Schema(
 ContratoSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
+    //delete returnedObject._id;
     delete returnedObject.__v;
   },
 });
