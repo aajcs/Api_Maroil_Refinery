@@ -36,13 +36,13 @@ const refinacionGets = async (req = request, res = response) => {
       Refinacion.find(query).populate(populateOptions), // Poblar referencias y convertir a JSON
     ]);
 
-    // Validar si hay datos
-    if (refinacions.length === 0) {
-      return res.status(404).json({
-        message:
-          "No se encontraron refinacions con los criterios proporcionados.",
-      });
-    }
+    // // Validar si hay datos
+    // if (refinacions.length === 0) {
+    //   return res.status(404).json({
+    //     message:
+    //       "No se encontraron refinacions con los criterios proporcionados.",
+    //   });
+    // }
 
     // Respuesta exitosa
     res.json({ total, refinacions });
