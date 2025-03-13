@@ -1,16 +1,11 @@
 const { Schema, model } = require("mongoose");
 const ContratoItemsSchema = Schema({
   producto: {
-    type: String,
-    enum: [
-      "Nafta",
-      "Queroseno",
-      "Fuel Oil 4 (MGO)",
-      "Fuel Oil 6 (Fondo)",
-      "Petroleo Crudo",
-    ],
-    required: [false, "El producto es obligatorio"],
+    type: Schema.Types.ObjectId,
+    ref: "Producto",
+    required: [false, "El ID del tanque del derivado es obligatorio"],
   },
+
   cantidad: {
     type: Number,
     required: [false, "La cantidad es obligatoria"],

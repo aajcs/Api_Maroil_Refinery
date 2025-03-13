@@ -124,7 +124,7 @@ RefinacionSchema.pre("save", async function (next) {
   if (this.isNew && this.idRefineria) {
     try {
       // Generar la clave del contador específico para cada refinería
-      const counterKey = `chequeoCalidad_${this.idRefineria.toString()}`;
+      const counterKey = `refinacion_${this.idRefineria.toString()}`;
 
       // Buscar el contador
       let refineriaCounter = await Counter.findOne({ _id: counterKey });
