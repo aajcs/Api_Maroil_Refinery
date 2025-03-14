@@ -154,8 +154,7 @@ const refinacionPost = async (req = request, res = response) => {
 // Actualizar una refinación existente
 const refinacionPut = async (req = request, res = response) => {
   const { id } = req.params;
-  const { _id, ...resto } = req.body;
-
+  const { _id, idChequeoCalidad, idChequeoCantidad, ...resto } = req.body;
   try {
     const refinacionActualizada = await Refinacion.findOneAndUpdate(
       { _id: id, eliminado: false },
