@@ -77,7 +77,7 @@ const contratoPost = async (req, res = response) => {
     idContacto,
     abono,
     items, // Array de objetos item
-    //montoTransporte,
+
     montoTotal,
   } = req.body;
 
@@ -99,7 +99,7 @@ const contratoPost = async (req, res = response) => {
       clausulas,
       idContacto,
       abono,
-      // montoTransporte,
+
       montoTotal,
     });
 

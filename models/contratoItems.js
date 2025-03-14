@@ -39,7 +39,7 @@ const ContratoItemsSchema = Schema({
     required: [false, "El monto de transporte es obligatorio"],
   },
 
-  //CARACTERISTICAS DEL PRODUCTO.
+  //CARACTERISTICAS DEL PRODUCTO CALIDAD.
 
   gravedadAPI: {
     type: Number,

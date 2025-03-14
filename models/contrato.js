@@ -59,11 +59,6 @@ const ContratoSchema = Schema(
       },
     },
 
-    // montoTransporte: {
-    //   type: Number,
-    //   required: [false, "El Monto del transporte es Requerido"],
-    // },
-
     montoTotal: {
       type: Number,
       required: [false, "El Monto total es requerido"],
