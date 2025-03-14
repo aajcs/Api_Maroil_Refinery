@@ -1,6 +1,9 @@
 const { response, request } = require("express");
 const LineaCarga = require("../models/lineaCarga");
 
+// Opciones de populate reutilizables
+const populateOptions = [{ path: "idRefineria", select: "nombre" }];
+
 // Obtener todas las líneas de carga con paginación y población de referencias
 const lineaCargaGets = async (req = request, res = response) => {
   const query = { eliminado: false };
@@ -8,10 +11,7 @@ const lineaCargaGets = async (req = request, res = response) => {
   try {
     const [total, lineaCargas] = await Promise.all([
       LineaCarga.countDocuments(query),
-      LineaCarga.find(query).populate({
-        path: "idRefineria",
-        select: "nombre",
-      }),
+      LineaCarga.find(query).populate(populateOptions),
     ]);
 
     res.json({
@@ -32,10 +32,7 @@ const lineaCargaGet = async (req = request, res = response) => {
     const lineaCarga = await LineaCarga.findOne({
       _id: id,
       eliminado: false,
-    }).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    }).populate(populateOptions);
 
     if (!lineaCarga) {
       return res.status(404).json({ msg: "Línea de carga no encontrada" });
@@ -61,10 +58,7 @@ const lineaCargaPost = async (req = request, res = response) => {
 
     await nuevaLineaCarga.save();
 
-    await nuevaLineaCarga.populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    await nuevaLineaCarga.populate(populateOptions);
 
     res.status(201).json(nuevaLineaCarga);
   } catch (err) {
@@ -83,11 +77,7 @@ const lineaCargaPut = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       resto,
       { new: true }
-    ).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
-
+    ).populate(populateOptions);
     if (!lineaCargaActualizada) {
       return res.status(404).json({ msg: "Línea de carga no encontrada" });
     }
@@ -108,11 +98,7 @@ const lineaCargaDelete = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       { eliminado: true },
       { new: true }
-    ).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
-
+    ).populate(populateOptions);
     if (!lineaCarga) {
       return res.status(404).json({ msg: "Línea de carga no encontrada" });
     }

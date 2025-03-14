@@ -1,6 +1,9 @@
 const { response, request } = require("express");
 const Contacto = require("../models/contacto");
 
+// Opciones de populate reutilizables
+const populateOptions = [{ path: "idRefineria", select: "nombre" }];
+
 // Obtener todos los contactos con paginación
 const contactoGets = async (req = request, res = response) => {
   const query = { eliminado: false };
@@ -8,10 +11,7 @@ const contactoGets = async (req = request, res = response) => {
   try {
     const [total, contactos] = await Promise.all([
       Contacto.countDocuments(query),
-      Contacto.find(query).populate({
-        path: "idRefineria",
-        select: "nombre",
-      }),
+      Contacto.find(query).populate(populateOptions),
     ]);
 
     res.json({
@@ -32,10 +32,7 @@ const contactoGet = async (req = request, res = response) => {
     const contacto = await Contacto.findOne({
       _id: id,
       eliminado: false,
-    }).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    }).populate(populateOptions);
 
     if (!contacto) {
       return res.status(404).json({ msg: "Contacto no encontrado" });
@@ -63,10 +60,7 @@ const contactoPost = async (req, res = response) => {
       ...req.body,
     });
 
-    await nuevoContacto.populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    await nuevoContacto.populate(populateOptions);
 
     res.status(201).json(nuevoContacto);
   } catch (err) {
@@ -85,10 +79,7 @@ const contactoPut = async (req, res = response) => {
       { _id: id, eliminado: false },
       resto,
       { new: true }
-    ).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
+    ).populate(populateOptions);
 
     if (!contactoActualizado) {
       return res.status(404).json({ msg: "Contacto no encontrado" });
@@ -110,11 +101,7 @@ const contactoDelete = async (req, res = response) => {
       { _id: id, eliminado: false },
       { eliminado: true },
       { new: true }
-    ).populate({
-      path: "idRefineria",
-      select: "nombre",
-    });
-
+    ).populate(populateOptions);
     if (!contacto) {
       return res.status(404).json({ msg: "Contacto no encontrado" });
     }

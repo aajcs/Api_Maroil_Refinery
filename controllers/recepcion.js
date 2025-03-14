@@ -24,42 +24,6 @@ const recepcionGets = async (req = request, res = response) => {
         .populate("idTanque", "nombre")
         .populate("idContratoItems"),
     ]);
-    2;
-    // Poblar idRefineria e idContacto de cada recepción
-    // await Promise.all(
-    //   recepcions.map(async (recepcion) => {
-    //     await recepcion
-    //       .populate({
-    //         path: "idContrato",
-    //         select: "idRefineria idContacto idItems numeroContrato",
-    //         populate: [
-    //           { path: "idRefineria", select: "nombre" },
-    //           { path: "idContacto", select: "nombre" },
-    //           { path: "idItems" },
-    //         ],
-    //       })
-    //       .populate({
-    //         path: "idContratoItems",
-    //         select: "producto cantidad",
-    //       })
-    //       .populate({
-    //         path: "idLinea",
-    //         select: "nombre",
-    //         populate: { path: "idLinea", select: "nombre" },
-    //       })
-    //       .populate({
-    //         path: "idRefineria",
-    //         select: "nombre",
-    //         populate: { path: "idRefineria", select: "nombre" },
-    //       })
-    //       .populate({
-    //         path: "idTanque",
-    //         select: "nombre",
-    //         populate: { path: "idTanque", select: "nombre" },
-    //       })
-    //       .execPopulate();
-    //   })
-    // );
 
     res.json({
       total,

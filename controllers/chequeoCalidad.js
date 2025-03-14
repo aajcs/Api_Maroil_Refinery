@@ -55,23 +55,7 @@ const chequeoCalidadGet = async (req = request, res = response) => {
       _id: id,
       estado: true,
       eliminado: false,
-    })
-      .populate({
-        path: "idProducto",
-        select: "nombre",
-      })
-      .populate({
-        path: "idTanque",
-        select: "nombre",
-      })
-      .populate({
-        path: "idTorre",
-        select: "nombre",
-      })
-      .populate({
-        path: "idRefineria",
-        select: "nombre",
-      });
+    }).populate(populateOptions);
 
     if (!chequeoCalidad) {
       return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
