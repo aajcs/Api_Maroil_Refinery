@@ -55,27 +55,7 @@ const chequeoCantidadGet = async (req = request, res = response) => {
       _id: id,
       estado: true,
       eliminado: false,
-    })
-      .populate({
-        path: "idProducto",
-        select: "nombre",
-      })
-      .populate({
-        path: "idTanque",
-        select: "nombre",
-      })
-      .populate({
-        path: "idTorre",
-        select: "nombre",
-      })
-      .populate({
-        path: "idRefineria",
-        select: "nombre",
-      })
-      .populate({
-        path: "idRefinacion",
-        select: "descripcion",
-      });
+    }).populate(populateOptions);
 
     if (!chequeoCantidad) {
       return res.status(404).json({ msg: "Chequeo de cantidad no encontrado" });
@@ -91,26 +71,26 @@ const chequeoCantidadGet = async (req = request, res = response) => {
 // Crear un nuevo chequeo de cantidad
 const chequeoCantidadPost = async (req = request, res = response) => {
   const {
+    idRefineria,
     idProducto,
     idTanque,
     idTorre,
-    idRefineria,
+    idRefinacion,
     operador,
     fechaChequeo,
     cantidad,
-    idRefinacion,
   } = req.body;
 
   try {
     const nuevoChequeoCantidad = new ChequeoCantidad({
+      idRefineria,
       idProducto,
       idTanque,
       idTorre,
-      idRefineria,
+      idRefinacion,
       operador,
       fechaChequeo,
       cantidad,
-      idRefinacion,
     });
 
     await nuevoChequeoCantidad.save();

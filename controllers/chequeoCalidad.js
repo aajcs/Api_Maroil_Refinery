@@ -71,10 +71,10 @@ const chequeoCalidadGet = async (req = request, res = response) => {
 // Crear un nuevo chequeo de calidad
 const chequeoCalidadPost = async (req = request, res = response) => {
   const {
+    idRefineria,
     idProducto,
     idTanque,
     idTorre,
-    idRefineria,
     idRefinacion,
     operador,
     fechaChequeo,
@@ -90,10 +90,10 @@ const chequeoCalidadPost = async (req = request, res = response) => {
 
   try {
     const nuevoChequeoCalidad = new ChequeoCalidad({
+      idRefineria,
       idProducto,
       idTanque,
       idTorre,
-      idRefineria,
       idRefinacion,
       operador,
       fechaChequeo,
