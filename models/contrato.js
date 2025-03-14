@@ -34,18 +34,6 @@ const ContratoSchema = Schema(
       required: false,
     },
 
-    //ASIGNACIÓN ID DE CONTRATO SEGUN TIPO "COMPRA O VENTA"
-    // idContratoCompra: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: "Contrato",
-    //   required: false,
-    // },
-    // idContratoVenta: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: "Contrato",
-    //   required: false,
-    // },
-
     // Array de IDs,
     idItems: [{ type: Schema.Types.ObjectId, ref: "ContratoItems" }],
 
@@ -71,10 +59,10 @@ const ContratoSchema = Schema(
       },
     },
 
-    montoTransporte: {
-      type: Number,
-      required: [false, "El Monto del transporte es Requerido"],
-    },
+    // montoTransporte: {
+    //   type: Number,
+    //   required: [false, "El Monto del transporte es Requerido"],
+    // },
 
     montoTotal: {
       type: Number,

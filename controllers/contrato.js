@@ -77,7 +77,7 @@ const contratoPost = async (req, res = response) => {
     idContacto,
     abono,
     items, // Array de objetos item
-    montoTransporte,
+    //montoTransporte,
     montoTotal,
   } = req.body;
 
@@ -99,7 +99,7 @@ const contratoPost = async (req, res = response) => {
       clausulas,
       idContacto,
       abono,
-      montoTransporte,
+      // montoTransporte,
       montoTotal,
     });
 
@@ -129,95 +129,6 @@ const contratoPost = async (req, res = response) => {
     res.status(400).json({ error: err.message });
   }
 };
-
-//CREAR NUEVO CONTRATO CON TIPO DE CONTRATO
-// const contratoPost = async (req, res = response) => {
-//   const {
-//     numeroContrato,
-//     descripcion,
-//     estadoContrato,
-//     tipoContrato,
-//     idRefineria,
-//     fechaInicio,
-//     fechaFin,
-//     condicionesPago,
-//     plazo,
-//     destino,
-//     fechaEnvio,
-//     estadoEntrega,
-//     clausulas,
-//     idContacto,
-//     abono,
-//     items, // Array de objetos item
-//     montoTransporte,
-//     montoTotal,
-//     idContratoCompra,
-//     idContratoVenta,
-//   } = req.body;
-
-//   try {
-//     // 1. Crear el contrato
-//     const nuevoContrato = new Contrato({
-//       numeroContrato,
-//       descripcion,
-//       tipoContrato,
-//       estadoContrato,
-//       idRefineria,
-//       fechaInicio,
-//       fechaFin,
-//       condicionesPago,
-//       plazo,
-//       destino,
-//       fechaEnvio,
-//       estadoEntrega,
-//       clausulas,
-//       idContacto,
-//       abono,
-//       montoTransporte,
-//       montoTotal,
-//       idContratoCompra,
-//     idContratoVenta,
-//     });
-
-//     // 2. Guardar el contrato para obtener el ID
-//     await nuevoContrato.save();
-
-//     // 3. Crear y guardar los items asociados al contrato
-//     const nuevosItems = await Promise.all(
-//       items.map(async (item) => {
-//         const nuevoItem = new contratoItems({
-//           ...item, // Spread operator para copiar las propiedades del item
-//           idContrato: nuevoContrato.id, // Asignar el ID del contrato al item
-//         });
-//         return await nuevoItem.save();
-//       })
-//     );
-
-//     // 4. Actualizar el contrato con los IDs de los items
-//     nuevoContrato.idItems = nuevosItems.map((item) => item.id);
-//     await nuevoContrato.save();
-
-//     // 5. Guardar el ID del contrato según el tipo de contrato
-//     if (tipoContrato === "Compra") {
-//       nuevoContrato.idContratoCompra = nuevoContrato._id;
-//     } else if (tipoContrato === "Venta") {
-//       nuevoContrato.idContratoVenta = nuevoContrato._id;
-//     }
-//     await nuevoContrato.save();
-
-//     // 6. Populate para obtener los datos de refinería y contacto
-//     await nuevoContrato.populate([
-//       { path: "idRefineria", select: "nombre" },
-//       { path: "idContacto", select: "nombre" },
-//       { path: "idItems" },
-//     ]);
-
-//     res.status(201).json(nuevoContrato);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(400).json({ error: err.message });
-//   }
-// };
 
 // Actualizar un contrato existente
 const contratoPut = async (req, res = response) => {

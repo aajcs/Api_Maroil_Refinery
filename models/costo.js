@@ -18,7 +18,7 @@ const CostoSchema = Schema(
       {
         tipoCosto: {
           type: String,
-          enum: ["Transporte", "Lubricantes", "Nómina", "Otros"],
+          enum: ["Lubricantes", "Nómina", "Otros"],
           required: [true, "El tipo es obligatorio"],
         },
         monto: {

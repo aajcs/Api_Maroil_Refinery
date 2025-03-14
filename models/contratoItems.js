@@ -1,5 +1,11 @@
 const { Schema, model } = require("mongoose");
 const ContratoItemsSchema = Schema({
+  idContrato: {
+    type: Schema.Types.ObjectId,
+    ref: "Contrato",
+    required: false,
+  },
+
   producto: {
     type: Schema.Types.ObjectId,
     ref: "Producto",
@@ -14,6 +20,27 @@ const ContratoItemsSchema = Schema({
     type: Number,
     required: [false, "El precio unitario es obligatorio"],
   },
+
+  brent: {
+    type: Number,
+    required: [false, "El precio Brent del producto es obligatorio"],
+  },
+
+  convenio: {
+    type: Number,
+    required: [
+      false,
+      "El porcentaje acordado por encima o por debajo del Brent es obligatorio",
+    ],
+  },
+
+  montoTransporte: {
+    type: Number,
+    required: [false, "El monto de transporte es obligatorio"],
+  },
+
+  //CARACTERISTICAS DEL PRODUCTO.
+
   gravedadAPI: {
     type: Number,
     required: [false, "La gravedad API es obligatoria"],
@@ -47,12 +74,8 @@ const ContratoItemsSchema = Schema({
     type: Number,
     required: [false, "La presión es obligatoria"],
   },
-  idContrato: {
-    type: Schema.Types.ObjectId,
-    ref: "Contrato",
-    required: false,
-  },
 
+  //VALIDACIONES LOGICA PARA EL ELIMINADO.
   estado: {
     type: String,
     default: true,
