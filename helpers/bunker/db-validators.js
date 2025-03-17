@@ -18,7 +18,6 @@ const {
   Costo,
   RefinacionSalida,
   Balance,
-
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {

@@ -102,10 +102,7 @@ class Server {
     this.app.use(this.paths.recepcion, require("../routes/recepcion"));
     this.app.use(this.paths.refinacion, require("../routes/refinacion"));
     this.app.use(this.paths.despacho, require("../routes/despacho"));
-    this.app.use(
-      this.paths.chequeoCalidad,
-      require("../routes/chequeoCalidad")
-    );
+    this.app.use(this.paths.chequeoCalidad, require("../routes/chequeoCalidad"));
     this.app.use(
       this.paths.chequeoCantidad,
       require("../routes/chequeoCantidad")
