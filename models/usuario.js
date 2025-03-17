@@ -2,6 +2,12 @@ const { Schema, model } = require("mongoose");
 
 const UsuarioSchema = Schema(
   {
+    idRefineria: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Refineria",
+      },
+    ],
     nombre: {
       type: String,
       required: [true, "El nombre es obligatorio"],
@@ -22,6 +28,13 @@ const UsuarioSchema = Schema(
       default: "lectura",
       enum: ["superAdmin", "admin", "operador", "user", "lectura"],
     },
+
+    acceso: {
+      type: String,
+      required: true,
+      default: "ninguno",
+      enum: ["limitado", "completo", "ninguno"],
+    },
     estado: {
       type: String,
       default: true,
@@ -38,18 +51,6 @@ const UsuarioSchema = Schema(
         type: Boolean,
         default: false
     },*/
-    acceso: {
-      type: String,
-      required: true,
-      default: "ninguno",
-      enum: ["limitado", "completo", "ninguno"],
-    },
-    idRefineria: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Refineria",
-      },
-    ],
   },
   {
     timestamps: true,

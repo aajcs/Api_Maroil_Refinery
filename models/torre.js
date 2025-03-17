@@ -3,6 +3,11 @@ const { stringify } = require("uuid");
 
 const TorreSchema = Schema(
   {
+    idRefineria: {
+      type: Schema.Types.ObjectId,
+      ref: "Refineria",
+      required: true,
+    },
     nombre: {
       type: String,
       required: [false, "El Nombre es obligatorio"],
@@ -40,12 +45,6 @@ const TorreSchema = Schema(
     eliminado: {
       type: Boolean,
       default: false,
-    },
-
-    idRefineria: {
-      type: Schema.Types.ObjectId,
-      ref: "Refineria",
-      required: true,
     },
   },
 

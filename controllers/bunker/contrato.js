@@ -4,7 +4,7 @@ const contratoItems = require("../models/contratoItems");
 
 const populateOptions = [
   {
-    path: "idRefineria",
+    path: "idBunker",
     select: "nombre",
   },
   {
@@ -65,7 +65,7 @@ const contratoPost = async (req, res = response) => {
     descripcion,
     tipoContrato,
     estadoContrato,
-    idRefineria,
+    idBunker,
     fechaInicio,
     fechaFin,
     condicionesPago,
@@ -88,7 +88,7 @@ const contratoPost = async (req, res = response) => {
       descripcion,
       tipoContrato,
       estadoContrato,
-      idRefineria,
+      idBunker,
       fechaInicio,
       fechaFin,
       condicionesPago,
