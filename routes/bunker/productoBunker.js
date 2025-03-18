@@ -13,20 +13,21 @@ const {
   // emailExiste,
   // existeUsuarioPorId,
   // nitExiste,
-  existeBarcazaPorId,
+  existeContratoPorId,
+  existeProductoPorId,
 } = require("../../helpers/db-validators");
 const {
-  barcazaGet,
-  barcazaGets,
-  barcazaPut,
-  barcazaPost,
-  barcazaDelete,
-  barcazaPatch,
-} = require("../../controllers/bunker/barcaza");
+  productoBunkerGets,
+  productoBunkerGet,
+  productoBunkerPut,
+  productoBunkerPost,
+  productoBunkerDelete,
+  productoBunkerPatch,
+} = require("../../controllers/bunker/productoBunker");
 
 const router = Router();
 
-router.get("/", barcazaGets);
+router.get("/", productoBunkerGets);
 router.get(
   "/:id",
   [
@@ -34,33 +35,32 @@ router.get(
     // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
-  barcazaGet
+  productoBunkerGet
 );
 router.put(
   "/:id",
   [
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeBarcazaPorId),
+    check("id").custom(existeProductoPorId),
     //check("rol").custom(esRoleValido),
     validarCampos,
   ],
-  barcazaPut
+  productoBunkerPut
 );
 
 router.post(
   "/",
   [
     //Validación de campos.
-
-    check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    check("nombre", "El nombre delbarcaza es obligatorio").not().isEmpty(),
-    check("capacidad", "La capacidad delbarcaza es obligatoria")
-      .not()
-      .isEmpty(),
-    check("material", "El material delbarcaza es obligatoria").not().isEmpty(),
-    validarCampos,
+    //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
+    //check("nombre", "El nombre del productoBunker es obligatorio").not().isEmpty(),
+    //check("capacidad", "La capacidad del productoBunker es obligatoria")
+    //  .not()
+    //.isEmpty(),
+    // check("material", "El material del productoBunker es obligatoria").not().isEmpty(),
+    // validarCampos,
   ],
-  barcazaPost
+  productoBunkerPost
 );
 
 router.delete(
@@ -70,12 +70,12 @@ router.delete(
     // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeBarcazaPorId),
+    check("id").custom(existeProductoPorId),
     validarCampos,
   ],
-  barcazaDelete
+  productoBunkerDelete
 );
 
-router.patch("/", barcazaPatch);
+router.patch("/", productoBunkerPatch);
 
 module.exports = router;

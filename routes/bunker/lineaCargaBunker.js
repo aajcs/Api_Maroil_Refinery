@@ -13,20 +13,20 @@ const {
   // emailExiste,
   // existeUsuarioPorId,
   // nitExiste,
-  existeBarcazaPorId,
+  existeLineaPorId,
 } = require("../../helpers/db-validators");
 const {
-  barcazaGet,
-  barcazaGets,
-  barcazaPut,
-  barcazaPost,
-  barcazaDelete,
-  barcazaPatch,
-} = require("../../controllers/bunker/barcaza");
+  lineaCargaBunkerGets,
+  lineaCargaBunkerGet,
+  lineaCargaBunkerPut,
+  lineaCargaBunkerPost,
+  lineaCargaBunkerDelete,
+} = require("../../controllers/bunker/lineaCargaBunker");
+const { lineaCargaBunkerPatch } = require("../../controllers/bunker/lineaCargaBunker");
 
 const router = Router();
 
-router.get("/", barcazaGets);
+router.get("/", lineaCargaBunkerGets);
 router.get(
   "/:id",
   [
@@ -34,33 +34,32 @@ router.get(
     // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
-  barcazaGet
+  lineaCargaBunkerGet
 );
 router.put(
   "/:id",
   [
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeBarcazaPorId),
+    check("id").custom(existeLineaPorId),
     //check("rol").custom(esRoleValido),
     validarCampos,
   ],
-  barcazaPut
+  lineaCargaBunkerPut
 );
 
 router.post(
   "/",
   [
-    //Validación de campos.
+    // check("numero", "El numero es obligatorio").not().isEmpty(),
+    //check("nit").custom(nitExiste),
+    //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
+    // check("refineria").custom(existeLineaPorId),
 
-    check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    check("nombre", "El nombre delbarcaza es obligatorio").not().isEmpty(),
-    check("capacidad", "La capacidad delbarcaza es obligatoria")
-      .not()
-      .isEmpty(),
-    check("material", "El material delbarcaza es obligatoria").not().isEmpty(),
+    // check('rol', 'No es un rol válido').isIn(['ADMIN_ROLE','USER_ROLE']),
+    // check('rol').custom( esRoleValido ),
     validarCampos,
   ],
-  barcazaPost
+  lineaCargaBunkerPost
 );
 
 router.delete(
@@ -70,12 +69,12 @@ router.delete(
     // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeBarcazaPorId),
+    check("id").custom(existeLineaPorId),
     validarCampos,
   ],
-  barcazaDelete
+  lineaCargaBunkerDelete
 );
 
-router.patch("/", barcazaPatch);
+router.patch("/", lineaCargaBunkerPatch);
 
 module.exports = router;

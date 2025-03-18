@@ -65,4 +65,4 @@ BarcazaSchema.set("toJSON", {
   },
 });
 
-module.exports = model("Barcaza", BarcazaSchema);
+module.exports = model("barcaza", BarcazaSchema);

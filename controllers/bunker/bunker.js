@@ -1,5 +1,5 @@
 const { response, request } = require("express");
-const Bunker = require("../models/bunker");
+const Bunker = require("../../models/bunker/bunker");
 
 // Obtener todas las refinerías con paginación y población de referencias
 const bunkersGets = async (req = request, res = response) => {

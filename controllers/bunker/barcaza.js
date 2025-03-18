@@ -1,5 +1,5 @@
 const { response, request } = require("express");
-const Barcaza = require("../models/barcaza");
+const Barcaza = require("../../models/bunker/barcaza");
 
 const populateOptions = [
   {

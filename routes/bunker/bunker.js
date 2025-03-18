@@ -6,7 +6,7 @@ const {
   validarJWT,
   esAdminRole,
   tieneRole,
-} = require("../middlewares");
+} = require("../../middlewares");
 
 const {
   //esRoleValido,
@@ -14,13 +14,14 @@ const {
   existeUsuarioPorId,
   nitExiste,
   existeBunkerPorId,
-} = require("../helpers/db-validators");
+} = require("../../helpers/db-validators");
 const {
   bunkersGet,
   bunkersPut,
   bunkersPost,
   bunkersDelete,
   bunkersGets,
+  bunkersPatch,
 } = require("../../controllers/bunker/bunker");
 
 const router = Router();
@@ -71,6 +72,6 @@ router.delete(
   bunkersDelete
 );
 
-router.patch("/", bunkerPatch);
+router.patch("/", bunkersPatch);
 
 module.exports = router;
