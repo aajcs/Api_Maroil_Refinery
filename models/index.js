@@ -19,6 +19,7 @@ const Historial = require("./historial");
 const Costo = require("./costo");
 const RefinacionSalida = require("./refinacionSalida");
 const Balance = require("./balance");
+const TipoProducto = require("./tipoProducto");
 const BalanceBunker = require("./bunker/balanceBunker");
 const Barcaza = require("./bunker/barcaza");
 const Bunker = require("./bunker/bunker");
@@ -30,8 +31,7 @@ const ContratoBunker = require("./bunker/contratoBunker");
 const ContactoBunker = require("./bunker/contactoBunker");
 const RecepcionBunker = require("./bunker/recepcionBunker");
 const HistorialBunker = require("./bunker/historialBunker");
-const CostoBunker = require("./bunker/costoBunker")
-
+const CostoBunker = require("./bunker/costoBunker");
 
 /*const contactos = require ('./contactos');
 const bombas = require('./bombas');
@@ -63,6 +63,7 @@ module.exports = {
   Costo,
   RefinacionSalida,
   Balance,
+  TipoProducto,
   BalanceBunker,
   Barcaza,
   ChequeoCalidadBunker,

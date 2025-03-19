@@ -6,8 +6,7 @@ const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
-
-
+const tipoProducto = require("./tipoProducto");
 
 class Server {
   constructor() {
@@ -37,7 +36,8 @@ class Server {
       costo: "/api/costo",
       refinacionSalida: "/api/refinacionSalida",
       balance: "/api/balance",
-      
+      tipoProducto: "/api/tipoProducto",
+
       bunker: "/api/bunker/bunker",
       balanceBunker: "/api/bunker/balanceBunker",
       barcaza: "/api/bunker/barcaza",
@@ -50,7 +50,6 @@ class Server {
       historialBunker: "/api/bunker/historialBunker",
       costoBunker: "/api/bunker/costoBunker",
       lineaCargaBunker: "/api/bunker/lineaCargaBunker",
-    
     };
 
     // Conectar a base de datos
@@ -117,25 +116,65 @@ class Server {
     this.app.use(this.paths.recepcion, require("../routes/recepcion"));
     this.app.use(this.paths.refinacion, require("../routes/refinacion"));
     this.app.use(this.paths.despacho, require("../routes/despacho"));
-    this.app.use(this.paths.chequeoCalidad, require("../routes/chequeoCalidad"));
-    this.app.use(this.paths.chequeoCantidad, require("../routes/chequeoCantidad")    );
+    this.app.use(
+      this.paths.chequeoCalidad,
+      require("../routes/chequeoCalidad")
+    );
+    this.app.use(
+      this.paths.chequeoCantidad,
+      require("../routes/chequeoCantidad")
+    );
     this.app.use(this.paths.historial, require("../routes/historial"));
     this.app.use(this.paths.costo, require("../routes/costo"));
-    this.app.use(this.paths.refinacionSalida, require("../routes/refinacionSalida"));
+    this.app.use(
+      this.paths.refinacionSalida,
+      require("../routes/refinacionSalida")
+    );
     this.app.use(this.paths.balance, require("../routes/balance"));
-   
-    this.app.use(this.paths.balanceBunker, require("../routes/bunker/balanceBunker"));
+    this.app.use(this.paths.tipoProducto, require("../routes/tipoProducto"));
+
+    this.app.use(
+      this.paths.balanceBunker,
+      require("../routes/bunker/balanceBunker")
+    );
     this.app.use(this.paths.barcaza, require("../routes/bunker/barcaza"));
     this.app.use(this.paths.bunker, require("../routes/bunker/bunker"));
-    this.app.use(this.paths.chequeoCalidadBunker, require("../routes/bunker/chequeoCalidadBunker"));
-    this.app.use(this.paths.chequeoCantidadBunker, require("../routes/bunker/chequeoCantidadBunker")    );
-    this.app.use(this.paths.productoBunker, require("../routes/bunker/productoBunker"));
-    this.app.use(this.paths.contratoBunker, require("../routes/bunker/contratoBunker"));
-    this.app.use(this.paths.contactoBunker, require("../routes/bunker/contactoBunker"));
-    this.app.use(this.paths.recepcionBunker, require("../routes/bunker/recepcionBunker"));
-    this.app.use(this.paths.costoBunker, require("../routes/bunker/costoBunker"));
-    this.app.use(this.paths.historialBunker, require("../routes/bunker/historialBunker"));
-    this.app.use(this.paths.lineaCargaBunker, require("../routes/bunker/lineaCargaBunker"));
+    this.app.use(
+      this.paths.chequeoCalidadBunker,
+      require("../routes/bunker/chequeoCalidadBunker")
+    );
+    this.app.use(
+      this.paths.chequeoCantidadBunker,
+      require("../routes/bunker/chequeoCantidadBunker")
+    );
+    this.app.use(
+      this.paths.productoBunker,
+      require("../routes/bunker/productoBunker")
+    );
+    this.app.use(
+      this.paths.contratoBunker,
+      require("../routes/bunker/contratoBunker")
+    );
+    this.app.use(
+      this.paths.contactoBunker,
+      require("../routes/bunker/contactoBunker")
+    );
+    this.app.use(
+      this.paths.recepcionBunker,
+      require("../routes/bunker/recepcionBunker")
+    );
+    this.app.use(
+      this.paths.costoBunker,
+      require("../routes/bunker/costoBunker")
+    );
+    this.app.use(
+      this.paths.historialBunker,
+      require("../routes/bunker/historialBunker")
+    );
+    this.app.use(
+      this.paths.lineaCargaBunker,
+      require("../routes/bunker/lineaCargaBunker")
+    );
   }
 
   configurarSockets() {

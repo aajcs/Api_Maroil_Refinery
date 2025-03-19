@@ -18,7 +18,7 @@ const {
   Costo,
   RefinacionSalida,
   Balance,
-
+  TipoProducto,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -197,6 +197,15 @@ const existeBalancePorId = async (id) => {
   }
 };
 
+const existeTipoProductoPorId = async (id) => {
+  // Verificar si la refineria existe
+
+  const existeTipoProducto = await TipoProducto.findById(id);
+  if (!existeTipoProducto) {
+    throw new Error(`Tipo de Producto no existe ${id}`);
+  }
+};
+
 /**
  * Validar colecciones permitidas
  */
@@ -233,6 +242,7 @@ module.exports = {
   existeCostoPorId,
   existeRefinacionSalidaPorId,
   existeBalancePorId,
+  existeTipoProductoPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO
