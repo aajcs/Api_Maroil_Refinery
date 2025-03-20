@@ -40,7 +40,7 @@ const TipoProductoSchema = Schema(
     },
 
     flashPoint: {
-      type: String,
+      type: Number,
       required: [false, "La viscosidad es obligatoria"],
     },
 

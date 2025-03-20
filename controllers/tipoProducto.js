@@ -78,8 +78,6 @@ const tipoProductoPost = async (req = request, res = response) => {
       gravedadAPI,
       azufre,
       contenidoAgua,
-      viscosidad,
-      origen,
       flashPoint,
     });
     await nuevoTipoProducto.save();
