@@ -39,6 +39,13 @@ const RefinacionSalidaSchema = new Schema(
         ref: "ChequeoCantidad",
       },
     ],
+
+    idProducto: {
+      type: Schema.Types.ObjectId,
+      ref: "Producto",
+      required: [false, "El ID del tanque del derivado es obligatorio"],
+    },
+
     // Eliminación lógica
 
     eliminado: {

@@ -7,6 +7,7 @@ const populateOptions = [
   { path: "idTanque", select: "nombre" },
   { path: "idChequeoCalidad" },
   { path: "idChequeoCantidad" },
+  { path: "idProducto", select: "nombre" },
 ];
 
 // Obtener todas las refinacionSalidaes con paginación y población de referencias
@@ -77,6 +78,7 @@ const refinacionSalidaPost = async (req = request, res = response) => {
     descripcion,
     idChequeoCalidad,
     idChequeoCantidad,
+    idProducto,
   } = req.body;
 
   try {
@@ -87,6 +89,7 @@ const refinacionSalidaPost = async (req = request, res = response) => {
       descripcion,
       idChequeoCalidad,
       idChequeoCantidad,
+      idProducto,
     });
 
     await nuevaRefinacionSalida.save();
