@@ -102,10 +102,13 @@ const contratoPost = async (req, res = response) => {
 
       montoTotal,
     });
-    if (items?.length === 0) {
+    if (!items || items.length === 0) {
       return res
         .status(400)
-        .json({ error: "El contrato debe tener al menos un item" });
+        .json({
+          error:
+            "El contrato debe incluir al menos un item en el campo 'items'.",
+        });
     }
     // 2. Guardar el contrato para obtener el ID
     await nuevoContrato.save();
