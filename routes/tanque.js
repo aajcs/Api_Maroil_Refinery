@@ -58,7 +58,6 @@ router.post(
     check("capacidad", "La capacidad del tanque es obligatoria")
       .not()
       .isEmpty(),
-    check("material", "El material del tanque es obligatoria").not().isEmpty(),
     validarCampos,
   ],
   tanquePost
