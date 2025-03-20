@@ -19,14 +19,6 @@ const refinacionSalidaGets = async (req = request, res = response) => {
       RefinacionSalida.find(query).populate(populateOptions), // Poblar referencias y convertir a JSON
     ]);
 
-    // Validar si hay datos
-    if (refinacionSalidas.length === 0) {
-      return res.status(404).json({
-        message:
-          "No se encontraron refinacionSalidas con los criterios proporcionados.",
-      });
-    }
-
     // Respuesta exitosa
     res.json({ total, refinacionSalidas });
   } catch (err) {
