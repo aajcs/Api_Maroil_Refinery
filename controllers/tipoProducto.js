@@ -61,8 +61,7 @@ const tipoProductoPost = async (req = request, res = response) => {
       gravedadAPI,
       azufre,
       contenidoAgua,
-      viscosidad,
-      origen,
+      flashPoint,
     } = req.body;
 
     if (!nombre || !idRefineria) {
@@ -81,6 +80,7 @@ const tipoProductoPost = async (req = request, res = response) => {
       contenidoAgua,
       viscosidad,
       origen,
+      flashPoint,
     });
     await nuevoTipoProducto.save();
     await nuevoTipoProducto.populate(populateOptions);

@@ -5,7 +5,8 @@ const RefinacionSalida = require("../models/refinacionSalida");
 const populateOptions = [
   { path: "idRefinacion" },
   { path: "idTanque", select: "nombre" },
-  { path: "idProducto", select: "nombre" },
+  { path: "idChequeoCalidad" },
+  { path: "idChequeoCantidad" },
 ];
 
 // Obtener todas las refinacionSalidaes con paginación y población de referencias
@@ -77,16 +78,23 @@ const refinacionSalidaGet = async (req = request, res = response) => {
 
 // Crear una nueva refinación
 const refinacionSalidaPost = async (req = request, res = response) => {
-  const { idRefinacion, idTanque, idProducto, cantidad, descripcion } =
-    req.body;
+  const {
+    idRefinacion,
+    idTanque,
+    cantidad,
+    descripcion,
+    idChequeoCalidad,
+    idChequeoCantidad,
+  } = req.body;
 
   try {
     const nuevaRefinacionSalida = new RefinacionSalida({
       idRefinacion,
       idTanque,
-      idProducto,
       cantidad,
       descripcion,
+      idChequeoCalidad,
+      idChequeoCantidad,
     });
 
     await nuevaRefinacionSalida.save();
@@ -105,7 +113,7 @@ const refinacionSalidaPost = async (req = request, res = response) => {
     }
 
     res.status(500).json({
-      error: "Error interno del servidor al crear la refinación.",
+      error: "Error interno del servidor al crear la refinación de Salida.",
     });
   }
 };

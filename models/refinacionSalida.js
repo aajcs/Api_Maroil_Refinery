@@ -8,11 +8,7 @@ const RefinacionSalidaSchema = new Schema(
       ref: "Refinacion",
       required: true,
     },
-    idProducto: {
-      type: Schema.Types.ObjectId,
-      ref: "Producto",
-      required: true,
-    },
+
     idTanque: {
       type: Schema.Types.ObjectId,
       ref: "Tanque",
@@ -29,7 +25,22 @@ const RefinacionSalidaSchema = new Schema(
         "La descripción del proceso de refinación es obligatoria.",
       ],
     },
+
+    idChequeoCalidad: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "ChequeoCalidad",
+      },
+    ],
+
+    idChequeoCantidad: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "ChequeoCantidad",
+      },
+    ],
     // Eliminación lógica
+
     eliminado: {
       type: Boolean,
       default: false,

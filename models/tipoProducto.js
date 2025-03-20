@@ -39,13 +39,9 @@ const TipoProductoSchema = Schema(
       required: [false, "El contenido de agua es obligatorio"],
     },
 
-    viscosidad: {
+    flashPoint: {
       type: String,
       required: [false, "La viscosidad es obligatoria"],
-    },
-    origen: {
-      type: String,
-      required: [false, "El origen es obligatorio"],
     },
 
     estado: {
