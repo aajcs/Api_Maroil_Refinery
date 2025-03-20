@@ -102,7 +102,7 @@ const contratoPost = async (req, res = response) => {
 
       montoTotal,
     });
-    if (items.length === 0) {
+    if (items?.length === 0) {
       return res
         .status(400)
         .json({ error: "El contrato debe tener al menos un item" });
