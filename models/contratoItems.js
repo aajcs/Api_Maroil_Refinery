@@ -40,7 +40,16 @@ const ContratoItemsSchema = Schema({
   },
 
   //CARACTERISTICAS DEL PRODUCTO CALIDAD.
+  nombre: {
+    type: String,
+    required: [true, "El nombre del crudo es obligatorio"],
+  },
 
+  clasificacion: {
+    type: String,
+    enum: ["Liviano", "Mediano", "Pesado"],
+    required: [false, "La clasificacion de Crudo es obligatoria"],
+  },
   gravedadAPI: {
     type: Number,
     required: [false, "La gravedad API es obligatoria"],
@@ -49,33 +58,17 @@ const ContratoItemsSchema = Schema({
     type: Number,
     required: [false, "El porcentaje de azufre es obligatorio"],
   },
-  viscosidad: {
-    type: Number,
-    required: [false, "La viscosidad es obligatoria"],
-  },
-  densidad: {
-    type: Number,
-    required: [false, "La densidad es obligatoria"],
-  },
+
   contenidoAgua: {
     type: Number,
     required: [false, "El contenido de agua es obligatorio"],
   },
-  origen: {
+
+  flashPoint: {
     type: String,
-    required: [false, "El origen es obligatorio"],
+    required: [false, "El Flashpoint es obligatorio"],
   },
 
-  temperatura: {
-    type: Number,
-    required: [false, "La temperatura es obligatoria"],
-  },
-  presion: {
-    type: Number,
-    required: [false, "La presión es obligatoria"],
-  },
-
-  //VALIDACIONES LOGICA PARA EL ELIMINADO.
   estado: {
     type: String,
     default: true,
@@ -84,7 +77,12 @@ const ContratoItemsSchema = Schema({
     type: Boolean,
     default: false,
   },
-});
+},
+{
+  timestamps: true, // Añade createdAt y updatedAt automáticamente
+  versionKey: false, // Elimina el campo __v
+}
+);
 
 ContratoItemsSchema.set("toJSON", {
   transform: (document, returnedObject) => {
