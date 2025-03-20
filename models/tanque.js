@@ -29,7 +29,7 @@ const TanqueSchema = Schema(
     idProducto: {
       type: Schema.Types.ObjectId,
       ref: "Producto",
-      required: [true, "El ID del Producto del derivado es obligatorio"],
+      required: [false, "El ID del Producto del derivado es obligatorio"],
     },
     almacenamiento: {
       type: Number,

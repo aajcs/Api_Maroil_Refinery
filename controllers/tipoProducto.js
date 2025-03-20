@@ -41,7 +41,7 @@ const tipoProductoGet = async (req = request, res = response) => {
     }).populate(populateOptions);
 
     if (!tipoProducto) {
-      return res.status(404).json({ msg: "Chequeo de cantidad no encontrado" });
+      return res.status(404).json({ msg: "Tipo de Producto no encontrado" });
     }
 
     res.json(tipoProducto);
@@ -96,7 +96,7 @@ const tipoProductoPost = async (req = request, res = response) => {
 const tipoProductoPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { idProducto, ...resto } = req.body;
-  console.log(idProducto);
+  console.log(id, idProducto);
   try {
     const tipoProductoActualizado = await TipoProducto.findOneAndUpdate(
       { _id: id, eliminado: false },
@@ -140,8 +140,8 @@ const tipoProductoDelete = async (req = request, res = response) => {
     if (!tipoProducto) {
       return res.status(404).json({ msg: "Tipo de Producto no encontrado" });
     }
-    // Eliminar la referencia en la colección de refinación
-    await Refinacion.updateMany(
+    // Eliminar la referencia en la colección de producto
+    await Producto.updateMany(
       { idTipoProducto: id },
       { $pull: { idTipoProducto: id } }
     );
