@@ -7,9 +7,11 @@ const populateOptions = [
     path: "idRefineria",
     select: "nombre",
   },
+
+  { path: "idTipoProducto" },
 ];
 const productoGets = async (req = request, res = response) => {
-  const query = { estado: true };
+  const query = { eliminado: false };
 
   try {
     const [total, productos] = await Promise.all([
@@ -52,7 +54,7 @@ const productoGet = async (req = request, res = response) => {
 // Crear un nuevo producto
 const productoPost = async (req = request, res = response) => {
   try {
-    const { nombre, idRefineria, posicion, color, estado, tipoProducto } =
+    const { nombre, idRefineria, posicion, color, estado, tipoMaterial } =
       req.body;
 
     if (!nombre || !idRefineria) {
@@ -67,7 +69,7 @@ const productoPost = async (req = request, res = response) => {
       posicion,
       color,
       estado,
-      tipoProducto,
+      tipoMaterial,
     });
     await nuevoProducto.save();
     await nuevoProducto.populate(populateOptions);

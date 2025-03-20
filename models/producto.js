@@ -20,9 +20,17 @@ const ProductoSchema = Schema(
       type: String,
       required: [true, "El color del producto es obligatorio"],
     },
-    tipoProducto: {
+    tipoMaterial: {
+      type: String,
       enum: ["Materia Prima", "Derivado"],
     },
+
+    idTipoProducto: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "TipoProducto",
+      },
+    ],
     estado: {
       type: String,
       default: true,
