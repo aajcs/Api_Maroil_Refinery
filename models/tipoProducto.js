@@ -41,7 +41,7 @@ const TipoProductoSchema = Schema(
 
     flashPoint: {
       type: Number,
-      required: [false, "La viscosidad es obligatoria"],
+      required: [false, "El Flashpoint es obligatoria"],
     },
 
     estado: {
