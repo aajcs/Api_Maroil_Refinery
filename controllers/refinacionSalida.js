@@ -16,8 +16,22 @@ const populateOptions = [
     ],
   },
   { path: "idTanque", select: "nombre" },
-  { path: "idChequeoCalidad" },
-  { path: "idChequeoCantidad" },
+  {
+    path: "idChequeoCalidad",
+    select: "idProducto idTanque gravedadAPI azufre contenidoAgua",
+    populate: [
+      { path: "idProducto", select: "nombre" },
+      { path: "idTanque", select: "nombre" },
+    ],
+  },
+  {
+    path: "idChequeoCantidad",
+    select: "idProducto idTanque gravedadAPI azufre contenidoAgua",
+    populate: [
+      { path: "idProducto", select: "nombre" },
+      { path: "idTanque", select: "nombre" },
+    ],
+  },
   { path: "idProducto", select: "nombre" },
 ];
 
