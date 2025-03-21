@@ -80,10 +80,10 @@ const contratoPost = async (req, res = response) => {
 
     montoTotal,
   } = req.body;
-
+  let nuevoContrato; // Declarar fuera del bloque try
   try {
     // 1. Crear el contrato
-    const nuevoContrato = new Contrato({
+    nuevoContrato = new Contrato({
       numeroContrato,
       descripcion,
       tipoContrato,
@@ -103,12 +103,9 @@ const contratoPost = async (req, res = response) => {
       montoTotal,
     });
     if (!items || items.length === 0) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "El contrato debe incluir al menos un item en el campo 'items'.",
-        });
+      return res.status(400).json({
+        error: "El contrato debe incluir al menos un item en el campo 'items'.",
+      });
     }
     // 2. Guardar el contrato para obtener el ID
     await nuevoContrato.save();
@@ -133,6 +130,11 @@ const contratoPost = async (req, res = response) => {
       res.status(201).json(nuevoContrato);
   } catch (err) {
     console.error(err);
+
+    // Si ocurre un error, eliminar el contrato creado
+    if (nuevoContrato && nuevoContrato.id) {
+      await Contrato.findByIdAndDelete(nuevoContrato.id);
+    }
     res.status(400).json({ error: err.message });
   }
 };
