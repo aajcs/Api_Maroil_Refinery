@@ -6,6 +6,10 @@ const RecepcionSchema = new Schema(
     idContrato: {
       type: Schema.Types.ObjectId,
       ref: "Contrato",
+      required: [
+        true,
+        "El ID del Contrato asociado a la recepción es obligatorio",
+      ],
     },
     idContratoItems: {
       type: Schema.Types.ObjectId,
@@ -18,6 +22,10 @@ const RecepcionSchema = new Schema(
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
+      required: [
+        true,
+        "El ID de la Refinería asociada a la recepción es obligatorio",
+      ],
     },
     idTanque: {
       type: Schema.Types.ObjectId,
@@ -31,6 +39,7 @@ const RecepcionSchema = new Schema(
 
     cantidadEnviada: {
       type: Number,
+      required: [true, "La cantidad enviada es obligatoria"],
     },
 
     estadoCarga: {
@@ -57,15 +66,19 @@ const RecepcionSchema = new Schema(
     // Información del transporte
     idGuia: {
       type: Number,
+      required: [true, "El ID de la Guía es obligatoria"],
     },
     placa: {
       type: String,
+      required: [true, "La placa del transporte es obligatoria"],
     },
     nombreChofer: {
       type: String,
+      required: [true, "El nombre del chofer es obligatoria"],
     },
     apellidoChofer: {
       type: String,
+      required: [true, "El apellido del chofer es obligatoria"],
     },
 
     // Control de estado (eliminación lógica)

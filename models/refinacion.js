@@ -6,11 +6,13 @@ const RefinacionSchema = new Schema(
     numeroRefinacion: {
       type: Number,
     },
+
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
-      required: false,
+      required: [true, "El ID de la refinería es obligatorio"],
     },
+
     idTanque: {
       type: Schema.Types.ObjectId,
       ref: "Tanque",
@@ -22,21 +24,21 @@ const RefinacionSchema = new Schema(
       ref: "Torre",
       required: [true, "El ID de la torre es obligatorio"],
     },
+
     idProducto: {
       type: Schema.Types.ObjectId,
       ref: "Producto",
-      required: [false, "El ID del tanque del derivado es obligatorio"],
+      required: [true, "El ID del producto es obligatorio"],
     },
+
     cantidadTotal: {
       type: Number,
-      required: [true, "La cantidad recibida es obligatoria"],
+      required: [true, "La cantidad total es obligatoria"],
     },
+
     descripcion: {
       type: String,
-      required: [
-        true,
-        "La descripción del proceso de refinación es obligatoria.",
-      ],
+      required: [true, "La descripción del proceso es obligatoria"],
     },
 
     idChequeoCalidad: [
@@ -45,6 +47,7 @@ const RefinacionSchema = new Schema(
         ref: "ChequeoCalidad",
       },
     ],
+
     idChequeoCantidad: [
       {
         type: Schema.Types.ObjectId,
@@ -52,25 +55,20 @@ const RefinacionSchema = new Schema(
       },
     ],
 
-    // historialOperaciones: [
-    //  {
-    //   idHistorial: {
-    //     type: Schema.Types.ObjectId,
-    //     ref: "Historial",
-    //     required: [false, "Historiales faltantes"],
-    //   },
-    // },
-    // ],
     derivado: [
       {
         idProducto: {
           type: Schema.Types.ObjectId,
           ref: "Producto",
-          required: [false, "El ID del tanque del derivado es obligatorio"],
+          required: [true, "El ID del producto del derivado es obligatorio"],
         },
-        porcentaje: { type: Number, required: false },
+        porcentaje: {
+          type: Number,
+          required: false,
+        },
       },
     ],
+
     // Estado
 
     fechaInicio: {
@@ -85,19 +83,19 @@ const RefinacionSchema = new Schema(
       required: [true, "El operador es obligatorio"],
     },
 
-    // Eliminación lógica
-    eliminado: {
-      type: Boolean,
-      default: false,
-    },
-
     estadoRefinacion: {
       type: String,
       enum: ["En Cola", "En Proceso", "Finalizado", "Pausado"],
       required: [
-        false,
+        true,
         "Seleccione en que fase se encuentra el proceso de refinación.",
       ],
+    },
+
+    // Eliminación lógica
+    eliminado: {
+      type: Boolean,
+      default: false,
     },
 
     estado: {
