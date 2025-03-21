@@ -10,11 +10,11 @@ const TorreSchema = Schema(
     },
     nombre: {
       type: String,
-      required: [false, "El Nombre es obligatorio"],
+      required: [true, "El Nombre es obligatorio"],
     },
     ubicacion: {
       type: String,
-      required: [false, "La ubicación es obligatorio"],
+      required: [true, "La ubicación es obligatorio"],
     },
     caudal: {
       type: Number,
@@ -29,7 +29,7 @@ const TorreSchema = Schema(
         idProducto: {
           type: Schema.Types.ObjectId,
           ref: "Producto",
-          required: [false, "El ID del Producto del derivado es obligatorio"],
+          required: [true, "El ID del Producto del derivado es obligatorio"],
         },
         estadoMaterial: { type: String, required: false },
       },

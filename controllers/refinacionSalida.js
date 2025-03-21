@@ -3,7 +3,18 @@ const RefinacionSalida = require("../models/refinacionSalida");
 
 // Opciones de populate reutilizables
 const populateOptions = [
-  { path: "idRefinacion" },
+  {
+    path: "idRefinacion",
+    select: "numeroRefinacion idTorre idProducto cantidadTotal derivado",
+    populate: [
+      { path: "idProducto", select: "nombre" },
+      { path: "idTorre", select: "nombre" },
+      {
+        path: "derivado",
+        populate: [{ path: "idProducto", select: "nombre" }],
+      },
+    ],
+  },
   { path: "idTanque", select: "nombre" },
   { path: "idChequeoCalidad" },
   { path: "idChequeoCantidad" },

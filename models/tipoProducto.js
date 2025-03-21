@@ -5,49 +5,55 @@ const TipoProductoSchema = Schema(
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
-      required: true,
+      required: [true, "El ID de la refinería es obligatorio"],
     },
 
     idProducto: {
       type: Schema.Types.ObjectId,
       ref: "Producto",
-      required: true,
+      required: [true, "El ID del producto es obligatorio"],
     },
 
-    //CARACTERISTICAS DEL PRODUCTO CALIDAD.
+    // CARACTERÍSTICAS DEL PRODUCTO - CALIDAD
     nombre: {
       type: String,
-      required: [true, "El nombre del crudo es obligatorio"],
+      required: [true, "El nombre del producto es obligatorio"],
     },
 
     clasificacion: {
       type: String,
       enum: ["Liviano", "Mediano", "Pesado"],
-      required: [false, "La clasificacion de Crudo es obligatoria"],
+      required: [true, "La clasificación del producto es obligatoria"],
     },
+
     gravedadAPI: {
       type: Number,
-      required: [false, "La gravedad API es obligatoria"],
+      required: [true, "La gravedad API del producto es obligatoria"],
     },
+
     azufre: {
       type: Number,
-      required: [false, "El porcentaje de azufre es obligatorio"],
+      required: [true, "El porcentaje de azufre en el producto es obligatorio"],
     },
 
     contenidoAgua: {
       type: Number,
-      required: [false, "El contenido de agua es obligatorio"],
+      required: [true, "El contenido de agua en el producto es obligatorio"],
     },
 
     flashPoint: {
       type: Number,
-      required: [false, "El Flashpoint es obligatoria"],
+      required: [
+        true,
+        "El punto de inflamación (Flashpoint) del producto es obligatorio",
+      ],
     },
 
     estado: {
       type: String,
-      default: true,
+      default: "Activo", // Cambié el valor por defecto para que sea más descriptivo.
     },
+
     eliminado: {
       type: Boolean,
       default: false,
