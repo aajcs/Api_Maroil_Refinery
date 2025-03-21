@@ -41,9 +41,10 @@ const ContratoItemsSchema = Schema(
     },
 
     //CARACTERISTICAS DEL PRODUCTO CALIDAD.
-    nombre: {
-      type: String,
-      required: [true, "El nombre del crudo es obligatorio"],
+    idTipoProducto: {
+      type: Schema.Types.ObjectId,
+      ref: "TipoProducto",
+      required: [true, "El ID del tipo de producto es obligatorio"],
     },
 
     clasificacion: {
