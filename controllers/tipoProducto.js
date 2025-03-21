@@ -6,6 +6,11 @@ const { Producto } = require("../models");
 const populateOptions = [
   {
     path: "idProducto",
+    select: "nombre color",
+  },
+  {
+    path: "idRefineria",
+    select: "nombre",
   },
 ];
 
@@ -100,7 +105,8 @@ const tipoProductoPut = async (req = request, res = response) => {
   try {
     const tipoProductoActualizado = await TipoProducto.findOneAndUpdate(
       { _id: id, eliminado: false },
-      resto,
+      { ...resto, idProducto },
+
       { new: true }
     ).populate(populateOptions);
 
