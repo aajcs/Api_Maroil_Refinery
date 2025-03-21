@@ -46,49 +46,45 @@ const ChequeoCalidadSchema = Schema(
       type: Date,
       required: [false, "La fecha del chequeo es obligatoria"],
     },
-    //Caracteristicas del producto (crudo o derivado)
-    gravedadAPI: {
-      type: Number,
-      required: [false, "La gravedad API es obligatoria"],
-    },
-    azufre: {
-      type: Number,
-      required: [false, "El porcentaje de azufre es obligatorio"],
-    },
-    viscosidad: {
-      type: Number,
-      required: [false, "La viscosidad es obligatoria"],
-    },
-    densidad: {
-      type: Number,
-      required: [false, "La densidad es obligatoria"],
-    },
-    contenidoAgua: {
-      type: Number,
-      required: [false, "El contenido de agua es obligatorio"],
-    },
-    contenidoPlomo: {
-      type: String,
-      required: [false, "El contenido de plomo es obligatorio"],
-    },
-    octanaje: {
-      type: String,
-      required: [false, "El octanaje es obligatorio"],
-    },
-    temperatura: {
-      type: Number,
-      required: [false, "La temperatura es obligatoria"],
-    },
-    estado: {
-      type: String,
-      default: true,
-      required: true,
-    },
-    eliminado: {
-      type: Boolean,
-      default: false,
-    },
+    //CARACTERISTICAS DEL PRODUCTO CALIDAD.
+  nombre: {
+    type: String,
+    required: [true, "El nombre del crudo es obligatorio"],
   },
+
+  clasificacion: {
+    type: String,
+    enum: ["Liviano", "Mediano", "Pesado"],
+    required: [false, "La clasificacion de Crudo es obligatoria"],
+  },
+  gravedadAPI: {
+    type: Number,
+    required: [false, "La gravedad API es obligatoria"],
+  },
+  azufre: {
+    type: Number,
+    required: [false, "El porcentaje de azufre es obligatorio"],
+  },
+
+  contenidoAgua: {
+    type: Number,
+    required: [false, "El contenido de agua es obligatorio"],
+  },
+
+  flashPoint: {
+    type: String,
+    required: [false, "El Flashpoint es obligatorio"],
+  },
+
+  estado: {
+    type: String,
+    default: true,
+  },
+  eliminado: {
+    type: Boolean,
+    default: false,
+  },
+},
   {
     timestamps: true, // Añade createdAt y updatedAt automáticamente
     versionKey: false, // Elimina el campo __v
