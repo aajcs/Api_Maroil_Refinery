@@ -47,13 +47,14 @@ const lineaCargaGet = async (req = request, res = response) => {
 
 // Crear una nueva línea de carga
 const lineaCargaPost = async (req = request, res = response) => {
-  const { ubicacion, nombre, idRefineria } = req.body;
+  const { ubicacion, nombre, idRefineria, tipoLinea } = req.body;
 
   try {
     const nuevaLineaCarga = new LineaCarga({
       ubicacion,
       nombre,
       idRefineria,
+      tipoLinea,
     });
 
     await nuevaLineaCarga.save();

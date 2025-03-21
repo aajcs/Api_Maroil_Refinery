@@ -1,7 +1,11 @@
 const { Schema, model } = require("mongoose");
 
 const lineaCargaSchema = Schema(
-  {
+  {tipoLinea:{
+    type: String,
+      enum: ["Carga", "Despacho"],
+      default: "Carga",
+  },
     ubicacion: {
       type: String,
       required: [true, "Fecha de recepción obligatoria"],
