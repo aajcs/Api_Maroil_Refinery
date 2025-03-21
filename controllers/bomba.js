@@ -2,13 +2,15 @@ const { response, request } = require("express");
 
 const Bomba = require("../models/bomba");
 
+// Opciones de populate reutilizables
+const populateOptions = [{ path: "idRefineria", select: "nombre" }];
+
 const bombaGets = async (req = request, res = response) => {
   const query = { eliminado: false };
 
   const [total, bombas] = await Promise.all([
     Bomba.countDocuments(query),
-    Bomba.find(query)
-    .populate("idRefineria", "nombre"),
+    Bomba.find(query).populate(populateOptions),
   ]);
 
   res.json({
@@ -45,10 +47,10 @@ const bombaPost = async (req, res = response) => {
   try {
     // Guardar en BD
     await bomba.save();
-    await bomba.populate("idRefineria", "nombre").execPopulate(),
-      res.json({
-        bomba,
-      });
+    await bomba.populate(populateOptions).execPopulate();
+    res.json({
+      bomba,
+    });
   } catch (err) {
     res.status(400).json({ error: err });
   }
@@ -60,7 +62,7 @@ const bombaPut = async (req, res = response) => {
 
   const bomba = await Bomba.findByIdAndUpdate(id, resto, {
     new: true,
-  }).populate("idRefineria", "nombre");
+  }).populate(populateOptions);
 
   res.json(bomba);
 };

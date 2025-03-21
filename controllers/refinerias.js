@@ -9,14 +9,6 @@ const refineriasGets = async (req = request, res = response) => {
     const [total, refinerias] = await Promise.all([
       Refineria.countDocuments(query),
       Refineria.find(query),
-      // .populate({
-      //   path: "idContacto",
-      //   select: "nombre",
-      // })
-      // .populate({
-      //   path: "idLinea",
-      //   select: "nombre",
-      // }),
     ]);
 
     res.json({
