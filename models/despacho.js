@@ -1,62 +1,91 @@
 const { Schema, model } = require("mongoose");
 
-const DespachoSchema = Schema(
+const DespachoSchema = new Schema(
   {
-    fecha: {
-      type: Date,
-      required: [true, "Fecha de recepción obligatoria"],
-    },
-    hora: {
-      type: Date,
-      required: [true, "Hora de recepción obligatoria"],
-    },
-    idLote: {
+    // Relaciones con otros modelos (referencias)
+    idContrato: {
       type: Schema.Types.ObjectId,
-      ref: "Lotes_producto",
-      required: true,
+      ref: "Contrato",
     },
-
+    idContratoItems: {
+      type: Schema.Types.ObjectId,
+      ref: "ContratoItems",
+    },
     idLinea: {
       type: Schema.Types.ObjectId,
       ref: "LineaCarga",
-      required: true,
     },
-
-    idEmpresa: {
+    idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
-      required: true,
+    },
+    idTanque: {
+      type: Schema.Types.ObjectId,
+      ref: "Tanque",
     },
 
-    numeroGuia: {
+    // Información de la recepción
+    cantidadDespacho: {
       type: Number,
-      required: [true, "Número de guía obligatorio"],
+    },
+
+    cantidadEnviada: {
+      type: Number,
+    },
+
+    estadoDespacho: {
+      type: String,
+      enum: ["EN_TRANSITO", "ENTREGADO"],
+      default: "EN_TRANSITO",
+    },
+    estado: {
+      type: String,
+      default: "true",
+    },
+
+    // Fechas
+    fechaInicio: {
+      type: Date,
+    },
+    fechaFin: {
+      type: Date,
+    },
+    fechaDespacho: {
+      type: Date,
+    },
+
+    // Información del transporte
+    idGuia: {
+      type: Number,
     },
     placa: {
       type: String,
-      required: [true, "Placa del Vehículo obligatorio"],
     },
     nombreChofer: {
       type: String,
-      required: [true, "Nombre del Chofer obligatorio"],
     },
     apellidoChofer: {
       type: String,
-      required: [true, "Apellido del chofer obligatorio"],
+    },
+
+    // Control de estado (eliminación lógica)
+    eliminado: {
+      type: Boolean,
+      default: false,
     },
   },
-
   {
-    timestamps: true,
-    versionKey: false,
+    timestamps: true, // Añade createdAt y updatedAt automáticamente
+    versionKey: false, // Elimina el campo __v
   }
 );
 
+// Método para transformar el objeto devuelto por Mongoose
 DespachoSchema.set("toJSON", {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
+    returnedObject.id = returnedObject._id.toString(); // Convierte _id a id
+    delete returnedObject._id; // Elimina _id
+    delete returnedObject.__v; // Elimina __v (si no lo has desactivado en las opciones del esquema)
   },
 });
 

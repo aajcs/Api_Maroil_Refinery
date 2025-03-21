@@ -1,27 +1,36 @@
 const { response, request } = require("express");
 const Despacho = require("../models/despacho");
+const Contrato = require("../models/contrato");
 
-// Obtener todos los despachos con paginación y población de referencias
+const populateOptions = [
+  {
+    path: "idContrato",
+    select: "idItems numeroContrato",
+    populate: {
+      path: "idItems",
+      populate: [{ path: "producto", select: "nombre" }],
+    },
+  },
+
+  { path: "idRefineria", select: "nombre" },
+  { path: "idTanque", select: "nombre" },
+  { path: "idLinea", select: "nombre" },
+  {
+    path: "idContratoItems",
+    populate: {
+      path: "producto",
+      select: "nombre",
+    },
+  },
+];
+// Obtener todas las despachos con paginación y población de referencias
 const despachoGets = async (req = request, res = response) => {
-  const query = { eliminado: false };
+  const query = {};
 
   try {
     const [total, despachos] = await Promise.all([
       Despacho.countDocuments(query),
-      Despacho.find(query)
-
-        .populate({
-          path: "id_lote",
-          select: "nombre",
-        })
-        .populate({
-          path: "id_linea",
-          select: "nombre",
-        })
-        .populate({
-          path: "id_empresa",
-          select: "nombre",
-        }),
+      Despacho.find(query).populate(populateOptions),
     ]);
 
     res.json({
@@ -29,168 +38,145 @@ const despachoGets = async (req = request, res = response) => {
       despachos,
     });
   } catch (err) {
-    console.error(err);
+    console.log(err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// Obtener un despacho específico por ID
+// Obtener una recepción específica por ID
+
 const despachoGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const despacho = await Despacho.findOne({
-      _id: id,
-      eliminado: false,
-    })
-      .populate({
-        path: "id_lote",
-        select: "nombre",
-      })
-      .populate({
-        path: "id_linea",
-        select: "nombre",
-      })
-      .populate({
-        path: "id_empresa",
-        select: "nombre",
+    const despachoActualizada = await Despacho.findById(id).populate(
+      populateOptions
+    );
+    if (despachoActualizada) {
+      res.json(despachoActualizada);
+    } else {
+      res.status(404).json({
+        msg: "Recepción no encontrada",
       });
-
-    if (!despacho) {
-      return res.status(404).json({ msg: "Despacho no encontrado" });
     }
-
-    res.json(despacho);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// Crear un nuevo despacho
-const despachoPost = async (req = request, res = response) => {
+// Crear una nueva recepción
+const despachoPost = async (req, res = response) => {
   const {
-    fecha,
-    hora,
-    id_lote,
-    id_linea,
-    id_empresa,
-    numero_guia,
+    // Relaciones con otros modelos
+    idContrato,
+    idContratoItems,
+    idLinea,
+    idRefineria,
+    idTanque,
+
+    // Información de la recepción
+    cantidadDespacho,
+    cantidadEnviada,
+    estadoCarga,
+    estado,
+
+    // Fechas
+    fechaInicio,
+    fechaFin,
+    fechaDespacho,
+
+    // Información del transporte
+    idGuia,
     placa,
-    nombre_chofer,
-    apellido_chofer,
+    nombreChofer,
+    apellidoChofer,
   } = req.body;
 
+  const nuevaDespacho = new Despacho({
+    // Relaciones con otros modelos
+    idContrato,
+    idContratoItems,
+    idLinea,
+    idRefineria,
+    idTanque,
+
+    // Información de la recepción
+    cantidadDespacho,
+    cantidadEnviada,
+    estadoCarga,
+    estado,
+
+    // Fechas
+    fechaInicio,
+    fechaFin,
+    fechaDespacho,
+
+    // Información del transporte
+    idGuia,
+    placa,
+    nombreChofer,
+    apellidoChofer,
+  });
+
   try {
-    const nuevoDespacho = new Despacho({
-      fecha,
-      hora,
-      id_lote,
-      id_linea,
-      id_empresa,
-      numero_guia,
-      placa,
-      nombre_chofer,
-      apellido_chofer,
-    });
+    await nuevaDespacho.save();
 
-    await nuevoDespacho.save();
+    await nuevaDespacho.populate(populateOptions);
 
-    await nuevoDespacho
-      .populate({
-        path: "id_lote",
-        select: "nombre",
-      })
-      .populate({
-        path: "id_linea",
-        select: "nombre",
-      })
-      .populate({
-        path: "id_empresa",
-        select: "nombre",
-      });
-
-    res.status(201).json(nuevoDespacho);
+    res.json({ despacho: nuevaDespacho });
   } catch (err) {
-    console.error(err);
     res.status(400).json({ error: err.message });
   }
 };
 
-// Actualizar un despacho existente
-const despachoPut = async (req = request, res = response) => {
+// Actualizar una recepción existente
+const despachoPut = async (req, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
   try {
-    const despachoActualizado = await Despacho.findOneAndUpdate(
-      { _id: id, eliminado: false },
-      resto,
-      { new: true }
-    )
-      .populate({
-        path: "id_lote",
-        select: "nombre",
-      })
-      .populate({
-        path: "id_linea",
-        select: "nombre",
-      })
-      .populate({
-        path: "id_empresa",
-        select: "nombre",
+    const despachoActualizada = await Despacho.findByIdAndUpdate(id, resto, {
+      new: true,
+    }).populate(populateOptions);
+
+    if (!despachoActualizada) {
+      return res.status(404).json({
+        msg: "Recepción no encontrada",
       });
-
-    if (!despachoActualizado) {
-      return res.status(404).json({ msg: "Despacho no encontrado" });
     }
-
-    req.io.emit("despacho-modificado", despachoActualizado);
-    res.json(despachoActualizado);
+    req.io.emit("despacho-modificada", despachoActualizada);
+    res.json(despachoActualizada);
   } catch (err) {
-    console.error(err);
     res.status(400).json({ error: err.message });
   }
 };
 
-// Eliminar (marcar como eliminado) un despacho
-const despachoDelete = async (req = request, res = response) => {
+// Eliminar (marcar como eliminado) una recepción
+const despachoDelete = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const despacho = await Despacho.findOneAndUpdate(
-      { _id: id, eliminado: false },
+    const despacho = await Despacho.findByIdAndUpdate(
+      id,
       { eliminado: true },
       { new: true }
-    )
-      .populate({
-        path: "id_lote",
-        select: "nombre",
-      })
-      .populate({
-        path: "id_linea",
-        select: "nombre",
-      })
-      .populate({
-        path: "id_empresa",
-        select: "nombre",
-      });
+    ).populate(populateOptions);
 
     if (!despacho) {
-      return res.status(404).json({ msg: "Despacho no encontrado" });
+      return res.status(404).json({
+        msg: "Recepción no encontrada",
+      });
     }
 
     res.json(despacho);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// Parchear un despacho (ejemplo básico)
-const despachoPatch = (req = request, res = response) => {
+const despachoPatch = (req, res = response) => {
   res.json({
-    msg: "patch API - despachoPatch",
+    msg: "patch API - usuariosPatch",
   });
 };
 

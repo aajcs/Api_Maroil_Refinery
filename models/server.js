@@ -100,22 +100,20 @@ class Server {
   }
 
   routes() {
+    // Rutas de autenticación y usuarios
     this.app.use(this.paths.auth, require("../routes/auth"));
+    this.app.use(this.paths.usuarios, require("../routes/usuarios"));
+
+    // Rutas de gestión general
+    this.app.use(this.paths.balance, require("../routes/balance"));
     this.app.use(this.paths.buscar, require("../routes/buscar"));
     this.app.use(this.paths.categorias, require("../routes/categorias"));
+    this.app.use(this.paths.costo, require("../routes/costo"));
+    this.app.use(this.paths.historial, require("../routes/historial"));
     this.app.use(this.paths.producto, require("../routes/producto"));
-    this.app.use(this.paths.usuarios, require("../routes/usuarios"));
-    this.app.use(this.paths.uploads, require("../routes/uploads"));
-    this.app.use(this.paths.refinerias, require("../routes/refinerias"));
-    this.app.use(this.paths.lineaCarga, require("../routes/lineaCarga"));
-    this.app.use(this.paths.bomba, require("../routes/bomba"));
-    this.app.use(this.paths.tanque, require("../routes/tanque"));
-    this.app.use(this.paths.torre, require("../routes/torre"));
-    this.app.use(this.paths.contrato, require("../routes/contrato"));
-    this.app.use(this.paths.contacto, require("../routes/contacto"));
-    this.app.use(this.paths.recepcion, require("../routes/recepcion"));
-    this.app.use(this.paths.refinacion, require("../routes/refinacion"));
-    this.app.use(this.paths.despacho, require("../routes/despacho"));
+    this.app.use(this.paths.tipoProducto, require("../routes/tipoProducto"));
+
+    // Rutas relacionadas con operaciones de calidad y cantidad
     this.app.use(
       this.paths.chequeoCalidad,
       require("../routes/chequeoCalidad")
@@ -124,56 +122,73 @@ class Server {
       this.paths.chequeoCantidad,
       require("../routes/chequeoCantidad")
     );
-    this.app.use(this.paths.historial, require("../routes/historial"));
-    this.app.use(this.paths.costo, require("../routes/costo"));
+
+    // Rutas específicas de refinación y despacho
+    this.app.use(this.paths.despacho, require("../routes/despacho"));
+    this.app.use(this.paths.recepcion, require("../routes/recepcion"));
+    this.app.use(this.paths.refinacion, require("../routes/refinacion"));
     this.app.use(
       this.paths.refinacionSalida,
       require("../routes/refinacionSalida")
     );
-    this.app.use(this.paths.balance, require("../routes/balance"));
-    this.app.use(this.paths.tipoProducto, require("../routes/tipoProducto"));
+    this.app.use(this.paths.refinerias, require("../routes/refinerias"));
 
+    // Rutas de infraestructura
+    this.app.use(this.paths.bomba, require("../routes/bomba"));
+    this.app.use(this.paths.lineaCarga, require("../routes/lineaCarga"));
+    this.app.use(this.paths.tanque, require("../routes/tanque"));
+    this.app.use(this.paths.torre, require("../routes/torre"));
+
+    // Rutas relacionadas con contactos y contratos
+    this.app.use(this.paths.contacto, require("../routes/contacto"));
+    this.app.use(this.paths.contrato, require("../routes/contrato"));
+
+    // Rutas de archivos y cargas
+    this.app.use(this.paths.uploads, require("../routes/uploads"));
+
+    // Rutas específicas del módulo Bunker
+    const bunkerRoutes = "../routes/bunker";
+    this.app.use(this.paths.bunker, require(`${bunkerRoutes}/bunker`));
     this.app.use(
       this.paths.balanceBunker,
-      require("../routes/bunker/balanceBunker")
+      require(`${bunkerRoutes}/balanceBunker`)
     );
-    this.app.use(this.paths.barcaza, require("../routes/bunker/barcaza"));
-    this.app.use(this.paths.bunker, require("../routes/bunker/bunker"));
+    this.app.use(this.paths.barcaza, require(`${bunkerRoutes}/barcaza`));
     this.app.use(
       this.paths.chequeoCalidadBunker,
-      require("../routes/bunker/chequeoCalidadBunker")
+      require(`${bunkerRoutes}/chequeoCalidadBunker`)
     );
     this.app.use(
       this.paths.chequeoCantidadBunker,
-      require("../routes/bunker/chequeoCantidadBunker")
-    );
-    this.app.use(
-      this.paths.productoBunker,
-      require("../routes/bunker/productoBunker")
-    );
-    this.app.use(
-      this.paths.contratoBunker,
-      require("../routes/bunker/contratoBunker")
+      require(`${bunkerRoutes}/chequeoCantidadBunker`)
     );
     this.app.use(
       this.paths.contactoBunker,
-      require("../routes/bunker/contactoBunker")
+      require(`${bunkerRoutes}/contactoBunker`)
     );
     this.app.use(
-      this.paths.recepcionBunker,
-      require("../routes/bunker/recepcionBunker")
+      this.paths.contratoBunker,
+      require(`${bunkerRoutes}/contratoBunker`)
     );
     this.app.use(
       this.paths.costoBunker,
-      require("../routes/bunker/costoBunker")
+      require(`${bunkerRoutes}/costoBunker`)
     );
     this.app.use(
       this.paths.historialBunker,
-      require("../routes/bunker/historialBunker")
+      require(`${bunkerRoutes}/historialBunker`)
     );
     this.app.use(
       this.paths.lineaCargaBunker,
-      require("../routes/bunker/lineaCargaBunker")
+      require(`${bunkerRoutes}/lineaCargaBunker`)
+    );
+    this.app.use(
+      this.paths.productoBunker,
+      require(`${bunkerRoutes}/productoBunker`)
+    );
+    this.app.use(
+      this.paths.recepcionBunker,
+      require(`${bunkerRoutes}/recepcionBunker`)
     );
   }
 
