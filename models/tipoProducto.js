@@ -1,62 +1,82 @@
 const { Schema, model } = require("mongoose");
 
+// Definición del esquema para el modelo TipoProducto
 const TipoProductoSchema = Schema(
   {
+    // Relación con el modelo Refinería
     idRefineria: {
       type: Schema.Types.ObjectId,
-      ref: "Refineria",
-      required: [true, "El ID de la refinería es obligatorio"],
+      ref: "Refineria", // Relación con el modelo Refineria
+      required: [true, "El ID de la refinería es obligatorio"], // Campo obligatorio
     },
 
+    // Relación con el modelo Producto
     idProducto: {
       type: Schema.Types.ObjectId,
-      ref: "Producto",
-      required: [true, "El ID del producto es obligatorio"],
+      ref: "Producto", // Relación con el modelo Producto
+      required: [true, "El ID del producto es obligatorio"], // Campo obligatorio
     },
 
-    // CARACTERÍSTICAS DEL PRODUCTO - CALIDAD
+    // Nombre del producto
     nombre: {
       type: String,
-      required: [true, "El nombre del producto es obligatorio"],
+      required: [true, "El nombre del producto es obligatorio"], // Campo obligatorio
+      minlength: [3, "El nombre debe tener al menos 3 caracteres"], // Validación de longitud mínima
+      maxlength: [50, "El nombre no puede exceder los 50 caracteres"], // Validación de longitud máxima
     },
 
+    // Clasificación del producto (Liviano, Mediano, Pesado)
     clasificacion: {
       type: String,
-      enum: ["Liviano", "Mediano", "Pesado"],
-      required: [true, "La clasificación del producto es obligatoria"],
+      enum: ["Liviano", "Mediano", "Pesado"], // Valores permitidos
+      required: [true, "La clasificación del producto es obligatoria"], // Campo obligatorio
     },
 
+    // Gravedad API del producto
     gravedadAPI: {
       type: Number,
-      required: [true, "La gravedad API del producto es obligatoria"],
+      min: [0, "La gravedad API no puede ser negativa"], // Validación para evitar valores negativos
+      max: [100, "La gravedad API no puede exceder 100"], // Validación de rango máximo
+      required: [true, "La gravedad API del producto es obligatoria"], // Campo obligatorio
     },
 
+    // Porcentaje de azufre en el producto
     azufre: {
       type: Number,
-      required: [true, "El porcentaje de azufre en el producto es obligatorio"],
+      min: [0, "El porcentaje de azufre no puede ser negativo"], // Validación para evitar valores negativos
+      max: [100, "El porcentaje de azufre no puede exceder el 100%"], // Validación de rango máximo
+      required: [true, "El porcentaje de azufre en el producto es obligatorio"], // Campo obligatorio
     },
 
+    // Contenido de agua en el producto
     contenidoAgua: {
       type: Number,
-      required: [true, "El contenido de agua en el producto es obligatorio"],
+      min: [0, "El contenido de agua no puede ser negativo"], // Validación para evitar valores negativos
+      max: [100, "El contenido de agua no puede exceder el 100%"], // Validación de rango máximo
+      required: [true, "El contenido de agua en el producto es obligatorio"], // Campo obligatorio
     },
 
+    // Punto de inflamación (Flashpoint) del producto
     flashPoint: {
       type: Number,
+      min: [0, "El punto de inflamación no puede ser negativo"], // Validación para evitar valores negativos
       required: [
         true,
         "El punto de inflamación (Flashpoint) del producto es obligatorio",
-      ],
+      ], // Campo obligatorio
     },
 
+    // Estado del producto (Activo o Inactivo)
     estado: {
       type: String,
-      default: "Activo", // Cambié el valor por defecto para que sea más descriptivo.
+      enum: ["Activo", "Inactivo"], // Valores permitidos
+      default: "Activo", // Valor por defecto
     },
 
+    // Indica si el producto ha sido eliminado (eliminación lógica)
     eliminado: {
       type: Boolean,
-      default: false,
+      default: false, // Valor por defecto
     },
   },
   {
@@ -65,6 +85,7 @@ const TipoProductoSchema = Schema(
   }
 );
 
+// Configuración para transformar el objeto JSON al devolverlo
 TipoProductoSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();

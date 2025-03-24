@@ -1,117 +1,146 @@
 const { Schema, model } = require("mongoose");
 const Counter = require("./counter");
+
 // Esquema principal de refinación
 const RefinacionSchema = new Schema(
   {
+    // Número único de refinación
     numeroRefinacion: {
       type: Number,
     },
 
+    // Relación con el modelo Refinería
     idRefineria: {
       type: Schema.Types.ObjectId,
-      ref: "Refineria",
-      required: [true, "El ID de la refinería es obligatorio"],
+      ref: "Refineria", // Relación con el modelo Refineria
+      required: [true, "El ID de la refinería es obligatorio"], // Campo obligatorio
     },
 
+    // Relación con el modelo Tanque
     idTanque: {
       type: Schema.Types.ObjectId,
-      ref: "Tanque",
-      required: [true, "El ID del tanque es obligatorio"],
+      ref: "Tanque", // Relación con el modelo Tanque
+      required: [true, "El ID del tanque es obligatorio"], // Campo obligatorio
     },
 
+    // Relación con el modelo Torre
     idTorre: {
       type: Schema.Types.ObjectId,
-      ref: "Torre",
-      required: [true, "El ID de la torre es obligatorio"],
+      ref: "Torre", // Relación con el modelo Torre
+      required: [true, "El ID de la torre es obligatorio"], // Campo obligatorio
     },
 
+    // Relación con el modelo Producto
     idProducto: {
       type: Schema.Types.ObjectId,
-      ref: "Producto",
-      required: [true, "El ID del producto es obligatorio"],
+      ref: "Producto", // Relación con el modelo Producto
+      required: [true, "El ID del producto es obligatorio"], // Campo obligatorio
     },
 
+    // Cantidad total procesada
     cantidadTotal: {
       type: Number,
-      required: [true, "La cantidad total es obligatoria"],
+      min: [0, "La cantidad total no puede ser negativa"], // Validación para evitar valores negativos
+      required: [true, "La cantidad total es obligatoria"], // Campo obligatorio
     },
 
+    // Descripción del proceso de refinación
     descripcion: {
       type: String,
-      required: [true, "La descripción del proceso es obligatoria"],
+      required: [true, "La descripción del proceso es obligatoria"], // Campo obligatorio
+      minlength: [10, "La descripción debe tener al menos 10 caracteres"], // Validación de longitud mínima
+      maxlength: [200, "La descripción no puede exceder los 200 caracteres"], // Validación de longitud máxima
     },
 
+    // Relación con el modelo ChequeoCalidad
     idChequeoCalidad: [
       {
         type: Schema.Types.ObjectId,
-        ref: "ChequeoCalidad",
+        ref: "ChequeoCalidad", // Relación con el modelo ChequeoCalidad
       },
     ],
 
+    // Relación con el modelo ChequeoCantidad
     idChequeoCantidad: [
       {
         type: Schema.Types.ObjectId,
-        ref: "ChequeoCantidad",
-      },
-    ],
-    idRefinacionSalida: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "RefinacionSalida",
+        ref: "ChequeoCantidad", // Relación con el modelo ChequeoCantidad
       },
     ],
 
+    // Relación con el modelo RefinacionSalida
+    idRefinacionSalida: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "RefinacionSalida", // Relación con el modelo RefinacionSalida
+      },
+    ],
+
+    // Derivados del proceso de refinación
     derivado: [
       {
         idProducto: {
           type: Schema.Types.ObjectId,
-          ref: "Producto",
-          required: [true, "El ID del producto del derivado es obligatorio"],
+          ref: "Producto", // Relación con el modelo Producto
+          required: [true, "El ID del producto del derivado es obligatorio"], // Campo obligatorio
         },
         porcentaje: {
           type: Number,
-          required: false,
+          min: [0, "El porcentaje no puede ser negativo"], // Validación para evitar valores negativos
+          max: [100, "El porcentaje no puede exceder el 100%"], // Validación de rango máximo
+          required: false, // Campo opcional
         },
       },
     ],
 
-    // Estado
-
+    // Fechas del proceso
     fechaInicio: {
       type: Date,
-      default: Date.now,
+      default: Date.now, // Valor por defecto: fecha actual
     },
     fechaFin: {
       type: Date,
     },
+
+    // Nombre del operador responsable
     operador: {
       type: String,
-      required: [true, "El operador es obligatorio"],
+      required: [true, "El operador es obligatorio"], // Campo obligatorio
+      minlength: [3, "El nombre del operador debe tener al menos 3 caracteres"], // Validación de longitud mínima
+      maxlength: [
+        50,
+        "El nombre del operador no puede exceder los 50 caracteres",
+      ], // Validación de longitud máxima
     },
 
+    // Estado del proceso de refinación
     estadoRefinacion: {
       type: String,
-      enum: ["En Cola", "En Proceso", "Finalizado", "Pausado"],
+      enum: ["En Cola", "En Proceso", "Finalizado", "Pausado"], // Valores permitidos
       required: [
         true,
-        "Seleccione en que fase se encuentra el proceso de refinación.",
-      ],
+        "Seleccione en qué fase se encuentra el proceso de refinación",
+      ], // Campo obligatorio
     },
 
     // Eliminación lógica
     eliminado: {
       type: Boolean,
-      default: false,
+      default: false, // Valor por defecto
     },
 
+    // Estado general (activo o inactivo)
     estado: {
       type: String,
-      default: true,
+      enum: ["activo", "inactivo"], // Valores permitidos
+      default: "activo", // Valor por defecto
     },
   },
   {
-    timestamps: true, // Añade createdAt y updatedAt automáticamente
-    versionKey: false, // Evita que se añada el campo __v
+    // Agrega automáticamente las propiedades createdAt y updatedAt
+    timestamps: true,
+    // Elimina la propiedad __v que agrega Mongoose por defecto
+    versionKey: false,
   }
 );
 
@@ -124,6 +153,7 @@ RefinacionSchema.set("toJSON", {
   },
 });
 
+// Middleware para generar un número único de refinación
 RefinacionSchema.pre("save", async function (next) {
   if (this.isNew && this.idRefineria) {
     try {
@@ -154,4 +184,5 @@ RefinacionSchema.pre("save", async function (next) {
   }
 });
 
+// Exporta el modelo Refinacion basado en el esquema definido
 module.exports = model("Refinacion", RefinacionSchema);
