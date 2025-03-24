@@ -1,11 +1,13 @@
 const { response, request } = require("express");
 const RefinacionSalida = require("../models/refinacionSalida");
+const { Refinacion } = require("../models");
 
 // Opciones de populate reutilizables
 const populateOptions = [
   {
     path: "idRefinacion",
-    select: "numeroRefinacion idTorre idProducto cantidadTotal derivado",
+    select:
+      "numeroRefinacion idTorre idProducto cantidadTotal derivado descripcion",
     populate: [
       { path: "idProducto", select: "nombre" },
       { path: "idTorre", select: "nombre" },
@@ -33,6 +35,7 @@ const populateOptions = [
     ],
   },
   { path: "idProducto", select: "nombre" },
+  { path: "idRefineria", select: "nombre" },
 ];
 
 // Obtener todas las refinacionSalidaes con paginación y población de referencias
@@ -97,27 +100,43 @@ const refinacionSalidaGet = async (req = request, res = response) => {
 // Crear una nueva refinación
 const refinacionSalidaPost = async (req = request, res = response) => {
   const {
+    idRefineria,
     idRefinacion,
     idTanque,
     cantidad,
     descripcion,
-    idChequeoCalidad,
-    idChequeoCantidad,
+    // idChequeoCalidad,
+    // idChequeoCantidad,
     idProducto,
+    operador,
+    estadoRefinacionSalida,
+    cantidadTotal,
+    fechaFin,
   } = req.body;
 
   try {
     const nuevaRefinacionSalida = new RefinacionSalida({
+      idRefineria,
       idRefinacion,
       idTanque,
       cantidad,
       descripcion,
-      idChequeoCalidad,
-      idChequeoCantidad,
+      // idChequeoCalidad,
+      // idChequeoCantidad,
       idProducto,
+      operador,
+      estadoRefinacionSalida,
+      cantidadTotal,
+      fechaFin,
     });
 
     await nuevaRefinacionSalida.save();
+
+    await Refinacion.findByIdAndUpdate(
+      idRefinacion,
+      { $push: { idRefinacionSalida: nuevaRefinacionSalida._id } },
+      { new: true }
+    );
 
     // Poblar referencias después de guardar
     await nuevaRefinacionSalida.populate(populateOptions);
@@ -141,7 +160,7 @@ const refinacionSalidaPost = async (req = request, res = response) => {
 // Actualizar una refinación existente
 const refinacionSalidaPut = async (req = request, res = response) => {
   const { id } = req.params;
-  const { _id, ...resto } = req.body;
+  const { idRefinacion, ...resto } = req.body;
 
   try {
     const refinacionSalidaActualizada = await RefinacionSalida.findOneAndUpdate(
@@ -152,7 +171,18 @@ const refinacionSalidaPut = async (req = request, res = response) => {
     if (!refinacionSalidaActualizada) {
       return res.status(404).json({ msg: "Refinación no encontrada" });
     }
+    if (idRefinacion) {
+      await Refinacion.updateMany(
+        { idRefinacionSalida: id },
+        { $pull: { idRefinacionSalida: id } }
+      );
 
+      await Refinacion.findByIdAndUpdate(
+        idRefinacion,
+        { $push: { idRefinacionSalida: id } },
+        { new: true }
+      );
+    }
     res.json(refinacionSalidaActualizada);
   } catch (err) {
     console.error("Error en refinacionSalidaPut:", err);
@@ -182,7 +212,10 @@ const refinacionSalidaDelete = async (req = request, res = response) => {
     if (!refinacionSalida) {
       return res.status(404).json({ msg: "Refinación no encontrada" });
     }
-
+    await Refinacion.updateMany(
+      { idRefinacionSalida: id },
+      { $pull: { idRefinacionSalida: id } }
+    );
     res.json(refinacionSalida);
   } catch (err) {
     console.error("Error en refinacionSalidaDelete:", err);
