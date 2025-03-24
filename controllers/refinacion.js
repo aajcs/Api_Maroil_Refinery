@@ -1,61 +1,59 @@
-const { response, request } = require("express");
-const Refinacion = require("../models/refinacion");
+// Importaciones necesarias
+const { response, request } = require("express"); // Objetos de Express para manejar solicitudes y respuestas
+const Refinacion = require("../models/refinacion"); // Modelo Refinacion para interactuar con la base de datos
 
-// Opciones de populate reutilizables
+// Opciones de población reutilizables para consultas
 const populateOptions = [
-  { path: "idTorre", select: "nombre" },
+  { path: "idTorre", select: "nombre" }, // Relación con el modelo Torre
   {
-    path: "idChequeoCalidad",
+    path: "idChequeoCalidad", // Relación con el modelo ChequeoCalidad
     populate: [
-      { path: "idProducto" },
-      { path: "idTanque", select: "nombre" },
-      { path: "idTorre", select: "nombre" },
+      { path: "idProducto" }, // Relación con el modelo Producto
+      { path: "idTanque", select: "nombre" }, // Relación con el modelo Tanque
+      { path: "idTorre", select: "nombre" }, // Relación con el modelo Torre
     ],
   },
   {
-    path: "idChequeoCantidad",
+    path: "idChequeoCantidad", // Relación con el modelo ChequeoCantidad
     populate: [
-      { path: "idProducto" },
-      { path: "idTanque", select: "nombre" },
-      { path: "idTorre", select: "nombre" },
+      { path: "idProducto" }, // Relación con el modelo Producto
+      { path: "idTanque", select: "nombre" }, // Relación con el modelo Tanque
+      { path: "idTorre", select: "nombre" }, // Relación con el modelo Torre
     ],
   },
-  { path: "idRefineria", select: "nombre" },
-  { path: "idTanque", select: "nombre" },
-  { path: "idProducto", select: "nombre" },
-  { path: "derivado.idProducto", select: "nombre" },
+  { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
+  { path: "idTanque", select: "nombre" }, // Relación con el modelo Tanque
+  { path: "idProducto", select: "nombre" }, // Relación con el modelo Producto
+  { path: "derivado.idProducto", select: "nombre" }, // Relación con productos derivados
 ];
 
-// Obtener todas las refinaciones con paginación y población de referencias
+// Controlador para obtener todas las refinaciones con paginación y población de referencias
 const refinacionGets = async (req = request, res = response) => {
-  const query = { eliminado: false };
+  const query = { eliminado: false }; // Filtro para obtener solo refinaciones no eliminadas
 
   try {
     const [total, refinacions] = await Promise.all([
-      Refinacion.countDocuments(query), // Contar documentos
-      Refinacion.find(query).populate(populateOptions), // Poblar referencias y convertir a JSON
+      Refinacion.countDocuments(query), // Cuenta el total de refinaciones
+      Refinacion.find(query).populate(populateOptions), // Obtiene las refinaciones con referencias pobladas
     ]);
 
-    // Respuesta exitosa
-    res.json({ total, refinacions });
+    res.json({ total, refinacions }); // Responde con el total y la lista de refinaciones
   } catch (err) {
     console.error("Error en refinacionGets:", err);
 
-    // Manejo de errores específicos
     if (err.name === "CastError") {
       return res.status(400).json({
         error: "Error en las referencias. Verifica que los IDs sean válidos.",
       });
     }
 
-    // Error genérico
     res.status(500).json({
       error: "Error interno del servidor al obtener las refinaciones.",
     });
   }
 };
 
-// Obtener una refinación específica por ID
+// Controlador para obtener una refinación específica por ID
 const refinacionGet = async (req = request, res = response) => {
   const { id } = req.params;
 
@@ -64,7 +62,8 @@ const refinacionGet = async (req = request, res = response) => {
       _id: id,
       estado: true,
       eliminado: false,
-    }).populate(populateOptions); // Poblar referencias // Convertir a JSON
+    }).populate(populateOptions);
+
     if (!refinacion) {
       return res.status(404).json({ msg: "Refinación no encontrada" });
     }
@@ -85,7 +84,7 @@ const refinacionGet = async (req = request, res = response) => {
   }
 };
 
-// Crear una nueva refinación
+// Controlador para crear una nueva refinación
 const refinacionPost = async (req = request, res = response) => {
   const {
     idTorre,
@@ -122,12 +121,12 @@ const refinacionPost = async (req = request, res = response) => {
       descripcion,
     });
 
-    await nuevaRefinacion.save();
+    await nuevaRefinacion.save(); // Guarda la nueva refinación en la base de datos
 
     // Poblar referencias después de guardar
     await nuevaRefinacion.populate(populateOptions);
 
-    res.status(201).json(nuevaRefinacion);
+    res.status(201).json(nuevaRefinacion); // Responde con la refinación creada
   } catch (err) {
     console.error("Error en refinacionPost:", err);
 
@@ -143,16 +142,18 @@ const refinacionPost = async (req = request, res = response) => {
   }
 };
 
-// Actualizar una refinación existente
+// Controlador para actualizar una refinación existente
 const refinacionPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, idChequeoCalidad, idChequeoCantidad, ...resto } = req.body;
+
   try {
     const refinacionActualizada = await Refinacion.findOneAndUpdate(
       { _id: id, eliminado: false },
       resto,
       { new: true }
-    ).populate(populateOptions); // Poblar referencias // Convertir a JSON
+    ).populate(populateOptions);
+
     if (!refinacionActualizada) {
       return res.status(404).json({ msg: "Refinación no encontrada" });
     }
@@ -173,7 +174,7 @@ const refinacionPut = async (req = request, res = response) => {
   }
 };
 
-// Eliminar (marcar como eliminado) una refinación
+// Controlador para eliminar (marcar como eliminado) una refinación
 const refinacionDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
@@ -182,7 +183,8 @@ const refinacionDelete = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       { eliminado: true },
       { new: true }
-    ).populate(populateOptions); // Poblar referencias // Convertir a JSON
+    ).populate(populateOptions);
+
     if (!refinacion) {
       return res.status(404).json({ msg: "Refinación no encontrada" });
     }
@@ -203,18 +205,19 @@ const refinacionDelete = async (req = request, res = response) => {
   }
 };
 
-// Parchear una refinación (ejemplo básico)
+// Controlador para manejar solicitudes PATCH (ejemplo básico)
 const refinacionPatch = (req = request, res = response) => {
   res.json({
-    msg: "patch API - refinacionPatch",
+    msg: "patch API - refinacionPatch", // Mensaje de prueba
   });
 };
 
+// Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
-  refinacionGets,
-  refinacionGet,
-  refinacionPost,
-  refinacionPut,
-  refinacionDelete,
-  refinacionPatch,
+  refinacionGets, // Obtener todas las refinaciones
+  refinacionGet, // Obtener una refinación específica por ID
+  refinacionPost, // Crear una nueva refinación
+  refinacionPut, // Actualizar una refinación existente
+  refinacionDelete, // Eliminar (marcar como eliminado) una refinación
+  refinacionPatch, // Manejar solicitudes PATCH
 };
