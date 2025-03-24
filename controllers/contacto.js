@@ -74,34 +74,34 @@ const contactoGet = async (req = request, res = response) => {
 // Crear una nuevo contacto
 const contactoPost = async (req = request, res = response) => {
   const {
-    nombre,
-    ubicacion,
+    correo,
+    cuentasBancarias,
+    cuentasPorCobrar,
+    cuentasPorPagar,
+    direccion,
+    email,
     identificacionFiscal,
+    nombre,
     representanteLegal,
     telefono,
-    correo,
-    email,
-    direccion,
     tipo,
-    cuentasBancarias,
-    cuentasPorPagar,
-    cuentasPorCobrar,
+    ubicacion,
   } = req.body;
 
   try {
     const nuevaContacto = new Contacto({
-      nombre,
-      ubicacion,
+      correo,
+      cuentasBancarias,
+      cuentasPorCobrar,
+      cuentasPorPagar,
+      direccion,
+      email,
       identificacionFiscal,
+      nombre,
       representanteLegal,
       telefono,
-      correo,
-      email,
-      direccion,
       tipo,
-      cuentasBancarias,
-      cuentasPorPagar,
-      cuentasPorCobrar,
+      ubicacion,
     });
 
     await nuevaContacto.save();

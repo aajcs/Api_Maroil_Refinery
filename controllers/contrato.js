@@ -67,46 +67,45 @@ const contratoGet = async (req = request, res = response) => {
 // Crear un nuevo contrato FUNCIONAL
 const contratoPost = async (req, res = response) => {
   const {
-    numeroContrato,
-    descripcion,
-    tipoContrato,
-    estadoContrato,
     idRefineria,
-    fechaInicio,
-    fechaFin,
-    condicionesPago,
-    plazo,
-    destino,
-    fechaEnvio,
-    estadoEntrega,
-    clausulas,
     idContacto,
     abono,
+    clausulas,
+    condicionesPago,
+    descripcion,
+    destino,
+    estadoContrato,
+    estadoEntrega,
+    fechaEnvio,
+    fechaFin,
+    fechaInicio,
     items, // Array de objetos item
-
     montoTotal,
+    numeroContrato,
+    plazo,
+    tipoContrato,
   } = req.body;
   let nuevoContrato; // Declarar fuera del bloque try
   try {
     // 1. Crear el contrato
     nuevoContrato = new Contrato({
-      numeroContrato,
-      descripcion,
-      tipoContrato,
-      estadoContrato,
       idRefineria,
-      fechaInicio,
-      fechaFin,
-      condicionesPago,
-      plazo,
-      destino,
-      fechaEnvio,
-      estadoEntrega,
-      clausulas,
       idContacto,
       abono,
-
+      clausulas,
+      condicionesPago,
+      descripcion,
+      destino,
+      estadoContrato,
+      estadoEntrega,
+      fechaEnvio,
+      fechaFin,
+      fechaInicio,
+      items, // Array de objetos item
       montoTotal,
+      numeroContrato,
+      plazo,
+      tipoContrato,
     });
     if (!items || items.length === 0) {
       return res.status(400).json({

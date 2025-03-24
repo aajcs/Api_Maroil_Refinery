@@ -50,24 +50,24 @@ const torreGet = async (req = request, res = response) => {
 // Crear una nueva torre
 const torrePost = async (req = request, res = response) => {
   const {
-    nombre,
-    ubicacion,
+    idRefineria,
+    almacenamiento,
     capacidad,
     material,
-    almacenamiento,
     numero,
-    idRefineria,
+    nombre,
+    ubicacion,
   } = req.body;
 
   try {
     const nuevaTorre = new Torre({
-      nombre,
-      ubicacion,
+      idRefineria,
+      almacenamiento,
       capacidad,
       material,
-      almacenamiento,
       numero,
-      idRefineria,
+      nombre,
+      ubicacion,
     });
 
     await nuevaTorre.save();

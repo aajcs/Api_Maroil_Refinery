@@ -11,19 +11,30 @@ const TorreSchema = Schema(
     nombre: {
       type: String,
       required: [true, "El Nombre es obligatorio"],
+      minlength: [3, "El nombre debe tener al menos 3 caracteres"],
+      maxlength: [50, "El nombre no puede exceder los 50 caracteres"],
     },
     ubicacion: {
       type: String,
-      required: [true, "La ubicación es obligatorio"],
+      required: [true, "La ubicación es obligatoria"],
+      maxlength: [100, "La ubicación no puede exceder los 100 caracteres"],
     },
     caudal: {
       type: Number,
-      required: [false, "El caudal es obligatorio"],
+      min: [0, "El caudal no puede ser negativo"],
+      required: false,
     },
     densidad: {
       type: Number,
-      required: [false, "Densidad de torre obligatorio"],
+      min: [0, "La densidad no puede ser negativa"],
+      required: false,
     },
+    presion: {
+      type: Number,
+      min: [0, "La presión no puede ser negativa"],
+      required: false,
+    },
+
     material: [
       {
         idProducto: {
@@ -31,17 +42,22 @@ const TorreSchema = Schema(
           ref: "Producto",
           required: [true, "El ID del Producto del derivado es obligatorio"],
         },
-        estadoMaterial: { type: String, required: false },
+        estadoMaterial: {
+          type: String,
+          enum: ["bueno", "regular", "malo"], // Ejemplo de valores permitidos
+          required: false,
+        },
       },
     ],
-    presion: {
-      type: Number,
-      required: [false, "La presión es obligatoria"],
-    },
+
+    //Controladores Logicos y de eliminacion
+
     estado: {
       type: String,
-      default: true,
+      enum: ["activo", "inactivo"], // Valores permitidos
+      default: "activo",
     },
+
     eliminado: {
       type: Boolean,
       default: false,
