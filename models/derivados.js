@@ -1,13 +1,15 @@
 const { Schema, model } = require("mongoose");
+
 const DerivadoSchema = Schema({
   nombreDerivado: {
     type: String,
-    required: [false, "El nombre del derivado es obligatorio"],
+    required: [true, "El nombre del derivado es obligatorio"], // Cambiado a true para que sea obligatorio
     enum: ["Gasolina", "Diesel", "Jet Fuel", "Asfalto"], // Lista de derivados
   },
   cantidadProducida: {
     type: Number,
-    required: [false, "La cantidad producida es obligatoria"],
+    required: [true, "La cantidad producida es obligatoria"], // Cambiado a true para que sea obligatorio
+    min: [0, "La cantidad producida no puede ser negativa"], // Validación para evitar valores negativos
   },
   calidad: {
     type: String,
@@ -25,7 +27,9 @@ const DerivadoSchema = Schema({
   },
   estado: {
     type: String,
-    default: true,
+    enum: ["true", "false"], // Define los valores permitidos para el campo estado
+    default: "true",
+    required: true,
   },
   eliminado: {
     type: Boolean,
@@ -40,4 +44,5 @@ DerivadoSchema.set("toJSON", {
     delete returnedObject.__v;
   },
 });
+
 module.exports = model("Derivado", DerivadoSchema);

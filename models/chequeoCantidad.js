@@ -3,60 +3,81 @@ const Counter = require("./counter");
 
 const ChequeoCantidadSchema = Schema(
   {
+    // Número de chequeo de cantidad
     numeroChequeoCantidad: {
       type: Number,
     },
+
+    // Relación con el modelo Refineria
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
       required: true,
+      
     },
-    //id del producto (crudo o derivado)
+
+    // Relación con el modelo Producto (crudo o derivado)
     idProducto: {
       type: Schema.Types.ObjectId,
       ref: "Producto",
       required: true,
+      
     },
 
-    //Tanque en el que se almacena el Derivado
+    // Relación con el modelo Tanque
     idTanque: {
       type: Schema.Types.ObjectId,
       ref: "Tanque",
       required: true,
+      
     },
 
-    //Torre de donde sale el derivado
+    // Relación con el modelo Torre
     idTorre: {
       type: Schema.Types.ObjectId,
       ref: "Torre",
       required: true,
+      
     },
 
+    // Relación con el modelo Refinacion
     idRefinacion: {
       type: Schema.Types.ObjectId,
       ref: "Refinacion",
       required: true,
-    },
-    //Nombre del operador
-    operador: {
-      type: String,
-      required: [false, "El nombre del operador es obligatorio"],
-    },
-    fechaChequeo: {
-      type: Date,
-      required: [false, "La fecha del chequeo es obligatoria"],
-    },
-    //cantidad registrada
-    cantidad: {
-      type: Number,
-      required: [false, "La cantidad registrada es obligatoria"],
+      
     },
 
+    // Nombre del operador
+    operador: {
+      type: String,
+      required: [true, "El nombre del operador es obligatorio"],
+      minlength: [3, "El nombre del operador debe tener al menos 3 caracteres"],
+      maxlength: [50, "El nombre del operador no puede exceder los 50 caracteres"]
+    },
+
+    // Fecha del chequeo
+    fechaChequeo: {
+      type: Date,
+      required: [true, "La fecha del chequeo es obligatoria"],
+    },
+
+    // Cantidad registrada
+    cantidad: {
+      type: Number,
+      required: [true, "La cantidad registrada es obligatoria"],
+      min: [0, "La cantidad no puede ser negativa"], // Validación para evitar valores negativos
+    },
+
+    // Estado del chequeo
     estado: {
       type: String,
-      default: true,
+      enum: ["true", "false"], // Define los valores permitidos para el campo estado
+      default: "true",
       required: true,
     },
+
+    // Eliminación lógica
     eliminado: {
       type: Boolean,
       default: false,
@@ -68,14 +89,16 @@ const ChequeoCantidadSchema = Schema(
   }
 );
 
+// Método para transformar el objeto devuelto por Mongoose
 ChequeoCantidadSchema.set("toJSON", {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
+    returnedObject.id = returnedObject._id.toString(); // Convierte _id a id
+    delete returnedObject._id; // Elimina _id
+    delete returnedObject.__v; // Elimina __v (si no lo has desactivado en las opciones del esquema)
   },
 });
 
+// Middleware para incrementar el contador antes de guardar
 ChequeoCantidadSchema.pre("save", async function (next) {
   if (this.isNew && this.idRefineria) {
     try {
@@ -95,7 +118,7 @@ ChequeoCantidadSchema.pre("save", async function (next) {
       refineriaCounter.seq += 1;
       await refineriaCounter.save();
 
-      // Asignar el valor actualizado al campo "numeroChequeoCalidad"
+      // Asignar el valor actualizado al campo "numeroChequeoCantidad"
       this.numeroChequeoCantidad = refineriaCounter.seq;
       next();
     } catch (error) {

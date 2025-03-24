@@ -1,50 +1,101 @@
 const { Schema, model } = require("mongoose");
 
 const ContactoSchema = new Schema({
+  // Relación con el modelo Refineria
   idRefineria: {
     type: Schema.Types.ObjectId,
     ref: "Refineria",
     required: false,
+    
   },
-  nombre: { type: String, required: false },
-  ubicacion: { type: String, required: false },
-  identificacionFiscal: { type: String, required: false },
-  representanteLegal: { type: String, required: false },
-  telefono: { type: String, required: false },
-  correo: { type: String, required: false },
-  email: { type: String, required: false },
-  direccion: { type: String, required: false },
 
+  // Información del contacto
+  nombre: { 
+    type: String, 
+    required: [true, "El nombre es obligatorio"], 
+    minlength: [3, "El nombre debe tener al menos 3 caracteres"], 
+    maxlength: [50, "El nombre no puede exceder los 50 caracteres"] 
+  },
+  ubicacion: { 
+    type: String, 
+    required: [true, "La ubicación es obligatoria"], 
+    minlength: [3, "La ubicación debe tener al menos 3 caracteres"], 
+    maxlength: [100, "La ubicación no puede exceder los 100 caracteres"] 
+  },
+  identificacionFiscal: { 
+    type: String, 
+    required: [true, "La identificación fiscal es obligatoria"], 
+    minlength: [5, "La identificación fiscal debe tener al menos 5 caracteres"], 
+    maxlength: [20, "La identificación fiscal no puede exceder los 20 caracteres"] 
+  },
+  representanteLegal: { 
+    type: String, 
+    required: [true, "El representante legal es obligatorio"], 
+    minlength: [3, "El representante legal debe tener al menos 3 caracteres"], 
+    maxlength: [50, "El representante legal no puede exceder los 50 caracteres"] 
+  },
+  telefono: { 
+    type: String, 
+    required: [true, "El teléfono es obligatorio"], 
+    minlength: [7, "El teléfono debe tener al menos 7 caracteres"], 
+    maxlength: [15, "El teléfono no puede exceder los 15 caracteres"] 
+  },
+  correo: { 
+    type: String, 
+    required: [true, "El correo es obligatorio"], 
+    match: [/.+\@.+\..+/, "Por favor ingrese un correo válido"] 
+  },
+  email: { 
+    type: String, 
+    required: [true, "El email es obligatorio"], 
+    match: [/.+\@.+\..+/, "Por favor ingrese un email válido"] 
+  },
+  direccion: { 
+    type: String, 
+    required: [true, "La dirección es obligatoria"], 
+    minlength: [5, "La dirección debe tener al menos 5 caracteres"], 
+    maxlength: [100, "La dirección no puede exceder los 100 caracteres"] 
+  },
+
+  // Tipo de contacto
   tipo: {
     type: String,
     enum: ["cliente", "proveedor"],
-    required: [false, "Seleccione que tipo de contacto es"],
+    required: [true, "Seleccione qué tipo de contacto es"],
   },
+
+  // Cuentas bancarias del contacto
   cuentasBancarias: [
     {
-      banco: { type: String, required: false },
-      numeroCuenta: { type: String, required: false },
+      banco: { type: String, required: [true, "El banco es obligatorio"] },
+      numeroCuenta: { type: String, required: [true, "El número de cuenta es obligatorio"] },
       tipoCuenta: {
         type: String,
         enum: ["Ahorro", "Corriente"],
-        required: false,
+        required: [true, "El tipo de cuenta es obligatorio"],
       },
     },
   ],
+
+  // Cuentas por pagar del contacto
   cuentasPorPagar: [
     {
-      monto: { type: Number, required: false },
-      fechaVencimiento: { type: Date, required: false },
-      estado: { type: String, enum: ["Pendiente", "Pagada"], required: false },
+      monto: { type: Number, required: [true, "El monto es obligatorio"], min: [0, "El monto no puede ser negativo"] },
+      fechaVencimiento: { type: Date, required: [true, "La fecha de vencimiento es obligatoria"] },
+      estado: { type: String, enum: ["Pendiente", "Pagada"], required: [true, "El estado es obligatorio"] },
     },
   ],
+
+  // Cuentas por cobrar del contacto
   cuentasPorCobrar: [
     {
-      monto: { type: Number, required: false },
-      fechaVencimiento: { type: Date, required: false },
-      estado: { type: String, enum: ["Pendiente", "Cobrada"], required: false },
+      monto: { type: Number, required: [true, "El monto es obligatorio"], min: [0, "El monto no puede ser negativo"] },
+      fechaVencimiento: { type: Date, required: [true, "La fecha de vencimiento es obligatoria"] },
+      estado: { type: String, enum: ["Pendiente", "Cobrada"], required: [true, "El estado es obligatorio"] },
     },
   ],
+
+  // Compras realizadas por el contacto
   compras: [
     {
       contrato: {
@@ -52,33 +103,43 @@ const ContactoSchema = new Schema({
         ref: "Contrato",
         required: false,
       },
-      fechaCompra: { type: Date, required: false },
-      cantidad: { type: Number, required: false },
-      precioUnitario: { type: Number, required: false },
-      total: { type: Number, required: false },
+      fechaCompra: { type: Date, required: [true, "La fecha de compra es obligatoria"] },
+      cantidad: { type: Number, required: [true, "La cantidad es obligatoria"], min: [0, "La cantidad no puede ser negativa"] },
+      precioUnitario: { type: Number, required: [true, "El precio unitario es obligatorio"], min: [0, "El precio unitario no puede ser negativo"] },
+      total: { type: Number, required: [true, "El total es obligatorio"], min: [0, "El total no puede ser negativo"] },
     },
   ],
+
+  // Ventas realizadas por el contacto
   ventas: [
     {
       contrato: { type: Schema.Types.ObjectId, ref: "Contrato" },
-      fechaVenta: { type: Date },
-      cantidad: { type: Number },
-      precioUnitario: { type: Number },
-      total: { type: Number },
+      fechaVenta: { type: Date, required: [true, "La fecha de venta es obligatoria"] },
+      cantidad: { type: Number, required: [true, "La cantidad es obligatoria"], min: [0, "La cantidad no puede ser negativa"] },
+      precioUnitario: { type: Number, required: [true, "El precio unitario es obligatorio"], min: [0, "El precio unitario no puede ser negativo"] },
+      total: { type: Number, required: [true, "El total es obligatorio"], min: [0, "El total no puede ser negativo"] },
     },
   ],
+
+  // Historial de modificaciones del contacto
   historialModificaciones: [
     {
-      campoModificado: { type: String },
-      valorAnterior: { type: Schema.Types.Mixed },
-      valorNuevo: { type: Schema.Types.Mixed },
+      campoModificado: { type: String, required: [true, "El campo modificado es obligatorio"] },
+      valorAnterior: { type: Schema.Types.Mixed, required: [true, "El valor anterior es obligatorio"] },
+      valorNuevo: { type: Schema.Types.Mixed, required: [true, "El valor nuevo es obligatorio"] },
       fechaModificacion: { type: Date, default: Date.now },
     },
   ],
+
+  // Estado del contacto
   estado: {
     type: String,
-    default: true,
+    enum: ["true", "false"], // Define los valores permitidos para el campo estado
+    default: "true",
+    required: true,
   },
+
+  // Eliminación lógica
   eliminado: {
     type: Boolean,
     default: false,
@@ -87,9 +148,9 @@ const ContactoSchema = new Schema({
 
 ContactoSchema.set("toJSON", {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
+    returnedObject.id = returnedObject._id.toString(); // Convierte _id a id
+    delete returnedObject._id; // Elimina _id
+    delete returnedObject.__v; // Elimina __v (si no lo has desactivado en las opciones del esquema)
   },
 });
 
