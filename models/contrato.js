@@ -14,7 +14,7 @@ const ContratoSchema = Schema(
     },
     tipoContrato: {
       type: String,
-      enum: ["Compra", "Venta"],
+      enum: ["Compra", "Venta", "Simulacion"],
       default: "Compra",
     },
 
