@@ -21,10 +21,25 @@ const populateOptions = [
       { path: "idTorre", select: "nombre" }, // Relación con el modelo Torre
     ],
   },
-  { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
-  { path: "idTanque", select: "nombre" }, // Relación con el modelo Tanque
-  { path: "idProducto", select: "nombre" }, // Relación con el modelo Producto
-  { path: "derivado.idProducto", select: "nombre" }, // Relación con productos derivados
+  { path: "idRefineria", select: "nombre" },
+  { path: "idTanque", select: "nombre" },
+  { path: "idProducto", select: "nombre" },
+  { path: "derivado.idProducto", select: "nombre" },
+  {
+    path: "idRefinacionSalida",
+    select:
+      "idTanque cantidadTotal descripcion idProducto estadoRefinacionSalida numeroRefinacionSalida",
+    populate: [
+      {
+        path: "idTanque",
+        select: "nombre",
+      },
+      {
+        path: "idProducto",
+        select: "nombre",
+      },
+    ],
+  },
 ];
 
 // Controlador para obtener todas las refinaciones con paginación y población de referencias
