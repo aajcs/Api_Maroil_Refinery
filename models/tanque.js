@@ -81,7 +81,7 @@ TanqueSchema.set("toJSON", {
     // Cambia el nombre de _id a id
     returnedObject.id = returnedObject._id.toString();
     // Elimina las propiedades innecesarias del objeto devuelto
-    delete returnedObject._id;
+    // delete returnedObject._id;
     delete returnedObject.__v;
   },
 });

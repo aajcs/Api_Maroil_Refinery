@@ -92,7 +92,7 @@ const TorreSchema = Schema(
 TorreSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString(); // Cambia _id a id
-    delete returnedObject._id; // Elimina _id
+    // delete returnedObject._id; // Elimina _id
     delete returnedObject.__v; // Elimina __v
   },
 });
