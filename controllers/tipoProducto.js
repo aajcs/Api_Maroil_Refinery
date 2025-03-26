@@ -13,6 +13,10 @@ const populateOptions = [
     path: "idRefineria", // Relación con el modelo Refineria
     select: "nombre", // Selecciona solo el campo nombre
   },
+  {
+    path: "rendimientos.idProducto", // Población dentro del array de rendimientos
+    select: "nombre", // Incluye solo el campo nombre del producto
+  },
 ];
 
 // Controlador para obtener todos los tipos de producto con paginación y población de referencias
@@ -68,6 +72,7 @@ const tipoProductoPost = async (req = request, res = response) => {
     idProducto,
     nombre,
     clasificacion,
+    rendimientos,
     gravedadAPI,
     azufre,
     contenidoAgua,
@@ -81,6 +86,7 @@ const tipoProductoPost = async (req = request, res = response) => {
       idProducto,
       nombre,
       clasificacion,
+      rendimientos,
       gravedadAPI,
       azufre,
       contenidoAgua,

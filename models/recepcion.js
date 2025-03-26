@@ -108,6 +108,13 @@ const RecepcionSchema = new Schema(
       ], // Validación de longitud máxima
     },
 
+    // Tipo de recepcion
+    tipo: {
+      type: String,
+      enum: ["Recepcion", "Despacho"],
+      required: [true, "Seleccione qué tipo de operacion es"],
+    },
+
     // Control de estado (eliminación lógica)
     eliminado: {
       type: Boolean,

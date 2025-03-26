@@ -19,6 +19,7 @@ const {
   RefinacionSalida,
   Balance,
   TipoProducto,
+  Simulacion,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -206,6 +207,15 @@ const existeTipoProductoPorId = async (id) => {
   }
 };
 
+const existeSimulacionPorId = async (id) => {
+  // Verificar si la simulacion existe
+
+  const existeSimulacion = await Simulacion.findById(id);
+  if (!existeSimulacion) {
+    throw new Error(`Simulacion no existe ${id}`);
+  }
+};
+
 /**
  * Validar colecciones permitidas
  */
@@ -243,6 +253,7 @@ module.exports = {
   existeRefinacionSalidaPorId,
   existeBalancePorId,
   existeTipoProductoPorId,
+  existeSimulacionPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

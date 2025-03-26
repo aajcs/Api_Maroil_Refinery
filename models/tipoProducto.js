@@ -65,7 +65,18 @@ const TipoProductoSchema = Schema(
         "El punto de inflamación (Flashpoint) del producto es obligatorio",
       ], // Campo obligatorio
     },
+    // Rendimiento del producto
 
+    rendimientos: [
+      {
+        idProducto: { type: Schema.Types.ObjectId, ref: "Producto" },
+        gas: { type: Number, min: 0, required: true },
+        nafta: { type: Number, min: 0, required: true },
+        kerosene: { type: Number, min: 0, required: true },
+        fo4: { type: Number, min: 0, required: true },
+        fo6: { type: Number, min: 0, required: true },
+      },
+    ],
     // Estado del producto (Activo o Inactivo)
     estado: {
       type: String,

@@ -28,6 +28,7 @@ const Refinacion = require("./refinacion");
 const RefinacionSalida = require("./refinacionSalida");
 const Role = require("./role");
 const Server = require("./server");
+const Simulacion = require("./simulacion");
 const Tanque = require("./tanque");
 const TipoProducto = require("./tipoProducto");
 const Torre = require("./torre");
@@ -71,6 +72,7 @@ module.exports = {
   RefinacionSalida,
   Role,
   Server,
+  Simulacion,
   Tanque,
   TipoProducto,
   Torre,
