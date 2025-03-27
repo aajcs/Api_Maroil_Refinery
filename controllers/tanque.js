@@ -10,7 +10,7 @@ const populateOptions = [
   },
   {
     path: "idProducto", // Relación con el modelo Producto
-    select: "nombre color", // Selecciona solo los campos nombre y color
+    select: "nombre color posicion", // Selecciona solo los campos nombre y color
   },
 ];
 

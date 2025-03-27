@@ -139,9 +139,6 @@ const ContratoSchema = Schema(
     // Estado del contrato
     estado: {
       type: String,
-      enum: ["true", "false"], // Define los valores permitidos para el campo estado
-      default: "true",
-      required: true,
     },
 
     // Eliminación lógica
