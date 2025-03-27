@@ -7,7 +7,6 @@ const ContratoItemsSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "Contrato",
       required: false,
-      
     },
 
     // Relación con el modelo Producto
@@ -15,7 +14,6 @@ const ContratoItemsSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "Producto",
       required: [false, "El ID del tanque del derivado es obligatorio"],
-      
     },
 
     // Cantidad del producto
@@ -42,8 +40,10 @@ const ContratoItemsSchema = Schema(
     // Porcentaje acordado por encima o por debajo del Brent
     convenio: {
       type: Number,
-      required: [false, "El porcentaje acordado por encima o por debajo del Brent es obligatorio"],
-      min: [0, "El porcentaje no puede ser negativo"], // Validación para evitar valores negativos
+      required: [
+        false,
+        "El porcentaje acordado por encima o por debajo del Brent es obligatorio",
+      ],
     },
 
     // Monto de transporte
@@ -58,7 +58,6 @@ const ContratoItemsSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "TipoProducto",
       required: [true, "El ID del tipo de producto es obligatorio"],
-      
     },
 
     // Clasificación del crudo
