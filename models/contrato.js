@@ -8,7 +8,10 @@ const ContratoSchema = Schema(
       required: [true, "El número de contrato es obligatorio"],
       unique: true,
       minlength: [3, "El número de contrato debe tener al menos 3 caracteres"],
-      maxlength: [50, "El número de contrato no puede exceder los 50 caracteres"]
+      maxlength: [
+        50,
+        "El número de contrato no puede exceder los 50 caracteres",
+      ],
     },
 
     // Descripción del contrato
@@ -16,7 +19,7 @@ const ContratoSchema = Schema(
       type: String,
       required: [true, "La descripción es obligatoria"],
       minlength: [5, "La descripción debe tener al menos 5 caracteres"],
-      maxlength: [200, "La descripción no puede exceder los 200 caracteres"]
+      maxlength: [200, "La descripción no puede exceder los 200 caracteres"],
     },
 
     // Tipo de contrato
@@ -24,7 +27,7 @@ const ContratoSchema = Schema(
       type: String,
       enum: ["Compra", "Venta", "Simulacion"],
       default: "Compra",
-      required: true
+      required: true,
     },
 
     // Estado del contrato
@@ -32,7 +35,7 @@ const ContratoSchema = Schema(
       type: String,
       enum: ["Adjudicado", "Activo", "Inactivo"],
       default: "Inactivo",
-      required: true
+      required: true,
     },
 
     // Relación con el modelo Refineria
@@ -40,7 +43,6 @@ const ContratoSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "Refineria",
       required: true,
-      
     },
 
     // Relación con el modelo Contacto
@@ -48,7 +50,6 @@ const ContratoSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "Contacto",
       required: false,
-      
     },
 
     // Array de IDs de items del contrato
@@ -57,11 +58,11 @@ const ContratoSchema = Schema(
     // Fechas de inicio y fin del contrato
     fechaInicio: {
       type: Date,
-      required: [true, "La fecha de inicio es obligatoria"]
+      required: [true, "La fecha de inicio es obligatoria"],
     },
     fechaFin: {
       type: Date,
-      required: [true, "La fecha de finalización es obligatoria"]
+      required: [true, "La fecha de finalización es obligatoria"],
     },
 
     // Condiciones de pago
@@ -70,42 +71,46 @@ const ContratoSchema = Schema(
         type: String,
         enum: ["Contado", "Crédito"],
         default: "Contado",
-        required: true
+        required: true,
       },
       plazo: {
         type: Number, // Días de plazo si es crédito
         default: 0,
-        min: [0, "El plazo no puede ser negativo"]
-      }
+        min: [0, "El plazo no puede ser negativo"],
+      },
     },
 
     // Monto total del contrato
     montoTotal: {
       type: Number,
-      required: [true, "El monto total es requerido"],
-      min: [0, "El monto total no puede ser negativo"] // Validación para evitar valores negativos
+      // required: [true, "El monto total es requerido"],
+      min: [0, "El monto total no puede ser negativo"], // Validación para evitar valores negativos
     },
 
     // Abonos realizados
     abono: [
       {
-        monto: { type: Number, required: false, min: [0, "El monto no puede ser negativo"] },
-        fecha: { type: Date, required: false }
-      }
+        monto: {
+          type: Number,
+          required: false,
+          min: [0, "El monto no puede ser negativo"],
+        },
+        fecha: { type: Date, required: false },
+      },
     ],
 
     // Destino del contrato
     destino: {
       type: String,
-      required: [true, "El destino es obligatorio"],
+      // required: [true, "El destino es obligatorio"],
       minlength: [3, "El destino debe tener al menos 3 caracteres"],
-      maxlength: [100, "El destino no puede exceder los 100 caracteres"]
+      maxlength: [100, "El destino no puede exceder los 100 caracteres"],
     },
 
     // Fecha de envío
     fechaEnvio: {
       type: Date,
-      required: [true, "La fecha de envío es obligatoria"]
+      // required: [true, "La fecha de envío es obligatoria"],
     },
 
     // Estado de la entrega
@@ -113,13 +118,13 @@ const ContratoSchema = Schema(
       type: String,
       enum: ["Pendiente", "En Tránsito", "Entregado", "Cancelado"],
       default: "Pendiente",
-      required: true
+      required: true,
     },
 
     // Cláusulas del contrato
     clausulas: {
       type: [String],
-      default: []
+      default: [],
     },
 
     // Historial de modificaciones
@@ -127,8 +132,8 @@ const ContratoSchema = Schema(
       {
         fecha: { type: Date, default: Date.now },
         usuario: { type: String, required: true },
-        cambios: { type: String, required: true }
-      }
+        cambios: { type: String, required: true },
+      },
     ],
 
     // Estado del contrato
@@ -136,21 +141,20 @@ const ContratoSchema = Schema(
       type: String,
       enum: ["true", "false"], // Define los valores permitidos para el campo estado
       default: "true",
-      required: true
+      required: true,
     },
 
     // Eliminación lógica
     eliminado: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   {
     timestamps: true, // Añade createdAt y updatedAt automáticamente
-    versionKey: false // Elimina el campo __v
+    versionKey: false, // Elimina el campo __v
   }
 );
-
 
 // Método para transformar el objeto devuelto por Mongoose
 ContratoSchema.set("toJSON", {
