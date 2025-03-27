@@ -15,7 +15,7 @@ const TorreSchema = Schema(
     // Nombre de la torre
     nombre: {
       type: String,
-      required: [true, "El Nombre es obligatorio"], // Campo obligatorio
+      required: [false, "El Nombre es obligatorio"], // Campo obligatorio
       minlength: [3, "El nombre debe tener al menos 3 caracteres"], // Validación de longitud mínima
       maxlength: [50, "El nombre no puede exceder los 50 caracteres"], // Validación de longitud máxima
     },
@@ -23,30 +23,30 @@ const TorreSchema = Schema(
     // Ubicación física de la torre dentro de la refinería
     ubicacion: {
       type: String,
-      required: [true, "La ubicación es obligatoria"], // Campo obligatorio
-      maxlength: [100, "La ubicación no puede exceder los 100 caracteres"], // Validación de longitud máxima
+      required: [false, "La ubicación es obligatoria"], // Campo obligatorio
+      //maxlength: [100, "La ubicación no puede exceder los 100 caracteres"], // Validación de longitud máxima
     },
 
     // Caudal de la torre (opcional)
-    caudal: {
-      type: Number,
-      min: [0, "El caudal no puede ser negativo"], // Validación para evitar valores negativos
-      required: false, // Campo opcional
-    },
+    // caudal: {
+    //   type: Number,
+    //   min: [0, "El caudal no puede ser negativo"], // Validación para evitar valores negativos
+    //   required: false, // Campo opcional
+    // },
 
-    // Densidad de los materiales procesados en la torre (opcional)
-    densidad: {
-      type: Number,
-      min: [0, "La densidad no puede ser negativa"], // Validación para evitar valores negativos
-      required: false, // Campo opcional
-    },
+    // // Densidad de los materiales procesados en la torre (opcional)
+    // densidad: {
+    //   type: Number,
+    //   min: [0, "La densidad no puede ser negativa"], // Validación para evitar valores negativos
+    //   required: false, // Campo opcional
+    // },
 
-    // Presión de operación de la torre (opcional)
-    presion: {
-      type: Number,
-      min: [0, "La presión no puede ser negativa"], // Validación para evitar valores negativos
-      required: false, // Campo opcional
-    },
+    // // Presión de operación de la torre (opcional)
+    // presion: {
+    //   type: Number,
+    //   min: [0, "La presión no puede ser negativa"], // Validación para evitar valores negativos
+    //   required: false, // Campo opcional
+    // },
 
     // Materiales procesados en la torre
     material: [
@@ -55,7 +55,7 @@ const TorreSchema = Schema(
         idProducto: {
           type: Schema.Types.ObjectId,
           ref: "Producto", // Relación con el modelo Producto
-          required: [true, "El ID del Producto del derivado es obligatorio"], // Campo obligatorio
+          required: [false, "El ID del Producto del derivado es obligatorio"], // Campo obligatorio
         },
         // Estado del material procesado
         estadoMaterial: {
