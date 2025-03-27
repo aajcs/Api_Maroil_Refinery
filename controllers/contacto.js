@@ -84,6 +84,7 @@ const contactoPost = async (req = request, res = response) => {
     telefono,
     tipo,
     ubicacion,
+    idRefineria,
   } = req.body; // Extrae los datos del cuerpo de la solicitud
 
   try {
@@ -100,6 +101,7 @@ const contactoPost = async (req = request, res = response) => {
       telefono,
       tipo,
       ubicacion,
+      idRefineria,
     });
 
     await nuevaContacto.save(); // Guarda el nuevo contacto en la base de datos
