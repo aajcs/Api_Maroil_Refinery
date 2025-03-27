@@ -1,121 +1,176 @@
 const { Schema, model } = require("mongoose");
 
+// Definición del esquema para el modelo Recepción
 const DespachoSchema = new Schema(
   {
-    // Relaciones con otros modelos (referencias)
+    // Número de despacho
+    numeroDespacho: {
+      type: Number,
+    },
+    // Relación con el modelo Contrato
     idContrato: {
       type: Schema.Types.ObjectId,
-      ref: "Contrato",
-      required: true,
-      
+      ref: "Contrato", // Relación con el modelo Contrato
+      required: [
+        true,
+        "El ID del Contrato asociado a la recepción es obligatorio",
+      ], // Campo obligatorio
     },
+
+    // Relación con los ítems del contrato (opcional)
     idContratoItems: {
       type: Schema.Types.ObjectId,
-      ref: "ContratoItems",
-      required: true,
-      
+      ref: "ContratoItems", // Relación con el modelo ContratoItems
     },
+
+    // Relación con el modelo Línea de Carga (opcional)
     idLinea: {
       type: Schema.Types.ObjectId,
-      ref: "LineaCarga",
-      required: true,
-      
+      ref: "LineaCarga", // Relación con el modelo LineaCarga
     },
+
+    // Relación con el modelo Refinería
     idRefineria: {
       type: Schema.Types.ObjectId,
-      ref: "Refineria",
-      required: true,
-      
+      ref: "Refineria", // Relación con el modelo Refineria
+      required: [
+        true,
+        "El ID de la Refinería asociada a la recepción es obligatorio",
+      ], // Campo obligatorio
     },
+
+    // Relación con el modelo Tanque (opcional)
     idTanque: {
       type: Schema.Types.ObjectId,
-      ref: "Tanque",
-      required: true,
-      
+      ref: "Tanque", // Relación con el modelo Tanque
     },
 
     // Información de la recepción
-    cantidadDespacho: {
+    cantidadRecibida: {
       type: Number,
-      required: true,
-      min: [0, "La cantidad de despacho no puede ser negativa"],
+      min: [0, "La cantidad recibida no puede ser negativa"], // Validación para evitar valores negativos
     },
+
     cantidadEnviada: {
       type: Number,
-      required: true,
-      min: [0, "La cantidad enviada no puede ser negativa"],
+      min: [0, "La cantidad enviada no puede ser negativa"], // Validación para evitar valores negativos
+      required: [true, "La cantidad enviada es obligatoria"], // Campo obligatorio
     },
 
-    estadoDespacho: {
+    // Estado de la carga (en tránsito o entregado)
+    estadoCarga: {
       type: String,
-      enum: ["EN_TRANSITO", "ENTREGADO"], // Define los valores permitidos para el campo estadoDespacho
-      default: "EN_TRANSITO",
-      required: true,
+      enum: ["EN_TRANSITO", "ENTREGADO"], // Valores permitidos
+      default: "EN_TRANSITO", // Valor por defecto
     },
+
+    // Estado general de la recepción (activo o inactivo)
     estado: {
       type: String,
-      enum: ["true", "false"], // Define los valores permitidos para el campo estado
-      default: "true",
-      required: true,
+      enum: ["activo", "inactivo"], // Valores permitidos
+      default: "activo", // Valor por defecto
     },
 
-    // Fechas
+    // Fechas relacionadas con la recepción
     fechaInicio: {
-      type: Date,
-      required: true,
+      type: Date, // Fecha de inicio de la recepción
     },
     fechaFin: {
-      type: Date,
-      required: true,
+      type: Date, // Fecha de finalización de la recepción
     },
     fechaDespacho: {
-      type: Date,
-      required: true,
+      type: Date, // Fecha de despacho del transporte
     },
 
     // Información del transporte
     idGuia: {
       type: Number,
-      required: true,
+      required: [true, "El ID de la Guía es obligatorio"], // Campo obligatorio
     },
     placa: {
       type: String,
-      required: true,
-      minlength: [6, "La placa debe tener al menos 6 caracteres"],
-      maxlength: [10, "La placa no puede exceder los 10 caracteres"],
+      required: [true, "La placa del transporte es obligatoria"], // Campo obligatorio
+      minlength: [6, "La placa debe tener al menos 6 caracteres"], // Validación de longitud mínima
+      maxlength: [10, "La placa no puede exceder los 10 caracteres"], // Validación de longitud máxima
     },
     nombreChofer: {
       type: String,
-      required: true,
-      minlength: [3, "El nombre del chofer debe tener al menos 3 caracteres"],
-      maxlength: [50, "El nombre del chofer no puede exceder los 50 caracteres"],
+      required: [true, "El nombre del chofer es obligatorio"], // Campo obligatorio
+      minlength: [3, "El nombre del chofer debe tener al menos 3 caracteres"], // Validación de longitud mínima
+      maxlength: [
+        20,
+        "El nombre del chofer no puede exceder los 50 caracteres",
+      ], // Validación de longitud máxima
     },
     apellidoChofer: {
       type: String,
-      required: true,
-      minlength: [3, "El apellido del chofer debe tener al menos 3 caracteres"],
-      maxlength: [50, "El apellido del chofer no puede exceder los 50 caracteres"],
+      required: [true, "El apellido del chofer es obligatorio"], // Campo obligatorio
+      minlength: [3, "El apellido del chofer debe tener al menos 3 caracteres"], // Validación de longitud mínima
+      maxlength: [
+        20,
+        "El apellido del chofer no puede exceder los 50 caracteres",
+      ], // Validación de longitud máxima
+    },
+
+    // Tipo de recepcion
+    tipo: {
+      type: String,
+      enum: ["Despacho", "Despacho"],
+      required: [true, "Seleccione qué tipo de operacion es"],
     },
 
     // Control de estado (eliminación lógica)
     eliminado: {
       type: Boolean,
-      default: false,
+      default: false, // Valor por defecto
     },
   },
   {
-    timestamps: true, // Añade createdAt y updatedAt automáticamente
-    versionKey: false, // Elimina el campo __v
+    // Agrega automáticamente las propiedades createdAt y updatedAt
+    timestamps: true,
+    // Elimina la propiedad __v que agrega Mongoose por defecto
+    versionKey: false,
   }
 );
 
 // Método para transformar el objeto devuelto por Mongoose
 DespachoSchema.set("toJSON", {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString(); // Convierte _id a id
-    delete returnedObject._id; // Elimina _id
-    delete returnedObject.__v; // Elimina __v (si no lo has desactivado en las opciones del esquema)
+    returnedObject.id = returnedObject._id.toString(); // Cambia _id a id
+    delete returnedObject.__v; // Elimina __v
   },
 });
 
+// Middleware para generar un número único de refinación
+DespachoSchema.pre("save", async function (next) {
+  if (this.isNew && this.idRefineria) {
+    try {
+      // Generar la clave del contador específico para cada refinería
+      const counterKey = `despacho_${this.idRefineria.toString()}`;
+
+      // Buscar el contador
+      let refineriaCounter = await Counter.findOne({ _id: counterKey });
+
+      // Si el contador no existe, crearlo con el valor inicial de 1000
+      if (!refineriaCounter) {
+        refineriaCounter = new Counter({ _id: counterKey, seq: 999 });
+        await refineriaCounter.save();
+      }
+
+      // Incrementar el contador en 1
+      refineriaCounter.seq += 1;
+      await refineriaCounter.save();
+
+      // Asignar el valor actualizado al campo "numeroRefinacion"
+      this.numeroDespacho = refineriaCounter.seq;
+      next();
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    next();
+  }
+});
+
+// Exporta el modelo Recepción basado en el esquema definido
 module.exports = model("Despacho", DespachoSchema);

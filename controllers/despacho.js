@@ -1,6 +1,6 @@
 // Importaciones necesarias
 const { response, request } = require("express"); // Objetos de Express para manejar solicitudes y respuestas
-const Despacho = require("../models/despacho"); // Modelo Despacho para interactuar con la base de datos
+const Despacho = require("../models/despachoviejo"); // Modelo Despacho para interactuar con la base de datos
 const Contrato = require("../models/contrato"); // Modelo Contrato para manejar relaciones
 
 // Opciones de población reutilizables para consultas
