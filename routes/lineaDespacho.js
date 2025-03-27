@@ -13,21 +13,21 @@ const {
   // emailExiste,
   // existeUsuarioPorId,
   // nitExiste,
-  existeDespachoPorId,
+  existeLineaDespachoPorId,
 } = require("../helpers/db-validators");
 
 const {
-  despachoGet,
-  despachoPut,
-  despachoPost,
-  despachoDelete,
-  despachoPatch,
-  despachoGets,
-} = require("../controllers/despacho");
+  lineaDespachoGet,
+  lineaDespachoPut,
+  lineaDespachoPost,
+  lineaDespachoDelete,
+  lineaDespachoPatch,
+  lineaDespachoGets,
+} = require("../controllers/lineaDespacho");
 
 const router = Router();
 
-router.get("/", despachoGets);
+router.get("/", lineaDespachoGets);
 router.get(
   "/:id",
   [
@@ -35,29 +35,32 @@ router.get(
     // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
-  despachoGet
+  lineaDespachoGet
 );
 router.put(
   "/:id",
   [
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeDespachoPorId),
-    //check("rol").custom(esRoleValido), subiendo cambioos
+    check("id").custom(existeLineaDespachoPorId),
+    //check("rol").custom(esRoleValido),
     validarCampos,
   ],
-  despachoPut
+  lineaDespachoPut
 );
 
 router.post(
   "/",
   [
-    // check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    // check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),
-    // check("nit", "El NIT es obligatorio").not().isEmpty(),
-    // check("img", "El logotipo de la refineria es obligatorio").not().isEmpty(),
+    // check("numero", "El numero es obligatorio").not().isEmpty(),
+    //check("nit").custom(nitExiste),
+    //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
+    // check("refineria").custom(existeLineaDespachoPorId),
+
+    // check('rol', 'No es un rol válido').isIn(['ADMIN_ROLE','USER_ROLE']),
+    // check('rol').custom( esRoleValido ),
     validarCampos,
   ],
-  despachoPost
+  lineaDespachoPost
 );
 
 router.delete(
@@ -67,12 +70,12 @@ router.delete(
     // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeDespachoPorId),
+    check("id").custom(existeLineaDespachoPorId),
     validarCampos,
   ],
-  despachoDelete
+  lineaDespachoDelete
 );
 
-router.patch("/", despachoPatch);
+router.patch("/", lineaDespachoPatch);
 
 module.exports = router;

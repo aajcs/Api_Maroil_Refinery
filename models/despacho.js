@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const Counter = require("./counter");
 
 // Definición del esquema para el modelo Recepción
 const DespachoSchema = new Schema(
@@ -24,9 +25,9 @@ const DespachoSchema = new Schema(
     },
 
     // Relación con el modelo Línea de Carga (opcional)
-    idLinea: {
+    idLineaDespacho: {
       type: Schema.Types.ObjectId,
-      ref: "LineaCarga", // Relación con el modelo LineaCarga
+      ref: "LineaDespacho", // Relación con el modelo LineaCarga
     },
 
     // Relación con el modelo Refinería
@@ -67,8 +68,6 @@ const DespachoSchema = new Schema(
     // Estado general de la recepción (activo o inactivo)
     estado: {
       type: String,
-      enum: ["activo", "inactivo"], // Valores permitidos
-      default: "activo", // Valor por defecto
     },
 
     // Fechas relacionadas con la recepción
@@ -110,13 +109,6 @@ const DespachoSchema = new Schema(
         20,
         "El apellido del chofer no puede exceder los 50 caracteres",
       ], // Validación de longitud máxima
-    },
-
-    // Tipo de recepcion
-    tipo: {
-      type: String,
-      enum: ["Despacho", "Despacho"],
-      required: [true, "Seleccione qué tipo de operacion es"],
     },
 
     // Control de estado (eliminación lógica)

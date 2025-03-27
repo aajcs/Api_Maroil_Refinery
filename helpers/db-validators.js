@@ -5,6 +5,7 @@ const {
   Producto,
   Refineria,
   LineaCarga,
+  LineaDespacho,
   Tanque,
   Bomba,
   Torre,
@@ -20,6 +21,7 @@ const {
   Balance,
   TipoProducto,
   Simulacion,
+  Despacho,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -69,6 +71,14 @@ const existeLineaPorId = async (id) => {
     throw new Error(`El id no existe ${id}`);
   }
 };
+const existeLineaDespachoPorId = async (id) => {
+  // Verificar si la linea existe
+
+  const existeLineaDespacho = await LineaDespacho.findById(id);
+  if (!existeLineaDespacho) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
 
 const existeBombaPorId = async (id) => {
   // Verificar si la Bomba existe
@@ -105,6 +115,13 @@ const existeRecepcionPorId = async (id) => {
   // Verificar si la linea existe
   const existeRecepcion = await Recepcion.findById(id);
   if (!existeRecepcion) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+const existeDespachoPorId = async (id) => {
+  // Verificar si la linea existe
+  const existeDespacho = await Despacho.findById(id);
+  if (!existeDespacho) {
     throw new Error(`El id no existe ${id}`);
   }
 };
@@ -254,6 +271,8 @@ module.exports = {
   existeBalancePorId,
   existeTipoProductoPorId,
   existeSimulacionPorId,
+  existeLineaDespachoPorId,
+  existeDespachoPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

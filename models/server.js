@@ -6,7 +6,6 @@ const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
-const tipoProducto = require("./tipoProducto");
 
 class Server {
   constructor() {
@@ -22,6 +21,7 @@ class Server {
       uploads: "/api/uploads",
       refinerias: "/api/refinerias",
       lineaCarga: "/api/lineaCarga",
+      lineaDespacho: "/api/lineaDespacho",
       bomba: "/api/bomba",
       tanque: "/api/tanque",
       torre: "/api/torre",
@@ -138,6 +138,7 @@ class Server {
     // Rutas de infraestructura
     this.app.use(this.paths.bomba, require("../routes/bomba"));
     this.app.use(this.paths.lineaCarga, require("../routes/lineaCarga"));
+    this.app.use(this.paths.lineaDespacho, require("../routes/lineaDespacho"));
     this.app.use(this.paths.tanque, require("../routes/tanque"));
     this.app.use(this.paths.torre, require("../routes/torre"));
 

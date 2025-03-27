@@ -14,10 +14,11 @@ const Contrato = require("./contrato");
 const ContratoBunker = require("./bunker/contratoBunker");
 const Costo = require("./costo");
 const CostoBunker = require("./bunker/costoBunker");
-const Despacho = require("./despachoviejo");
+const Despacho = require("./despacho");
 const Historial = require("./historial");
 const HistorialBunker = require("./bunker/historialBunker");
 const LineaCarga = require("./lineaCarga");
+const LineaDespacho = require("./lineaDespacho");
 const LineaCargaBunker = require("./bunker/lineaCargaBunker");
 const Producto = require("./producto");
 const ProductoBunker = require("./bunker/productoBunker");
@@ -63,6 +64,7 @@ module.exports = {
   Historial,
   HistorialBunker,
   LineaCarga,
+  LineaDespacho,
   LineaCargaBunker,
   Producto,
   ProductoBunker,
