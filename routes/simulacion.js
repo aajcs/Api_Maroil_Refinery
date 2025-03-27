@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
-const { chromium } = require("playwright");
+// const { chromium } = require("playwright");
 const {
   validarCampos,
   validarJWT,
@@ -30,35 +30,35 @@ const router = Router();
 
 //Ruta para obtener brent
 
-router.get("/brent", async (req, res) => {
-  const browser = await chromium.launch();
-  const context = await browser.newContext();
-  const page = await context.newPage();
+// router.get("/brent", async (req, res) => {
+//   const browser = await chromium.launch();
+//   const context = await browser.newContext();
+//   const page = await context.newPage();
 
-  await page.route("**/*", async (route) => {
-    const request = route.request();
-    const headers = {
-      ...request.headers(),
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-      "Accept-Language": "en-US,en;q=0.9",
-      Referer: "https://www.google.com/",
-    };
+//   await page.route("**/*", async (route) => {
+//     const request = route.request();
+//     const headers = {
+//       ...request.headers(),
+//       "User-Agent":
+//         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+//       "Accept-Language": "en-US,en;q=0.9",
+//       Referer: "https://www.google.com/",
+//     };
 
-    await route.continue({ headers });
-  });
+//     await route.continue({ headers });
+//   });
 
-  await page.goto("https://tradingeconomics.com/commodity/brent-crude-oil");
+//   await page.goto("https://tradingeconomics.com/commodity/brent-crude-oil");
 
-  const brent = await page
-    .locator("table tr:nth-child(2) td:nth-child(2)")
-    .first()
-    .innerText();
+//   const brent = await page
+//     .locator("table tr:nth-child(2) td:nth-child(2)")
+//     .first()
+//     .innerText();
 
-  return res.json({
-    brent,
-  });
-});
+//   return res.json({
+//     brent,
+//   });
+// });
 
 router.get("/", simulacionGets);
 router.get(
