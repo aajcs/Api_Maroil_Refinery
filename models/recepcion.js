@@ -63,8 +63,6 @@ const RecepcionSchema = new Schema(
     // Estado general de la recepción (activo o inactivo)
     estado: {
       type: String,
-      enum: ["activo", "inactivo"], // Valores permitidos
-      default: "activo", // Valor por defecto
     },
 
     // Fechas relacionadas con la recepción
