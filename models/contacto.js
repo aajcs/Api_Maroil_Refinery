@@ -218,7 +218,7 @@ const ContactoSchema = new Schema({
 ContactoSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString(); // Convierte _id a id
-    delete returnedObject._id; // Elimina _id
+    // delete returnedObject._id; // Elimina _id
     delete returnedObject.__v; // Elimina __v (si no lo has desactivado en las opciones del esquema)
   },
 });
