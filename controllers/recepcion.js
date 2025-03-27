@@ -27,7 +27,7 @@ const populateOptions = [
 
 // Controlador para obtener todas las recepciones con población de referencias
 const recepcionGets = async (req = request, res = response) => {
-  const query = {}; // Filtro para obtener todas las recepciones
+  const query = { eliminado: false }; // Filtro para obtener todas las recepciones
 
   try {
     const [total, recepcions] = await Promise.all([
@@ -143,7 +143,7 @@ const recepcionPut = async (req, res = response) => {
 // Controlador para eliminar (marcar como eliminado) una recepción
 const recepcionDelete = async (req, res = response) => {
   const { id } = req.params; // Obtiene el ID de la recepción desde los parámetros de la URL
-
+  console.log("aqui entro", id);
   try {
     const recepcion = await Recepcion.findByIdAndUpdate(
       id,

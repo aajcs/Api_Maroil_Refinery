@@ -27,7 +27,7 @@ const populateOptions = [
 
 // Controlador para obtener todas las despachoes con población de referencias
 const despachoGets = async (req = request, res = response) => {
-  const query = {}; // Filtro para obtener todas las despachoes
+  const query = { eliminado: false }; // Filtro para obtener todas las despachoes
 
   try {
     const [total, despachos] = await Promise.all([
