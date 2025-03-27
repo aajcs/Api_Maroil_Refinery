@@ -10,11 +10,11 @@ const InventarioSchema = new Schema(
       required: true,
     },
 
-    idContrato: {
-      type: Schema.Types.ObjectId,
-      ref: "Contrato",
-      required: true,
-    },
+    // idContrato: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "Contrato",
+    //   required: true,
+    // },
 
     cantidadRecibida: [
       {
@@ -38,7 +38,7 @@ const InventarioSchema = new Schema(
 
     cantidadRefinada: [
       {
-        idrefinacionSalida: {
+        idRefinacionSalida: {
           type: Schema.Types.ObjectId,
           ref: "RefinacionSalida", // Referencia al modelo "Refinacion Salida"
           required: false,
@@ -53,12 +53,12 @@ const InventarioSchema = new Schema(
       default: 0,
     },
 
-    // Relación con el tanque donde se almacena el crudo
-    idTanque: {
-      type: Schema.Types.ObjectId,
-      ref: "Tanque",
-      required: true,
-    },
+    // // Relación con el tanque donde se almacena el crudo
+    // idTanque: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "Tanque",
+    //   required: true,
+    // },
 
     // Eliminación lógica
     eliminado: {
