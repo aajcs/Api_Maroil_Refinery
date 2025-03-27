@@ -15,13 +15,6 @@ const contactoGets = async (req = request, res = response) => {
       Contacto.find(query).populate(populateOptions), // Obtiene los contactos con referencias pobladas
     ]);
 
-    if (contactos.length === 0) {
-      return res.status(404).json({
-        message:
-          "No se encontraron contactos con los criterios proporcionados.",
-      }); // Responde con un error 404 si no se encuentran contactos
-    }
-
     res.json({ total, contactos }); // Responde con el total y la lista de contactos
   } catch (err) {
     console.error("Error en contactoGets:", err);
