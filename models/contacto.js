@@ -11,19 +11,19 @@ const ContactoSchema = new Schema({
   // Información del contacto
   nombre: {
     type: String,
-    required: [true, "El nombre es obligatorio"],
+    required: [false, "El nombre es obligatorio"],
     minlength: [3, "El nombre debe tener al menos 3 caracteres"],
     maxlength: [50, "El nombre no puede exceder los 50 caracteres"],
   },
   ubicacion: {
     type: String,
-    required: [true, "La ubicación es obligatoria"],
+    required: [false, "La ubicación es obligatoria"],
     minlength: [3, "La ubicación debe tener al menos 3 caracteres"],
     maxlength: [100, "La ubicación no puede exceder los 100 caracteres"],
   },
   identificacionFiscal: {
     type: String,
-    required: [true, "La identificación fiscal es obligatoria"],
+    required: [false, "La identificación fiscal es obligatoria"],
     minlength: [5, "La identificación fiscal debe tener al menos 5 caracteres"],
     maxlength: [
       20,
@@ -32,7 +32,7 @@ const ContactoSchema = new Schema({
   },
   representanteLegal: {
     type: String,
-    required: [true, "El representante legal es obligatorio"],
+    required: [false, "El representante legal es obligatorio"],
     minlength: [3, "El representante legal debe tener al menos 3 caracteres"],
     maxlength: [
       50,
@@ -41,23 +41,23 @@ const ContactoSchema = new Schema({
   },
   telefono: {
     type: String,
-    required: [true, "El teléfono es obligatorio"],
+    required: [false, "El teléfono es obligatorio"],
     minlength: [7, "El teléfono debe tener al menos 7 caracteres"],
     maxlength: [15, "El teléfono no puede exceder los 15 caracteres"],
   },
   correo: {
     type: String,
-    required: [true, "El correo es obligatorio"],
+    required: [false, "El correo es obligatorio"],
     match: [/.+\@.+\..+/, "Por favor ingrese un correo válido"],
   },
   email: {
     type: String,
-    required: [true, "El email es obligatorio"],
+    required: [false, "El email es obligatorio"],
     match: [/.+\@.+\..+/, "Por favor ingrese un email válido"],
   },
   direccion: {
     type: String,
-    required: [true, "La dirección es obligatoria"],
+    required: [false, "La dirección es obligatoria"],
     minlength: [5, "La dirección debe tener al menos 5 caracteres"],
     maxlength: [100, "La dirección no puede exceder los 100 caracteres"],
   },
