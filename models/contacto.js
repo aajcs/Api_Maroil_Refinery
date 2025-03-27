@@ -135,21 +135,21 @@ const ContactoSchema = new Schema({
       },
       fechaCompra: {
         type: Date,
-        required: [true, "La fecha de compra es obligatoria"],
+        required: [false, "La fecha de compra es obligatoria"],
       },
       cantidad: {
         type: Number,
-        required: [true, "La cantidad es obligatoria"],
+        required: [false, "La cantidad es obligatoria"],
         min: [0, "La cantidad no puede ser negativa"],
       },
       precioUnitario: {
         type: Number,
-        required: [true, "El precio unitario es obligatorio"],
+        required: [false, "El precio unitario es obligatorio"],
         min: [0, "El precio unitario no puede ser negativo"],
       },
       total: {
         type: Number,
-        required: [true, "El total es obligatorio"],
+        required: [false, "El total es obligatorio"],
         min: [0, "El total no puede ser negativo"],
       },
     },
