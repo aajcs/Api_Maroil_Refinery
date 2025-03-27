@@ -66,7 +66,7 @@ const ContactoSchema = new Schema({
   tipo: {
     type: String,
     enum: ["cliente", "proveedor"],
-    required: [true, "Seleccione qué tipo de contacto es"],
+    required: [false, "Seleccione qué tipo de contacto es"],
   },
 
   // Cuentas bancarias del contacto
@@ -205,7 +205,7 @@ const ContactoSchema = new Schema({
     type: String,
     enum: ["true", "false"], // Define los valores permitidos para el campo estado
     default: "true",
-    required: true,
+    required: false,
   },
 
   // Eliminación lógica
