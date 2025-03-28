@@ -54,11 +54,11 @@ const InventarioSchema = new Schema(
     },
 
     // // Relación con el tanque donde se almacena el crudo
-    // idTanque: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: "Tanque",
-    //   required: true,
-    // },
+    idTanque: {
+      type: Schema.Types.ObjectId,
+      ref: "Tanque",
+      required: true,
+    },
 
     // Eliminación lógica
     eliminado: {

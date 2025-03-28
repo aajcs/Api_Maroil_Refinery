@@ -4,11 +4,28 @@ const Inventario = require("../models/inventario");
 // Opciones de población reutilizables
 const populateOptions = [
   { path: "idRefineria", select: "nombre" }, // Popula el nombre de la refinería
-  { path: "idContrato", select: "numeroContrato descripcion" }, // Popula campos seleccionados del contrato
-  { path: "cantidadRecibida.idRecepcion", select: "fechaRecepcion cantidad" }, // Popula detalles de recepciones
-  { path: "cantidadRefinar.idRefinacion", select: "fecha cantidad" }, // Popula detalles de refinaciones
-  { path: "cantidadRefinada.idrefinacionSalida", select: "fecha cantidad" }, // Popula detalles de refinación salida
-  { path: "idTanque", select: "nombre capacidad" }, // Popula detalles del tanque
+  {
+    path: "cantidadRecibida",
+    populate: [
+      {
+        path: "idRecepcion",
+        populate: {
+          path: "idContrato",
+          populate: {
+            path: "idItems",
+            populate: {
+              path: "producto", // Población adicional para idContrato dentro de idRecepcion
+            }, // Población adicional para idContrato dentro de idRecepcion
+          },
+        },
+      },
+    ],
+  },
+  // Popula campos seleccionados del contrato
+  // { path: "cantidadRecibida.idRecepcion", select: "fechaRecepcion cantidad" }, // Popula detalles de recepciones
+  // { path: "cantidadRefinar.idRefinacion", select: "fecha cantidad" }, // Popula detalles de refinaciones
+  // { path: "cantidadRefinada.idrefinacionSalida", select: "fecha cantidad" }, // Popula detalles de refinación salida
+  { path: "idTanque", select: "nombre" }, // Popula detalles del tanque
 ];
 
 // Obtener todos los inventarios

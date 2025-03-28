@@ -39,6 +39,7 @@ class Server {
       tipoProducto: "/api/tipoProducto",
       simulacion: "/api/simulacion",
       inventario: "/api/inventario",
+      gasto: "/api/gasto",
 
       bunker: "/api/bunker/bunker",
       balanceBunker: "/api/bunker/balanceBunker",
@@ -116,6 +117,7 @@ class Server {
     this.app.use(this.paths.tipoProducto, require("../routes/tipoProducto"));
     this.app.use(this.paths.simulacion, require("../routes/simulacion"));
     this.app.use(this.paths.inventario, require("../routes/inventario"));
+    this.app.use(this.paths.gasto, require("../routes/gasto"));
 
     // Rutas relacionadas con operaciones de calidad y cantidad
     this.app.use(
