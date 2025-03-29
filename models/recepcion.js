@@ -54,7 +54,7 @@ const RecepcionSchema = new Schema(
     },
 
     // Estado de la carga (en tránsito o entregado)
-    estadoCarga: {
+    estadoRecepcion: {
       type: String,
       enum: ["EN_TRANSITO", "ENTREGADO"], // Valores permitidos
       default: "EN_TRANSITO", // Valor por defecto
@@ -67,15 +67,26 @@ const RecepcionSchema = new Schema(
 
     // Fechas relacionadas con la recepción
     fechaInicio: {
-      type: Date, // Fecha de inicio de la recepción
+      type: Date, // Fecha en la que se inicia el proceso de recepción
     },
     fechaFin: {
-      type: Date, // Fecha de finalización de la recepción
+      type: Date, // Fecha en la que finaliza el proceso de recepción
     },
     fechaDespacho: {
-      type: Date, // Fecha de despacho del transporte
+      type: Date, // Fecha en la que el transporte fue despachado desde el origen
     },
-
+    fechaInicioRecepcion: {
+      type: Date, // Fecha en la que se inicia la recepción del producto en la refinería
+    },
+    fechaFinRecepcion: {
+      type: Date, // Fecha en la que finaliza la recepción del producto en la refinería
+    },
+    fechaSalida: {
+      type: Date, // Fecha en la que el transporte salió del origen
+    },
+    fechaLlegada: {
+      type: Date, // Fecha en la que el transporte llegó al destino
+    },
     // Información del transporte
     idGuia: {
       type: Number,

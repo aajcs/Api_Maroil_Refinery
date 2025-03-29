@@ -80,8 +80,6 @@ const TipoProductoSchema = Schema(
     // Estado del producto (Activo o Inactivo)
     estado: {
       type: String,
-      enum: ["Activo", "Inactivo"], // Valores permitidos
-      default: "Activo", // Valor por defecto
     },
 
     // Indica si el producto ha sido eliminado (eliminación lógica)

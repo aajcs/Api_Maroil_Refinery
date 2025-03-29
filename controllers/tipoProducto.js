@@ -21,7 +21,7 @@ const populateOptions = [
 
 // Controlador para obtener todos los tipos de producto con paginación y población de referencias
 const tipoProductoGets = async (req = request, res = response) => {
-  const query = { estado: true, eliminado: false }; // Filtro para obtener solo tipos de producto activos y no eliminados
+  const query = { eliminado: false }; // Filtro para obtener solo tipos de producto activos y no eliminados
 
   try {
     // Ejecuta ambas consultas en paralelo para optimizar el tiempo de respuesta
