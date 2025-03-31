@@ -1,4 +1,4 @@
-const Balance = require("./balance");
+const Ventana = require("./ventana");
 const BalanceBunker = require("./bunker/balanceBunker");
 const Barcaza = require("./bunker/barcaza");
 const Bomba = require("./bomba");
@@ -47,7 +47,7 @@ const lotes_producto = require('./lotes_producto');
 const linea_carga = require('./linea_carga');*/
 
 module.exports = {
-  Balance,
+  Ventana,
   BalanceBunker,
   Barcaza,
   Bomba,

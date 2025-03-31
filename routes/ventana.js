@@ -8,39 +8,39 @@ const {
   tieneRole,
 } = require("../middlewares");
 
-const { existeBalancePorId } = require("../helpers/db-validators");
+const { existeVentanaPorId } = require("../helpers/db-validators");
 // const { existeRefineriaPorId } = require("../helpers/db-validators");
 // const { existeTorrePorId } = require("../helpers/db-validators");
 // const { existeTanquePorId } = require("../helpers/db-validators");
 const {
-  balanceGet,
-  balancePut,
-  balancePost,
-  balanceDelete,
-  balancePatch,
-  balanceGets,
-} = require("../controllers/balance");
+  ventanaGet,
+  ventanaPut,
+  ventanaPost,
+  ventanaDelete,
+  ventanaPatch,
+  ventanaGets,
+} = require("../controllers/ventana");
 
 const router = Router();
 
-router.get("/", balanceGets);
+router.get("/", ventanaGets);
 router.get(
   "/:id",
   [check("id", "No es un id de Mongo válido").isMongoId(), validarCampos],
-  balanceGet
+  ventanaGet
 );
 router.put(
   "/:id",
   [
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeBalancePorId),
+    check("id").custom(existeVentanaPorId),
     // check("idRefineria").custom(existeRefineriaPorId),
     // check("idTanque").custom(existeTanquePorId),
     // check("idTorre").custom(existeTorrePorId),
     //check("rol").custom(esRoleValido), subiendo cambioos
     validarCampos,
   ],
-  balancePut
+  ventanaPut
 );
 
 router.post(
@@ -51,7 +51,7 @@ router.post(
     // // check("idTorre").custom(existeTorrePorId),
     validarCampos,
   ],
-  balancePost
+  ventanaPost
 );
 
 router.delete(
@@ -66,9 +66,9 @@ router.delete(
     // check("idTorre").custom(existeTorrePorId),
     validarCampos,
   ],
-  balanceDelete
+  ventanaDelete
 );
 
-router.patch("/", balancePatch);
+router.patch("/", ventanaPatch);
 
 module.exports = router;
