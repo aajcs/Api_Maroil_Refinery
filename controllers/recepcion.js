@@ -10,7 +10,10 @@ const populateOptions = [
     select: "idItems numeroContrato", // Selecciona los campos idItems y numeroContrato
     populate: {
       path: "idItems", // Relación con los ítems del contrato
-      populate: [{ path: "producto", select: "nombre" }], // Relación con el modelo Producto
+      populate: [
+        { path: "producto", select: "nombre" }, // Relación con el modelo Producto
+        { path: "idTipoProducto", select: "nombre" }, // Relación con el modelo TipoProducto
+      ],
     },
   },
   { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
