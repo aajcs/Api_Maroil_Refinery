@@ -56,8 +56,6 @@ const RecepcionSchema = new Schema(
     // Estado de la carga (en tránsito o entregado)
     estadoRecepcion: {
       type: String,
-      enum: ["EN_TRANSITO", "ENTREGADO"], // Valores permitidos
-      default: "EN_TRANSITO", // Valor por defecto
     },
 
     // Estado general de la recepción (activo o inactivo)
@@ -94,26 +92,17 @@ const RecepcionSchema = new Schema(
     },
     placa: {
       type: String,
-      required: [true, "La placa del transporte es obligatoria"], // Campo obligatorio
-      minlength: [6, "La placa debe tener al menos 6 caracteres"], // Validación de longitud mínima
+      // required: [true, "La placa del transporte es obligatoria"], // Campo obligatorio
+      // minlength: [6, "La placa debe tener al menos 6 caracteres"], // Validación de longitud mínima
       maxlength: [10, "La placa no puede exceder los 10 caracteres"], // Validación de longitud máxima
     },
     nombreChofer: {
       type: String,
-      required: [true, "El nombre del chofer es obligatorio"], // Campo obligatorio
-      minlength: [3, "El nombre del chofer debe tener al menos 3 caracteres"], // Validación de longitud mínima
+      // required: [true, "El nombre del chofer es obligatorio"], // Campo obligatorio
+      // minlength: [3, "El nombre del chofer debe tener al menos 3 caracteres"], // Validación de longitud mínima
       maxlength: [
         20,
         "El nombre del chofer no puede exceder los 50 caracteres",
-      ], // Validación de longitud máxima
-    },
-    apellidoChofer: {
-      type: String,
-      required: [true, "El apellido del chofer es obligatorio"], // Campo obligatorio
-      minlength: [3, "El apellido del chofer debe tener al menos 3 caracteres"], // Validación de longitud mínima
-      maxlength: [
-        20,
-        "El apellido del chofer no puede exceder los 50 caracteres",
       ], // Validación de longitud máxima
     },
 

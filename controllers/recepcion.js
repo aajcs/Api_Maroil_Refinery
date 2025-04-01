@@ -88,7 +88,6 @@ const recepcionPost = async (req, res = response) => {
     placa,
     tipo,
     nombreChofer,
-    apellidoChofer,
   } = req.body; // Extrae los datos del cuerpo de la solicitud
 
   const nuevaRecepcion = new Recepcion({
@@ -112,7 +111,6 @@ const recepcionPost = async (req, res = response) => {
     placa,
     tipo,
     nombreChofer,
-    apellidoChofer,
   });
 
   try {
