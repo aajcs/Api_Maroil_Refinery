@@ -1,13 +1,12 @@
 const { Schema, model } = require("mongoose");
 
-const BalanceSchema = Schema(
+const VentanaSchema = Schema(
   {
     // Relación con el modelo Refineria
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
       required: true,
-      
     },
 
     // Relación con el modelo Contrato para compras
@@ -29,18 +28,44 @@ const BalanceSchema = Schema(
     ],
 
     // Monto total del balance
-    montoTotal: {
+    gasto: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Gasto",
+        required: false,
+      },
+    ],
+
+    maquila: {
       type: Number,
-      required: [true, "El monto total es obligatorio"],
-      min: [0, "El monto total no puede ser negativo"], // Validación para evitar valores negativos
+      min: [0, "La cantidad total no puede ser negativa"], // Validación para evitar valores negativos
+      required: [false, "La cantidad total es obligatoria"], // Campo obligatorio
     },
 
     // Estado del balance
-    estado: {
+    monto: {
+      type: Number,
+      min: [0, "La cantidad total no puede ser negativa"], // Validación para evitar valores negativos
+      required: [false, "La cantidad total es obligatoria"], // Campo obligatorio
+    },
+
+    // Estado de la carga (en tránsito o entregado)
+    estadoVentana: {
       type: String,
-      enum: ["true", "false"], // Define los valores permitidos para el campo estado
-      default: "true",
-      required: true,
+      enum: ["ABIERTA", "CERRADA"], // Valores permitidos
+      default: "ABIERTA", // Valor por defecto
+    },
+
+    // Fecha del balance
+    fechaInicio: {
+      type: Date,
+      default: Date.now, // Valor por defecto: fecha actual
+    },
+
+    // Fecha del balance
+    fechaFin: {
+      type: Date,
+      default: Date.now, // Valor por defecto: fecha actual
     },
 
     // Eliminación lógica
@@ -55,7 +80,7 @@ const BalanceSchema = Schema(
   }
 );
 // Método para transformar el objeto devuelto por Mongoose
-BalanceSchema.set("toJSON", {
+VentanaSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     // delete returnedObject._id;
@@ -63,4 +88,4 @@ BalanceSchema.set("toJSON", {
   },
 });
 
-module.exports = model("Balance", BalanceSchema);
+module.exports = model("Ventana", VentanaSchema);

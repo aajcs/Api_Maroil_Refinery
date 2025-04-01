@@ -18,7 +18,7 @@ const {
   Historial,
   Costo,
   RefinacionSalida,
-  Balance,
+  Ventana,
   TipoProducto,
   Simulacion,
   Despacho,
@@ -207,12 +207,12 @@ const existeRefinacionSalidaPorId = async (id) => {
   }
 };
 
-const existeBalancePorId = async (id) => {
+const existeVentanaPorId = async (id) => {
   // Verificar si la refineria existe
 
-  const existeBalance = await Balance.findById(id);
-  if (!existeBalance) {
-    throw new Error(`Balance no existe ${id}`);
+  const existeVentana = await Ventana.findById(id);
+  if (!existeVentana) {
+    throw new Error(`Ventana no existe ${id}`);
   }
 };
 
@@ -278,7 +278,7 @@ module.exports = {
   existeHistorialPorId,
   existeCostoPorId,
   existeRefinacionSalidaPorId,
-  existeBalancePorId,
+  existeVentanaPorId,
   existeTipoProductoPorId,
   existeSimulacionPorId,
   existeLineaDespachoPorId,

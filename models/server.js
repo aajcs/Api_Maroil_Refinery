@@ -6,6 +6,7 @@ const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
+const ventana = require("./ventana");
 
 class Server {
   constructor() {
@@ -35,7 +36,7 @@ class Server {
       historial: "/api/historial",
       costo: "/api/costo",
       refinacionSalida: "/api/refinacionSalida",
-      balance: "/api/balance",
+      ventana: "/api/ventana",
       tipoProducto: "/api/tipoProducto",
       simulacion: "/api/simulacion",
       inventario: "/api/inventario",
@@ -108,7 +109,7 @@ class Server {
     this.app.use(this.paths.usuarios, require("../routes/usuarios"));
 
     // Rutas de gestión general
-    this.app.use(this.paths.balance, require("../routes/balance"));
+    this.app.use(this.paths.ventana, require("../routes/ventana"));
     this.app.use(this.paths.buscar, require("../routes/buscar"));
     this.app.use(this.paths.categorias, require("../routes/categorias"));
     this.app.use(this.paths.costo, require("../routes/costo"));
