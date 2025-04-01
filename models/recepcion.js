@@ -58,6 +58,11 @@ const RecepcionSchema = new Schema(
       type: String,
     },
 
+    // Estado de la carga (despachado o no despachado)
+    estadoCarga: {
+      type: String,
+    },
+
     // Estado general de la recepción (activo o inactivo)
     estado: {
       type: String,
