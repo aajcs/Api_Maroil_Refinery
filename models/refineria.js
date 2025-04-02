@@ -12,16 +12,9 @@ const RefineriaSchema = Schema(
     },
 
     //Capacidad de la refinería
-    capacidadMaxima: {
+    procesamientoDia: {
       type: Number,
       required: [true, "La capacidad de la refinería es necesaria"], // Campo obligatorio
-      min: [0, "La capacidad no puede ser negativa"], // Validación para evitar valores negativos
-    },
-
-    //Capacidad promedio de la refinería
-    capacidadPromedio: {
-      type: Number,
-      required: [false, "La capacidad de la refinería es necesaria"], // Campo obligatorio
       min: [0, "La capacidad no puede ser negativa"], // Validación para evitar valores negativos
     },
 

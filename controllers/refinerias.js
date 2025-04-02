@@ -57,23 +57,14 @@ const refineriasGet = async (req = request, res = response) => {
 // Controlador para crear una nueva refinería
 const refineriasPost = async (req = request, res = response) => {
   // Extrae los datos del cuerpo de la solicitud
-  const {
-    ubicacion,
-    nombre,
-    nit,
-    img,
-    idContacto,
-    idLinea,
-    capacidadMaxima,
-    capacidadPromedio,
-  } = req.body;
+  const { ubicacion, nombre, nit, img, idContacto, idLinea, procesamientoDia } =
+    req.body;
 
   try {
     // Crea una nueva instancia del modelo Refineria con los datos proporcionados
     const nuevaRefineria = new Refineria({
       ubicacion,
-      capacidadMaxima,
-      capacidadPromedio,
+      procesamientoDia,
       nombre,
       nit,
       img,
