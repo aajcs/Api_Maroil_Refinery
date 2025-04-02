@@ -11,6 +11,20 @@ const RefineriaSchema = Schema(
       maxlength: [100, "La ubicación no puede exceder los 100 caracteres"], // Validación de longitud máxima
     },
 
+    //Capacidad de la refinería
+    capacidadMaxima: {
+      type: Number,
+      required: [true, "La capacidad de la refinería es necesaria"], // Campo obligatorio
+      min: [0, "La capacidad no puede ser negativa"], // Validación para evitar valores negativos
+    },
+
+    //Capacidad promedio de la refinería
+    capacidadPromedio: {
+      type: Number,
+      required: [false, "La capacidad de la refinería es necesaria"], // Campo obligatorio
+      min: [0, "La capacidad no puede ser negativa"], // Validación para evitar valores negativos
+    },
+
     // Nombre de la refinería
     nombre: {
       type: String,
