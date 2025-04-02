@@ -10,7 +10,10 @@ const populateOptions = [
     select: "idItems numeroContrato", // Selecciona los campos idItems y numeroContrato
     populate: {
       path: "idItems", // Relación con los ítems del contrato
-      populate: [{ path: "producto", select: "nombre" }], // Relación con el modelo Producto
+      populate: [
+        { path: "producto", select: "nombre" }, // Relación con el modelo Producto
+        { path: "idTipoProducto", select: "nombre" }, // Relación con el modelo TipoProducto
+      ],
     },
   },
   { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
@@ -76,6 +79,7 @@ const recepcionPost = async (req, res = response) => {
     cantidadRecibida,
     cantidadEnviada,
     estadoRecepcion,
+    estadoCarga,
     estado,
     fechaInicio,
     fechaFin,
@@ -88,7 +92,6 @@ const recepcionPost = async (req, res = response) => {
     placa,
     tipo,
     nombreChofer,
-    apellidoChofer,
   } = req.body; // Extrae los datos del cuerpo de la solicitud
 
   const nuevaRecepcion = new Recepcion({
@@ -100,6 +103,7 @@ const recepcionPost = async (req, res = response) => {
     cantidadRecibida,
     cantidadEnviada,
     estadoRecepcion,
+    estadoCarga,
     estado,
     fechaInicio,
     fechaFin,
@@ -112,7 +116,6 @@ const recepcionPost = async (req, res = response) => {
     placa,
     tipo,
     nombreChofer,
-    apellidoChofer,
   });
 
   try {
