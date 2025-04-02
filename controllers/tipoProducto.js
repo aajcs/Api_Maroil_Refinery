@@ -6,16 +6,18 @@ const { Producto } = require("../models"); // Modelo Producto para manejar relac
 // Opciones de población reutilizables para consultas
 const populateOptions = [
   {
-    path: "idProducto", // Relación con el modelo Producto
-    select: "nombre color", // Selecciona solo los campos nombre y color
-  },
-  {
     path: "idRefineria", // Relación con el modelo Refineria
     select: "nombre", // Selecciona solo el campo nombre
   },
   {
-    path: "rendimientos.idProducto", // Población dentro del array de rendimientos
-    select: "nombre", // Incluye solo el campo nombre del producto
+    path: "idProducto",
+    select: "nombre", // Relación con el modelo Producto
+  },
+  {
+    path: "rendimientos", // Relación con el modelo Rendimiento
+    populate: {
+      path: "idProducto", // Relación con el modelo Producto dentro de Rendimiento
+    },
   },
 ];
 
@@ -77,6 +79,9 @@ const tipoProductoPost = async (req = request, res = response) => {
     azufre,
     contenidoAgua,
     flashPoint,
+    costoOperacional,
+    transporte,
+    convenio,
   } = req.body;
 
   try {
@@ -91,6 +96,9 @@ const tipoProductoPost = async (req = request, res = response) => {
       azufre,
       contenidoAgua,
       flashPoint,
+      costoOperacional,
+      transporte,
+      convenio,
     });
 
     await nuevoTipoProducto.save(); // Guarda el nuevo tipo de producto en la base de datos

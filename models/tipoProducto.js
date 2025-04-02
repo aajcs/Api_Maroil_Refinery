@@ -70,13 +70,31 @@ const TipoProductoSchema = Schema(
     rendimientos: [
       {
         idProducto: { type: Schema.Types.ObjectId, ref: "Producto" },
-        gas: { type: Number, min: 0, required: true },
-        nafta: { type: Number, min: 0, required: true },
-        kerosene: { type: Number, min: 0, required: true },
-        fo4: { type: Number, min: 0, required: true },
-        fo6: { type: Number, min: 0, required: true },
+        transporte: { type: Number, min: 0, required: false },
+        bunker: { type: Number, min: 0, required: false },
+        costoVenta: { type: Number, min: 0, required: false },
+        porcentaje: { type: Number, min: 0, required: false },
       },
     ],
+
+    costoOperacional: {
+      type: Number,
+      min: [0, "El costo operativo no puede ser negativo"], // Validación para evitar valores negativos
+      required: [false, "El costo operativo del producto es obligatorio"], // Campo obligatorio
+    },
+
+    transporte: {
+      type: Number,
+      min: [0, "El costo de transporte no puede ser negativo"], // Validación para evitar valores negativos
+      required: [false, "El costo de transporte del producto es obligatorio"], // Campo obligatorio
+    },
+
+    convenio: {
+      type: Number,
+      min: [0, "El costo de convenio no puede ser negativo"], // Validación para evitar valores negativos
+      required: [false, "El costo de convenio del producto es obligatorio"], // Campo obligatorio
+    },
+
     // Estado del producto (Activo o Inactivo)
     estado: {
       type: String,
