@@ -121,7 +121,7 @@ const tipoProductoPost = async (req = request, res = response) => {
 // Controlador para actualizar un tipo de producto existente
 const tipoProductoPut = async (req = request, res = response) => {
   const { id } = req.params; // Obtiene el ID del tipo de producto desde los parámetros de la URL
-  const { idProducto, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo idProducto
+  const { idProducto, datosProducto, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, incluyendo datos para actualizar en idProducto
 
   try {
     // Actualiza el tipo de producto en la base de datos y devuelve el tipo de producto actualizado
@@ -135,17 +135,13 @@ const tipoProductoPut = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Tipo de Producto no encontrado" }); // Responde con un error 404 si no se encuentra el tipo de producto
     }
 
-    // Si se proporciona un nuevo idProducto, actualiza las referencias en la colección Producto
-    if (idProducto) {
-      await Producto.updateMany(
-        { idTipoProducto: id }, // Encuentra todos los productos que referencian el tipo de producto
-        { $pull: { idTipoProducto: id } } // Elimina la referencia al tipo de producto
-      );
-
+    // Si se proporciona un nuevo idProducto o datos para actualizar en idProducto
+    if (idProducto || datosProducto) {
+      // Actualiza los datos del producto referenciado en idProducto
       await Producto.findByIdAndUpdate(
         idProducto,
-        { $push: { idTipoProducto: id } }, // Agrega la nueva referencia al tipo de producto
-        { new: true }
+        { ...datosProducto }, // Actualiza los datos proporcionados en datosProducto
+        { new: true } // Devuelve el documento actualizado
       );
     }
 
