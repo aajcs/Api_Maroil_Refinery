@@ -61,7 +61,7 @@ const TipoProductoSchema = Schema(
       type: Number,
       min: [0, "El punto de inflamación no puede ser negativo"], // Validación para evitar valores negativos
       required: [
-        true,
+        false,
         "El punto de inflamación (Flashpoint) del producto es obligatorio",
       ], // Campo obligatorio
     },
@@ -111,6 +111,15 @@ const TipoProductoSchema = Schema(
     versionKey: false, // Elimina el campo __v
   }
 );
+
+// Validación personalizada para garantizar que `idProducto` sea único en `rendimientos`
+TipoProductoSchema.path("rendimientos").validate(function (rendimientos) {
+  const ids = rendimientos.map((rendimiento) =>
+    rendimiento.idProducto.toString()
+  );
+  const uniqueIds = new Set(ids);
+  return ids.length === uniqueIds.size; // Verifica que no haya duplicados
+}, "El campo idProducto debe ser único dentro de rendimientos.");
 
 // Configuración para transformar el objeto JSON al devolverlo
 TipoProductoSchema.set("toJSON", {

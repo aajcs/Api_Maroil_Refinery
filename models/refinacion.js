@@ -34,6 +34,7 @@ const RefinacionSchema = new Schema(
     idProducto: {
       type: Schema.Types.ObjectId,
       ref: "Producto", // Relación con el modelo Producto
+      unique: true, // Asegura que el ID del producto sea único
       required: [true, "El ID del producto es obligatorio"], // Campo obligatorio
     },
 
