@@ -8,10 +8,17 @@ const HistorialSchema = Schema(
       ref: "Refineria",
       required: true,
     },
+
+    criticidad: {
+      type: String,
+      enum: ["Leve", "Medio", "Grave"], // Tipos de operación permitidos
+      required: true,
+    },
+
     operacion: {
       tipo: {
         type: String,
-        enum: ["Recepcion", "Refinacion", "RefinacionSalida"], // Tipos de operación permitidos
+        enum: ["Recepcion", "Refinacion", "RefinacionSalida", "Despacho"], // Tipos de operación permitidos
         required: true,
       },
       referencia: {
@@ -29,6 +36,7 @@ const HistorialSchema = Schema(
         "El nombre del operador no puede exceder los 50 caracteres",
       ],
     },
+
     fecha: {
       type: Date,
       default: Date.now, // Valor por defecto: fecha actual

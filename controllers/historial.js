@@ -61,12 +61,20 @@ const historialGet = async (req = request, res = response) => {
 
 // Controlador para crear un nuevo historial
 const historialPost = async (req = request, res = response) => {
-  const { idRefineria, operacion, operador, fecha, incidencias, comentarios } =
-    req.body;
+  const {
+    idRefineria,
+    criticidad,
+    operacion,
+    operador,
+    fecha,
+    incidencias,
+    comentarios,
+  } = req.body;
 
   try {
     const nuevoHistorial = new Historial({
       idRefineria,
+      criticidad,
       operacion,
       operador,
       fecha,
