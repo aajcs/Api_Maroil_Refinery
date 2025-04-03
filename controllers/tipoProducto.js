@@ -7,7 +7,7 @@ const { Producto } = require("../models"); // Modelo Producto para manejar relac
 const populateOptions = [
   {
     path: "idRefineria", // Relación con el modelo Refineria
-    select: "nombre", // Selecciona solo el campo nombre
+    select: "nombre procesamientoDia", // Selecciona solo el campo nombre
   },
   {
     path: "idProducto",
