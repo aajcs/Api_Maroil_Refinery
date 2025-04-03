@@ -85,7 +85,6 @@ const refineriasPost = async (req = request, res = response) => {
 const refineriasPut = async (req = request, res = response) => {
   const { id } = req.params; // Obtiene el ID de la refinería desde los parámetros de la URL
   const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
-
   try {
     // Actualiza la refinería en la base de datos y devuelve la refinería actualizada
     const refineriaActualizada = await Refineria.findOneAndUpdate(
