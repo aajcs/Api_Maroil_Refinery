@@ -11,12 +11,13 @@ const populateOptions = [
   },
   {
     path: "idProducto",
-    select: "nombre", // Relación con el modelo Producto
+    select: "nombre color", // Relación con el modelo Producto
   },
   {
     path: "rendimientos", // Relación con el modelo Rendimiento
     populate: {
-      path: "idProducto", // Relación con el modelo Producto dentro de Rendimiento
+      path: "idProducto",
+      select: "nombre color", // Relación con el modelo Producto dentro de Rendimiento
     },
   },
 ];

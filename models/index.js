@@ -83,6 +83,7 @@ module.exports = {
   Usuario,
   Inventario,
   Gasto,
+  Refineria,
 
   /*contactos,
     bombas,
