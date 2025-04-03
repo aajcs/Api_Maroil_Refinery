@@ -36,6 +36,7 @@ const Torre = require("./torre");
 const Usuario = require("./usuario");
 const Inventario = require("./inventario");
 const Gasto = require("./gasto");
+const Operador = require("./operador");
 
 /*const contactos = require ('./contactos');
 const bombas = require('./bombas');
@@ -84,6 +85,7 @@ module.exports = {
   Inventario,
   Gasto,
   Refineria,
+  Operador,
 
   /*contactos,
     bombas,
