@@ -62,6 +62,7 @@ const chequeoCantidadPost = async (req = request, res = response) => {
     operador,
     fechaChequeo,
     cantidad,
+    turno,
   } = req.body; // Extrae los datos del cuerpo de la solicitud
 
   try {
@@ -74,6 +75,7 @@ const chequeoCantidadPost = async (req = request, res = response) => {
       operador,
       fechaChequeo,
       cantidad,
+      turno,
     });
 
     await nuevoChequeoCantidad.save(); // Guarda el nuevo chequeo en la base de datos

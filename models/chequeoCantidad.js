@@ -55,6 +55,13 @@ const ChequeoCantidadSchema = Schema(
       minlength: [3, "El nombre del operador debe tener al menos 3 caracteres"],
       maxlength: [50, "El nombre del operador no puede exceder los 50 caracteres"]
     },
+     // Turno del operador
+     turno: {
+      type: String,
+      enum: ["Diurno", "Nocturno"],
+      default: "Diurno",
+      required: true,
+    },
 
     // Fecha del chequeo
     fechaChequeo: {
@@ -82,6 +89,7 @@ const ChequeoCantidadSchema = Schema(
       type: Boolean,
       default: false,
     },
+
   },
   {
     timestamps: true, // Añade createdAt y updatedAt automáticamente
