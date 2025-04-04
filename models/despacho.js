@@ -75,7 +75,7 @@ const DespachoSchema = new Schema(
       type: Date, // Fecha de inicio de la recepción
     },
     fechaFin: {
-      type: Date, // Fecha de finalización de la recepción
+      type: Date, // Fecha de finalización de la redcepción
     },
     fechaDespacho: {
       type: Date, // Fecha de despacho del transporte
