@@ -26,6 +26,14 @@ const OperadorSchema = new Schema(
       maxlength: [50, "El cargo no puede exceder los 50 caracteres"],
     },
 
+    // Turno del operador
+    turno: {
+      type: String,
+      enum: ["Diurno", "Nocturno"],
+      default: "Diurno",
+      required: true,
+    },
+
     // Estado del operador
     estado: {
       type: String,
