@@ -17,10 +17,10 @@ const ChequeoCalidadSchema = Schema(
     aplicar: {
       tipo: {
         type: String,
-        enum: ["Recepcion", "Tanque"], // Tipos de operación permitidos
+
         required: true,
       },
-      referencia: {
+      idReferencia: {
         type: Schema.Types.ObjectId,
         required: true, // ID de la operación asociada
         refPath: "aplicar.tipo", // Referencia dinámica basada en el tipo de operación

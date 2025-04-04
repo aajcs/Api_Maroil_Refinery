@@ -6,7 +6,7 @@ const ChequeoCalidad = require("../models/chequeoCalidad");
 const populateOptions = [
   { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
   {
-    path: "aplicar.referencia",
+    path: "aplicar.IdReferencia",
     select: {
       // Selección condicional basada en el tipo
       nombre: 1, // Campo para el modelo Tanque
@@ -24,7 +24,7 @@ const chequeoCalidadGets = async (req = request, res = response) => {
   try {
     const [total, chequeoCalidads] = await Promise.all([
       ChequeoCalidad.countDocuments(query), // Cuenta el total de chequeos
-      ChequeoCalidad.find(query).populate(populateOptions), // Obtiene los chequeos con referencias pobladas
+      ChequeoCalidad.find(query).populate(populateOptions), // Obtiene los chequeos con IdReferencia",s pobladas
     ]);
 
     if (chequeoCalidads.length === 0) {
