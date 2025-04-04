@@ -10,7 +10,10 @@ const populateOptions = [
     select: "idItems numeroContrato", // Selecciona los campos idItems y numeroContrato
     populate: {
       path: "idItems", // Relación con los ítems del contrato
-      populate: [{ path: "producto", select: "nombre" }], // Relación con el modelo Producto
+      populate: [
+        { path: "producto", select: "nombre" },
+        { path: "idTipoProducto", select: "nombre" }, // Relación con el modelo TipoProducto
+      ], // Relación con el modelo Producto
     },
   },
   { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
@@ -76,15 +79,19 @@ const despachoPost = async (req, res = response) => {
     cantidadRecibida,
     cantidadEnviada,
     estadoCarga,
+    estadoDespacho,
     estado,
+    fechaSalida,
+    fechaLlegada,
     fechaInicio,
     fechaFin,
     fechaDespacho,
+    fechaInicioDespacho,
+    fechaFinDespacho,
     idGuia,
     placa,
     tipo,
     nombreChofer,
-    apellidoChofer,
   } = req.body; // Extrae los datos del cuerpo de la solicitud
 
   const nuevaDespacho = new Despacho({
@@ -95,16 +102,20 @@ const despachoPost = async (req, res = response) => {
     idTanque,
     cantidadRecibida,
     cantidadEnviada,
+    estadoDespacho,
     estadoCarga,
     estado,
     fechaInicio,
     fechaFin,
+    fechaInicioDespacho,
+    fechaFinDespacho,
+    fechaSalida,
+    fechaLlegada,
     fechaDespacho,
     idGuia,
     placa,
     tipo,
     nombreChofer,
-    apellidoChofer,
   });
 
   try {

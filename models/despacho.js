@@ -57,12 +57,12 @@ const DespachoSchema = new Schema(
       min: [0, "La cantidad enviada no puede ser negativa"], // Validación para evitar valores negativos
       required: [true, "La cantidad enviada es obligatoria"], // Campo obligatorio
     },
-
+    estadoDespacho: {
+      type: String,
+    },
     // Estado de la carga (en tránsito o entregado)
     estadoCarga: {
       type: String,
-      enum: ["EN_TRANSITO", "ENTREGADO"], // Valores permitidos
-      default: "EN_TRANSITO", // Valor por defecto
     },
 
     // Estado general de la recepción (activo o inactivo)
@@ -79,6 +79,18 @@ const DespachoSchema = new Schema(
     },
     fechaDespacho: {
       type: Date, // Fecha de despacho del transporte
+    },
+    fechaInicioDespacho: {
+      type: Date, // Fecha en la que se inicia la recepción del producto en la refinería
+    },
+    fechaFinDespacho: {
+      type: Date, // Fecha en la que finaliza la recepción del producto en la refinería
+    },
+    fechaSalida: {
+      type: Date, // Fecha en la que el transporte salió del origen
+    },
+    fechaLlegada: {
+      type: Date, // Fecha en la que el transporte llegó al destino
     },
 
     // Información del transporte
@@ -99,15 +111,6 @@ const DespachoSchema = new Schema(
       maxlength: [
         20,
         "El nombre del chofer no puede exceder los 50 caracteres",
-      ], // Validación de longitud máxima
-    },
-    apellidoChofer: {
-      type: String,
-      required: [true, "El apellido del chofer es obligatorio"], // Campo obligatorio
-      minlength: [3, "El apellido del chofer debe tener al menos 3 caracteres"], // Validación de longitud mínima
-      maxlength: [
-        20,
-        "El apellido del chofer no puede exceder los 50 caracteres",
       ], // Validación de longitud máxima
     },
 

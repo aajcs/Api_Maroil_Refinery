@@ -1,53 +1,62 @@
 // Importaciones necesarias
-const { response, request } = require("express"); // Objetos de Express para manejar solicitudes y respuestas
-const ChequeoCalidad = require("../models/chequeoCalidad"); // Modelo ChequeoCalidad para interactuar con la base de datos
-const { Refinacion } = require("../models"); // Modelo Refinacion para manejar relaciones
+const { response, request } = require("express");
+const ChequeoCalidad = require("../models/chequeoCalidad");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
-  { path: "idProducto", select: "nombre" }, // Relación con el modelo Producto
-  { path: "idTanque", select: "nombre" }, // Relación con el modelo Tanque
-  { path: "idTorre", select: "nombre" }, // Relación con el modelo Torre
   { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
-  { path: "idRefinacion", select: "descripcion" }, // Relación con el modelo Refinacion
+  { path: "aplicar.referencia" }, // Población dinámica basada en el tipo de operación
+  { path: "idProducto", select: "nombre" }, // Relación con el modelo Producto
+  { path: "idOperador", select: "nombre" }, // Relación con el modelo Operador
 ];
 
-// Controlador para obtener todos los chequeos de calidad con población de referencias
+// Controlador para obtener todos los chequeos de calidad
 const chequeoCalidadGets = async (req = request, res = response) => {
-  const query = { eliminado: false }; // Filtro para obtener solo chequeos no eliminados
+  const query = { estado: "true", eliminado: false }; // Filtro para obtener solo chequeos activos y no eliminados
 
   try {
-    const [total, chequeoCalidads] = await Promise.all([
+    const [total, chequeos] = await Promise.all([
       ChequeoCalidad.countDocuments(query), // Cuenta el total de chequeos
       ChequeoCalidad.find(query).populate(populateOptions), // Obtiene los chequeos con referencias pobladas
     ]);
 
-    res.json({ total, chequeoCalidads }); // Responde con el total y la lista de chequeos
+    if (chequeos.length === 0) {
+      return res.status(404).json({
+        message:
+          "No se encontraron chequeos de calidad con los criterios proporcionados.",
+      });
+    }
+
+    res.json({ total, chequeos }); // Responde con el total y la lista de chequeos
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message }); // Responde con un error 500 en caso de un problema interno
+    console.error("Error en chequeoCalidadGets:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al obtener los chequeos de calidad.",
+    });
   }
 };
 
 // Controlador para obtener un chequeo de calidad específico por ID
 const chequeoCalidadGet = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID del chequeo desde los parámetros de la URL
+  const { id } = req.params;
 
   try {
-    const chequeoCalidad = await ChequeoCalidad.findOne({
+    const chequeo = await ChequeoCalidad.findOne({
       _id: id,
-      estado: true,
+      estado: "true",
       eliminado: false,
-    }).populate(populateOptions); // Busca el chequeo por ID y popula las referencias
+    }).populate(populateOptions);
 
-    if (!chequeoCalidad) {
-      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" }); // Responde con un error 404 si no se encuentra el chequeo
+    if (!chequeo) {
+      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
     }
 
-    res.json(chequeoCalidad); // Responde con los datos del chequeo
+    res.json(chequeo);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message }); // Responde con un error 500 en caso de un problema interno
+    console.error("Error en chequeoCalidadGet:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al obtener el chequeo de calidad.",
+    });
   }
 };
 
@@ -55,128 +64,116 @@ const chequeoCalidadGet = async (req = request, res = response) => {
 const chequeoCalidadPost = async (req = request, res = response) => {
   const {
     idRefineria,
+    aplicar,
     idProducto,
-    idTanque,
-    idTorre,
-    idRefinacion,
-    operador,
     fechaChequeo,
     gravedadAPI,
     azufre,
-    viscosidad,
-    densidad,
     contenidoAgua,
-    contenidoPlomo,
-    octanaje,
-    temperatura,
-  } = req.body; // Extrae los datos del cuerpo de la solicitud
+    puntoDeInflamacion,
+    cetano,
+    idOperador,
+  } = req.body;
 
   try {
-    const nuevoChequeoCalidad = new ChequeoCalidad({
+    const nuevoChequeo = new ChequeoCalidad({
       idRefineria,
+      aplicar,
       idProducto,
-      idTanque,
-      idTorre,
-      idRefinacion,
-      operador,
       fechaChequeo,
       gravedadAPI,
       azufre,
-      viscosidad,
-      densidad,
       contenidoAgua,
-      contenidoPlomo,
-      octanaje,
-      temperatura,
+      puntoDeInflamacion,
+      cetano,
+      idOperador,
     });
 
-    await nuevoChequeoCalidad.save(); // Guarda el nuevo chequeo en la base de datos
+    await nuevoChequeo.save();
+    await nuevoChequeo.populate(populateOptions);
 
-    // Actualiza la colección de Refinacion para agregar la referencia al chequeo
-    await Refinacion.findByIdAndUpdate(
-      idRefinacion,
-      { $push: { idChequeoCalidad: nuevoChequeoCalidad._id } },
-      { new: true }
-    );
-
-    await nuevoChequeoCalidad.populate(populateOptions); // Poblar referencias después de guardar
-    res.status(201).json(nuevoChequeoCalidad); // Responde con un código 201 (creado) y los datos del chequeo
+    res.status(201).json(nuevoChequeo);
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message }); // Responde con un error 400 si los datos no son válidos
+    console.error("Error en chequeoCalidadPost:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al crear el chequeo de calidad.",
+    });
   }
 };
 
 // Controlador para actualizar un chequeo de calidad existente
 const chequeoCalidadPut = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID del chequeo desde los parámetros de la URL
-  const { idRefinacion, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo ciertos campos
+  const { id } = req.params;
+  const { _id, ...resto } = req.body;
 
   try {
-    const chequeoCalidadActualizado = await ChequeoCalidad.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar el chequeo no eliminado
-      resto, // Datos a actualizar
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Poblar referencias después de actualizar
+    const chequeoActualizado = await ChequeoCalidad.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      resto,
+      { new: true }
+    ).populate(populateOptions);
 
-    if (!chequeoCalidadActualizado) {
-      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" }); // Responde con un error 404 si no se encuentra el chequeo
+    if (!chequeoActualizado) {
+      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
     }
 
-    // Actualiza la referencia en la colección de Refinacion si se proporciona un nuevo idRefinacion
-    if (idRefinacion) {
-      await Refinacion.updateMany(
-        { idChequeoCalidad: id },
-        { $pull: { idChequeoCalidad: id } }
-      );
-
-      await Refinacion.findByIdAndUpdate(
-        idRefinacion,
-        { $push: { idChequeoCalidad: id } },
-        { new: true }
-      );
-    }
-
-    res.json(chequeoCalidadActualizado); // Responde con los datos del chequeo actualizado
+    res.json(chequeoActualizado);
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message }); // Responde con un error 400 si los datos no son válidos
+    console.error("Error en chequeoCalidadPut:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al actualizar el chequeo de calidad.",
+    });
+  }
+};
+
+// Controlador para manejar actualizaciones parciales (PATCH)
+const chequeoCalidadPatch = async (req = request, res = response) => {
+  const { id } = req.params;
+  const { _id, ...resto } = req.body;
+
+  try {
+    const chequeoActualizado = await ChequeoCalidad.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { $set: resto },
+      { new: true }
+    ).populate(populateOptions);
+
+    if (!chequeoActualizado) {
+      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
+    }
+
+    res.json(chequeoActualizado);
+  } catch (err) {
+    console.error("Error en chequeoCalidadPatch:", err);
+    res.status(500).json({
+      error:
+        "Error interno del servidor al actualizar parcialmente el chequeo de calidad.",
+    });
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un chequeo de calidad
 const chequeoCalidadDelete = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID del chequeo desde los parámetros de la URL
+  const { id } = req.params;
 
   try {
-    const chequeoCalidad = await ChequeoCalidad.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar el chequeo no eliminado
-      { eliminado: true }, // Marca el chequeo como eliminado
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Poblar referencias después de actualizar
+    const chequeo = await ChequeoCalidad.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { eliminado: true },
+      { new: true }
+    ).populate(populateOptions);
 
-    if (!chequeoCalidad) {
-      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" }); // Responde con un error 404 si no se encuentra el chequeo
+    if (!chequeo) {
+      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
     }
 
-    // Elimina la referencia en la colección de Refinacion
-    await Refinacion.updateMany(
-      { idChequeoCalidad: id },
-      { $pull: { idChequeoCalidad: id } }
-    );
-
-    res.json(chequeoCalidad); // Responde con los datos del chequeo eliminado
+    res.json(chequeo);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message }); // Responde con un error 500 en caso de un problema interno
+    console.error("Error en chequeoCalidadDelete:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al eliminar el chequeo de calidad.",
+    });
   }
-};
-
-// Controlador para manejar solicitudes PATCH (ejemplo básico)
-const chequeoCalidadPatch = (req = request, res = response) => {
-  res.json({
-    msg: "patch API - chequeoCalidadPatch", // Mensaje de prueba
-  });
 };
 
 // Exporta los controladores para que puedan ser utilizados en las rutas
@@ -185,6 +182,6 @@ module.exports = {
   chequeoCalidadGet, // Obtener un chequeo de calidad específico por ID
   chequeoCalidadPost, // Crear un nuevo chequeo de calidad
   chequeoCalidadPut, // Actualizar un chequeo de calidad existente
+  chequeoCalidadPatch, // Actualizar parcialmente un chequeo de calidad
   chequeoCalidadDelete, // Eliminar (marcar como eliminado) un chequeo de calidad
-  chequeoCalidadPatch, // Manejar solicitudes PATCH
 };

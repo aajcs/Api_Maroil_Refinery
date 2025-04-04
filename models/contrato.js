@@ -127,6 +127,14 @@ const ContratoSchema = Schema(
       default: [],
     },
 
+    // Descripción del contrato
+    observacion: {
+      type: String,
+      required: [false, "La descripción es obligatoria"],
+      minlength: [5, "La descripción debe tener al menos 5 caracteres"],
+      maxlength: [200, "La descripción no puede exceder los 200 caracteres"],
+    },
+
     // Historial de modificaciones
     historialModificaciones: [
       {

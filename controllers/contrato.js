@@ -83,6 +83,7 @@ const contratoPost = async (req, res = response) => {
     numeroContrato,
     plazo,
     tipoContrato,
+    observacion,
   } = req.body;
 
   let nuevoContrato; // Declarar fuera del bloque try
@@ -107,6 +108,7 @@ const contratoPost = async (req, res = response) => {
       numeroContrato,
       plazo,
       tipoContrato,
+      observacion,
     });
 
     if (!items || items.length === 0) {
