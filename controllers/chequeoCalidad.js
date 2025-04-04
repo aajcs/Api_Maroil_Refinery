@@ -22,19 +22,19 @@ const chequeoCalidadGets = async (req = request, res = response) => {
   const query = { estado: "true", eliminado: false }; // Filtro para obtener solo chequeos activos y no eliminados
 
   try {
-    const [total, chequeos] = await Promise.all([
+    const [total, chequeoCalidads] = await Promise.all([
       ChequeoCalidad.countDocuments(query), // Cuenta el total de chequeos
       ChequeoCalidad.find(query).populate(populateOptions), // Obtiene los chequeos con referencias pobladas
     ]);
 
-    if (chequeos.length === 0) {
+    if (chequeoCalidads.length === 0) {
       return res.status(404).json({
         message:
           "No se encontraron chequeos de calidad con los criterios proporcionados.",
       });
     }
 
-    res.json({ total, chequeos }); // Responde con el total y la lista de chequeos
+    res.json({ total, chequeoCalidads }); // Responde con el total y la lista de chequeos
   } catch (err) {
     console.error("Error en chequeoCalidadGets:", err);
     res.status(500).json({
