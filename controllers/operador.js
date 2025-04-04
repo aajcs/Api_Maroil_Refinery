@@ -9,12 +9,12 @@ const operadorGets = async (req = request, res = response) => {
   const query = { eliminado: false }; // Filtro para operadores no eliminados
 
   try {
-    const [total, operadores] = await Promise.all([
+    const [total, operadors] = await Promise.all([
       Operador.countDocuments(query), // Cuenta el total de operadores
       Operador.find(query).populate(populateOptions), // Obtiene los operadores con referencias pobladas
     ]);
 
-    res.json({ total, operadores }); // Responde con el total y la lista de operadores
+    res.json({ total, operadors }); // Responde con el total y la lista de operadores
   } catch (err) {
     console.error("Error en operadorGets:", err);
     res.status(500).json({
