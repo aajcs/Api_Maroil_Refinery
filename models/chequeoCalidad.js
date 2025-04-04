@@ -8,92 +8,74 @@ const ChequeoCalidadSchema = Schema(
       type: Number,
     },
 
-    // Relación con el modelo Refineria
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
       required: true,
-      
     },
 
+    aplicar: {
+      tipo: {
+        type: String,
+        enum: ["Recepcion", "Tanque"], // Tipos de operación permitidos
+        required: true,
+      },
+      referencia: {
+        type: Schema.Types.ObjectId,
+        required: true, // ID de la operación asociada
+        refPath: "aplicar.tipo", // Referencia dinámica basada en el tipo de operación
+      },
+    },
     // Relación con el modelo Producto (crudo o derivado)
     idProducto: {
       type: Schema.Types.ObjectId,
       ref: "Producto",
-      required: true,
-      
-    },
-
-    // Relación con el modelo Tanque
-    idTanque: {
-      type: Schema.Types.ObjectId,
-      ref: "Tanque",
-      required: true,
-      
-    },
-
-    // Relación con el modelo Torre
-    idTorre: {
-      type: Schema.Types.ObjectId,
-      ref: "Torre",
-      required: true,
-      
-    },
-
-    // Relación con el modelo Refinacion
-    idRefinacion: {
-      type: Schema.Types.ObjectId,
-      ref: "Refinacion",
-      required: true,
-      
-    },
-
-    // Nombre del operador
-    operador: {
-      type: String,
-      required: [true, "El nombre del operador es obligatorio"],
-      minlength: [3, "El nombre del operador debe tener al menos 3 caracteres"],
-      maxlength: [50, "El nombre del operador no puede exceder los 50 caracteres"]
+      required: false,
     },
 
     // Fecha del chequeo
     fechaChequeo: {
       type: Date,
-      required: [true, "La fecha del chequeo es obligatoria"],
+      required: [false, "La fecha del chequeo es obligatoria"],
     },
 
     // Características del producto (calidad)
-    nombre: {
-      type: String,
-      required: [true, "El nombre del crudo es obligatorio"],
-      minlength: [3, "El nombre debe tener al menos 3 caracteres"],
-      maxlength: [50, "El nombre no puede exceder los 50 caracteres"]
-    },
-    clasificacion: {
-      type: String,
-      enum: ["Liviano", "Mediano", "Pesado"],
-      required: [true, "La clasificación de crudo es obligatoria"],
-    },
+
     gravedadAPI: {
       type: Number,
-      required: [true, "La gravedad API es obligatoria"],
+      required: [false, "La gravedad API es obligatoria"],
       min: [0, "La gravedad API no puede ser negativa"], // Validación para evitar valores negativos
     },
     azufre: {
       type: Number,
-      required: [true, "El porcentaje de azufre es obligatorio"],
+      required: [false, "El porcentaje de azufre es obligatorio"],
       min: [0, "El porcentaje de azufre no puede ser negativo"], // Validación para evitar valores negativos
     },
     contenidoAgua: {
       type: Number,
-      required: [true, "El contenido de agua es obligatorio"],
+      required: [false, "El contenido de agua es obligatorio"],
       min: [0, "El contenido de agua no puede ser negativo"], // Validación para evitar valores negativos
     },
-    flashPoint: {
-      type: String,
-      required: [true, "El Flashpoint es obligatorio"],
-      minlength: [3, "El Flashpoint debe tener al menos 3 caracteres"],
-      maxlength: [50, "El Flashpoint no puede exceder los 50 caracteres"]
+    puntoDeInflamacion: {
+      type: Number,
+      required: [false, "El Punto De Inflamacion es obligatorio"],
+      minlength: [
+        1,
+        "El Punto de Inflamacion debe tener al menos 3 caracteres",
+      ],
+    },
+
+    cetano: {
+      type: Number,
+      required: [false, "El Indice de cetano es obligatorio"],
+      minlength: [1, "El Indice de cetano debe tener al menos 1 caracter"],
+    },
+
+    // Nombre del operador
+    idOperador: {
+      type: Schema.Types.ObjectId,
+      ref: "Operador",
+      required: false,
     },
 
     // Estado del chequeo
