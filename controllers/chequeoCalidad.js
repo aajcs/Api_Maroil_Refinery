@@ -6,7 +6,7 @@ const ChequeoCalidad = require("../models/chequeoCalidad");
 const populateOptions = [
   { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
   {
-    path: "aplicar.IdReferencia",
+    path: "aplicar.idReferencia",
     select: {
       // Selección condicional basada en el tipo
       nombre: 1, // Campo para el modelo Tanque
@@ -20,7 +20,7 @@ const populateOptions = [
 
 // Controlador para obtener todos los chequeos de calidad
 const chequeoCalidadGets = async (req = request, res = response) => {
-  const query = { estado: "true", eliminado: false }; // Filtro para obtener solo chequeos activos y no eliminados
+  const query = { eliminado: false }; // Filtro para obtener solo chequeos activos y no eliminados
 
   try {
     const [total, chequeoCalidads] = await Promise.all([

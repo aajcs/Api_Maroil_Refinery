@@ -17,7 +17,7 @@ const ChequeoCalidadSchema = Schema(
     aplicar: {
       tipo: {
         type: String,
-        enum: ["recepcion", "tanque", "despacho"], // Tipos de operación permitidos
+        enum: ["Recepcion", "Tanque", "Despacho"], // Tipos De operación permitidos
         required: true,
       },
       idReferencia: {
