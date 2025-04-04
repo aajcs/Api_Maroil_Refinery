@@ -5,7 +5,14 @@ const ChequeoCalidad = require("../models/chequeoCalidad");
 // Opciones de población reutilizables para consultas
 const populateOptions = [
   { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
-  { path: "aplicar.referencia" }, // Población dinámica basada en el tipo de operación
+  {
+    path: "aplicar.referencia",
+    select: {
+      // Selección condicional basada en el tipo
+      nombre: 1, // Campo para el modelo Tanque
+      idGuia: 1, // Campo para el modelo Recepcion
+    },
+  },
   { path: "idProducto", select: "nombre" }, // Relación con el modelo Producto
   { path: "idOperador", select: "nombre" }, // Relación con el modelo Operador
 ];
