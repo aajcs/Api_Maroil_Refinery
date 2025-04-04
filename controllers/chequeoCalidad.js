@@ -11,6 +11,7 @@ const populateOptions = [
       // Selección condicional basada en el tipo
       nombre: 1, // Campo para el modelo Tanque
       idGuia: 1, // Campo para el modelo Recepcion
+      idGuia: 1, // Campo para el modelo Recepcion
     },
   },
   { path: "idProducto", select: "nombre" }, // Relación con el modelo Producto
