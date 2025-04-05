@@ -10,7 +10,8 @@ const refineriasGets = async (req = request, res = response) => {
     // Ejecuta ambas consultas en paralelo para optimizar el tiempo de respuesta
     const [total, refinerias] = await Promise.all([
       Refineria.countDocuments(query), // Cuenta el total de refinerías que cumplen el filtro
-      Refineria.find(query), // Obtiene las refinerías que cumplen el filtro
+      Refineria.find(query).sort({ nombre: 1 }), // Obtiene las refinerías que cumplen el filtro
+      ,
     ]);
 
     // Responde con el total de refinerías y la lista obtenida
