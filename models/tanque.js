@@ -54,6 +54,13 @@ const TanqueSchema = Schema(
       required: [false, "El ID del Producto del derivado es obligatorio"], // Campo opcional
     },
 
+    // Relación con el modelo Tanque (opcional)
+    idChequeoCalidad: {
+      type: Schema.Types.ObjectId,
+      ref: "ChequeoCalidad", // Relación con el modelo Tanque
+      required: false, // Campo obligatorio
+    },
+
     // Estado del tanque (activo o inactivo)
     estado: {
       type: String,

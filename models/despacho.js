@@ -46,6 +46,13 @@ const DespachoSchema = new Schema(
       ref: "Tanque", // Relación con el modelo Tanque
     },
 
+    // Relación con el modelo Tanque (opcional)
+    idChequeoCalidad: {
+      type: Schema.Types.ObjectId,
+      ref: "ChequeoCalidad", // Relación con el modelo Tanque
+      required: false, // Campo obligatorio
+    },
+
     // Información de la recepción
     cantidadRecibida: {
       type: Number,

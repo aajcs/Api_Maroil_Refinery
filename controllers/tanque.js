@@ -8,6 +8,7 @@ const populateOptions = [
     path: "idRefineria", // Relación con el modelo Refineria
     select: "nombre", // Selecciona solo el campo nombre
   },
+  { path: "idChequeoCalidad" }, // Población del chequeo de calidad
   {
     path: "idProducto", // Relación con el modelo Producto
     select: "nombre color posicion", // Selecciona solo los campos nombre y color
@@ -69,6 +70,7 @@ const tanquePost = async (req = request, res = response) => {
     almacenamientoMateriaPrimaria,
     idRefineria,
     idProducto,
+    idChequeoCalidad,
   } = req.body;
 
   try {
@@ -81,6 +83,7 @@ const tanquePost = async (req = request, res = response) => {
       almacenamientoMateriaPrimaria,
       idRefineria,
       idProducto,
+      idChequeoCalidad,
     });
 
     await nuevoTanque.save(); // Guarda el nuevo tanque en la base de datos

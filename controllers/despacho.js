@@ -16,6 +16,7 @@ const populateOptions = [
       ], // Relación con el modelo Producto
     },
   },
+  { path: "idChequeoCalidad" }, // Población del chequeo de calidad
   { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
   { path: "idTanque", select: "nombre" }, // Relación con el modelo Tanque
   { path: "idLineaDespacho", select: "nombre" }, // Relación con el modelo Linea
@@ -76,6 +77,7 @@ const despachoPost = async (req, res = response) => {
     idLineaDespacho,
     idRefineria,
     idTanque,
+    idChequeoCalidad,
     cantidadRecibida,
     cantidadEnviada,
     estadoCarga,
@@ -100,6 +102,7 @@ const despachoPost = async (req, res = response) => {
     idLineaDespacho,
     idRefineria,
     idTanque,
+    idChequeoCalidad,
     cantidadRecibida,
     cantidadEnviada,
     estadoDespacho,
