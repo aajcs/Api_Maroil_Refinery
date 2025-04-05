@@ -41,14 +41,6 @@ const ChequeoCantidadSchema = Schema(
       required: false,
     },
 
-    // Turno del operador
-    turno: {
-      type: String,
-      enum: ["Diurno", "Nocturno"],
-      default: "Diurno",
-      required: true,
-    },
-
     // Fecha del chequeo
     fechaChequeo: {
       type: Date,
