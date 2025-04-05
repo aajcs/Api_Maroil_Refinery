@@ -81,8 +81,7 @@ const ChequeoCalidadSchema = Schema(
     // Estado del chequeo
     estado: {
       type: String,
-      enum: ["true", "false"], // Define los valores permitidos para el campo estado
-      default: "true",
+
       required: true,
     },
 

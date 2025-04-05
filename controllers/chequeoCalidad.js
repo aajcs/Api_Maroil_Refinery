@@ -81,6 +81,7 @@ const chequeoCalidadPost = async (req = request, res = response) => {
     puntoDeInflamacion,
     cetano,
     idOperador,
+    estado,
   } = req.body;
 
   try {
@@ -95,6 +96,7 @@ const chequeoCalidadPost = async (req = request, res = response) => {
       puntoDeInflamacion,
       cetano,
       idOperador,
+      estado,
     });
 
     await nuevoChequeo.save();
