@@ -1,7 +1,9 @@
 // Importaciones necesarias
 const { response, request } = require("express");
 const ChequeoCantidad = require("../models/chequeoCantidad");
-const Refinacion = require("../models/refinacion"); // Modelo Refinacion para manejar relaciones
+const Recepcion = require("../models/recepcion");
+const Despacho = require("../models/despacho");
+const Tanque = require("../models/tanque");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
@@ -18,6 +20,47 @@ const populateOptions = [
   { path: "idProducto", select: "nombre" }, // Relación con el modelo Producto
   { path: "idOperador", select: "nombre" }, // Relación con el modelo Operador
 ];
+// Función auxiliar para actualizar el modelo relacionado
+const actualizarModeloRelacionado = async (idReferencia, tipo, datos) => {
+  try {
+    console.log(`Actualizando modelo relacionado: ${tipo}`);
+    console.log(`ID de referencia: ${idReferencia}`);
+    console.log(`Datos enviados:`, datos);
+
+    let resultado;
+
+    if (tipo === "Recepcion") {
+      resultado = await Recepcion.findByIdAndUpdate(
+        idReferencia,
+        { $set: datos },
+        { new: true } // Asegúrate de incluir esta opción
+      );
+    } else if (tipo === "Despacho") {
+      resultado = await Despacho.findByIdAndUpdate(
+        idReferencia,
+        { $set: datos },
+        { new: true }
+      );
+    } else if (tipo === "Tanque") {
+      resultado = await Tanque.findByIdAndUpdate(
+        idReferencia,
+        { $set: datos },
+        { new: true }
+      );
+    }
+
+    console.log("Resultado de la actualización:", resultado);
+
+    if (!resultado) {
+      throw new Error(
+        `No se encontró el modelo ${tipo} con ID: ${idReferencia}`
+      );
+    }
+  } catch (err) {
+    console.error(`Error al actualizar el modelo ${tipo}:`, err);
+    throw new Error(`Error al actualizar el modelo ${tipo}`);
+  }
+};
 
 // Controlador para obtener todos los chequeos de cantidad
 const chequeoCantidadGets = async (req = request, res = response) => {
