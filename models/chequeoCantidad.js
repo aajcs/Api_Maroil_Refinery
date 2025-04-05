@@ -57,8 +57,7 @@ const ChequeoCantidadSchema = Schema(
     // Estado del chequeo
     estado: {
       type: String,
-
-      required: true,
+      required: false,
     },
     // Eliminación lógica
     eliminado: {

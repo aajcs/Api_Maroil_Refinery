@@ -95,9 +95,11 @@ const chequeoCantidadPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoChequeo); // Responde con un código 201 (creado) y los datos del chequeo
   } catch (err) {
-    console.error("Error en chequeoCantidadPost:", err);
+    console.error("Error en chequeoCantidadPost:", err); // Muestra el error completo en la consola
     res.status(400).json({
-      error: "Error interno del servidor al crear el chequeo de cantidad.",
+      error:
+        err.message ||
+        "Error interno del servidor al crear el chequeo de cantidad.",
     });
   }
 };
