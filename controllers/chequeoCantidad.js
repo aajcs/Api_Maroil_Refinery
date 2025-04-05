@@ -243,7 +243,7 @@ const chequeoCantidadPatch = async (req = request, res = response) => {
      // Actualizar el modelo relacionado
      if (aplicar && aplicar.idReferencia && aplicar.tipo) {
       await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
-        chequeoCalidad: chequeoActualizado._id,
+        chequeoCantidad: chequeoActualizado._id,
       });
     }
 
