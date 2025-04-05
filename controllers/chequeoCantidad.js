@@ -77,6 +77,7 @@ const chequeoCantidadPost = async (req = request, res = response) => {
     idOperador,
     fechaChequeo,
     cantidad,
+    estado,
   } = req.body;
 
   try {
@@ -87,6 +88,7 @@ const chequeoCantidadPost = async (req = request, res = response) => {
       idOperador,
       fechaChequeo,
       cantidad,
+      estado,
     });
 
     await nuevoChequeo.save(); // Guarda el nuevo chequeo en la base de datos
