@@ -13,7 +13,6 @@ const ChequeoCantidadSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "Refineria",
       required: true,
-      
     },
 
     // Relación con el modelo Producto (crudo o derivado)
@@ -21,42 +20,29 @@ const ChequeoCantidadSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "Producto",
       required: true,
-      
     },
-
-    // Relación con el modelo Tanque
-    idTanque: {
-      type: Schema.Types.ObjectId,
-      ref: "Tanque",
-      required: true,
-      
-    },
-
-    // Relación con el modelo Torre
-    idTorre: {
-      type: Schema.Types.ObjectId,
-      ref: "Torre",
-      required: true,
-      
-    },
-
-    // Relación con el modelo Refinacion
-    idRefinacion: {
-      type: Schema.Types.ObjectId,
-      ref: "Refinacion",
-      required: true,
-      
+    aplicar: {
+      tipo: {
+        type: String,
+        enum: ["Recepcion", "Tanque", "Despacho"], // Tipos De operación permitidos
+        required: true,
+      },
+      idReferencia: {
+        type: Schema.Types.ObjectId,
+        required: true, // ID de la operación asociada
+        refPath: "aplicar.tipo", // Referencia dinámica basada en el tipo de operación
+      },
     },
 
     // Nombre del operador
-    operador: {
-      type: String,
-      required: [true, "El nombre del operador es obligatorio"],
-      minlength: [3, "El nombre del operador debe tener al menos 3 caracteres"],
-      maxlength: [50, "El nombre del operador no puede exceder los 50 caracteres"]
+    idOperador: {
+      type: Schema.Types.ObjectId,
+      ref: "Operador",
+      required: false,
     },
-     // Turno del operador
-     turno: {
+
+    // Turno del operador
+    turno: {
       type: String,
       enum: ["Diurno", "Nocturno"],
       default: "Diurno",
@@ -89,7 +75,6 @@ const ChequeoCantidadSchema = Schema(
       type: Boolean,
       default: false,
     },
-
   },
   {
     timestamps: true, // Añade createdAt y updatedAt automáticamente
