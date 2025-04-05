@@ -21,7 +21,7 @@ const populateOptions = [
 
 // Controlador para obtener todos los chequeos de cantidad
 const chequeoCantidadGets = async (req = request, res = response) => {
-  const query = { estado: true, eliminado: false }; // Filtro para obtener solo chequeos activos y no eliminados
+  const query = { eliminado: false }; // Filtro para obtener solo chequeos activos y no eliminados
 
   try {
     const [total, chequeoCantidads] = await Promise.all([
@@ -52,7 +52,6 @@ const chequeoCantidadGet = async (req = request, res = response) => {
   try {
     const chequeo = await ChequeoCantidad.findOne({
       _id: id,
-      estado: true,
       eliminado: false,
     }).populate(populateOptions);
 
