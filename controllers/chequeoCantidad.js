@@ -24,19 +24,19 @@ const chequeoCantidadGets = async (req = request, res = response) => {
   const query = { estado: true, eliminado: false }; // Filtro para obtener solo chequeos activos y no eliminados
 
   try {
-    const [total, chequeos] = await Promise.all([
+    const [total, chequeoCantidads] = await Promise.all([
       ChequeoCantidad.countDocuments(query), // Cuenta el total de chequeos
       ChequeoCantidad.find(query).populate(populateOptions), // Obtiene los chequeos con referencias pobladas
     ]);
 
-    if (chequeos.length === 0) {
+    if (chequeoCantidads.length === 0) {
       return res.status(404).json({
         message:
           "No se encontraron chequeos de cantidad con los criterios proporcionados.",
       });
     }
 
-    res.json({ total, chequeos }); // Responde con el total y la lista de chequeos
+    res.json({ total, chequeoCantidads }); // Responde con el total y la lista de chequeos
   } catch (err) {
     console.error("Error en chequeoCantidadGets:", err);
     res.status(500).json({
