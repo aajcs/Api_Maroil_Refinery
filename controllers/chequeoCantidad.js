@@ -137,6 +137,13 @@ const chequeoCantidadPost = async (req = request, res = response) => {
     await nuevoChequeo.save(); // Guarda el nuevo chequeo en la base de datos
     await nuevoChequeo.populate(populateOptions); // Poblar referencias después de guardar
 
+     // Actualizar el modelo relacionado
+     if (aplicar && aplicar.idReferencia && aplicar.tipo) {
+      await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
+        idChequeoCantidad: nuevoChequeo._id, // Cambiado a idChequeoCantidad
+      });
+    }
+
     res.status(201).json(nuevoChequeo); // Responde con un código 201 (creado) y los datos del chequeo
   } catch (err) {
     console.error("Error en chequeoCantidadPost:", err); // Muestra el error completo en la consola
@@ -163,6 +170,13 @@ const chequeoCantidadPut = async (req = request, res = response) => {
     if (!chequeoActualizado) {
       return res.status(404).json({ msg: "Chequeo de cantidad no encontrado" });
     }
+    
+    // Actualizar el modelo relacionado
+    if (aplicar && aplicar.idReferencia && aplicar.tipo) {
+      await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
+        chequeoCalidad: chequeoActualizado._id,
+      });
+    }
 
     res.json(chequeoActualizado); // Responde con los datos del chequeo actualizado
   } catch (err) {
@@ -186,6 +200,20 @@ const chequeoCantidadDelete = async (req = request, res = response) => {
 
     if (!chequeo) {
       return res.status(404).json({ msg: "Chequeo de cantidad no encontrado" });
+    }
+     // Actualizar el modelo relacionado
+     if (
+      chequeo.aplicar &&
+      chequeo.aplicar.idReferencia &&
+      chequeo.aplicar.tipo
+    ) {
+      await actualizarModeloRelacionado(
+        chequeo.aplicar.idReferencia,
+        chequeo.aplicar.tipo,
+        {
+          chequeoCalidad: null, // Eliminar la referencia al chequeo
+        }
+      );
     }
 
     res.json(chequeo); // Responde con los datos del chequeo eliminado
@@ -211,6 +239,12 @@ const chequeoCantidadPatch = async (req = request, res = response) => {
 
     if (!chequeoActualizado) {
       return res.status(404).json({ msg: "Chequeo de cantidad no encontrado" });
+    }
+     // Actualizar el modelo relacionado
+     if (aplicar && aplicar.idReferencia && aplicar.tipo) {
+      await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
+        chequeoCalidad: chequeoActualizado._id,
+      });
     }
 
     res.json(chequeoActualizado);

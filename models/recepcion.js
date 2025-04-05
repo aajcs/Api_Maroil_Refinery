@@ -48,6 +48,13 @@ const RecepcionSchema = new Schema(
       required: false, // Campo obligatorio
     },
 
+     // Relación con el chequeo de cantidad
+     idChequeoCantidad: {
+      type: Schema.Types.ObjectId,
+      ref: "ChequeoCantidad", // Relación con el chequeo cantidad
+      required: false, // Campo obligatorio
+    },
+
     // Información de la recepción
     cantidadRecibida: {
       type: Number,
