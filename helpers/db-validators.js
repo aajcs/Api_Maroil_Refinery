@@ -22,7 +22,9 @@ const {
   TipoProducto,
   Simulacion,
   Despacho,
-  Gasto,
+  Partida,
+  SubPartida,
+  Factura,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -233,12 +235,30 @@ const existeSimulacionPorId = async (id) => {
   }
 };
 
-const existeGastoPorId = async (id) => {
+const existeFacturaPorId = async (id) => {
   // Verificar si la simulacion existe
 
-  const existeGasto = await Gasto.findById(id);
-  if (!existeGasto) {
-    throw new Error(`Gasto no existe ${id}`);
+  const existeFactura = await Factura.findById(id);
+  if (!existeFactura) {
+    throw new Error(`Factura no existe ${id}`);
+  }
+};
+
+const existePartidaPorId = async (id) => {
+  // Verificar si la simulacion existe
+
+  const existePartida = await Partida.findById(id);
+  if (!existePartida) {
+    throw new Error(`Partida no existe ${id}`);
+  }
+};
+
+const existeSubPartidaPorId = async (id) => {
+  // Verificar si la sub partida existe
+
+  const existeSubPartida = await SubPartida.findById(id);
+  if (!existeSubPartida) {
+    throw new Error(`Sub Partida no existe ${id}`);
   }
 };
 
@@ -282,7 +302,9 @@ module.exports = {
   existeSimulacionPorId,
   existeLineaDespachoPorId,
   existeDespachoPorId,
-  existeGastoPorId,
+  existePartidaPorId,
+  existeSubPartidaPorId,
+  existeFacturaPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

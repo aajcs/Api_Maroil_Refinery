@@ -39,9 +39,10 @@ class Server {
       tipoProducto: "/api/tipoProducto",
       simulacion: "/api/simulacion",
       inventario: "/api/inventario",
-      gasto: "/api/gasto",
+      partida: "/api/partida",
+      subpartida: "/api/subpartida",
       operador: "/api/operador",
-
+      factura: "/api/factura",
       bunker: "/api/bunker/bunker",
       balanceBunker: "/api/bunker/balanceBunker",
       barcaza: "/api/bunker/barcaza",
@@ -118,8 +119,13 @@ class Server {
     this.app.use(this.paths.tipoProducto, require("../routes/tipoProducto"));
     this.app.use(this.paths.simulacion, require("../routes/simulacion"));
     this.app.use(this.paths.inventario, require("../routes/inventario"));
-    this.app.use(this.paths.gasto, require("../routes/gasto"));
+    this.app.use(this.paths.partida, require("../routes/partida"));
+    this.app.use(this.paths.subpartida, require("../routes/subPartida"));
+
     this.app.use(this.paths.operador, require("../routes/operador"));
+
+    //Rutas relacionadas con el módulo de finanzas
+    this.app.use(this.paths.factura, require("../routes/factura"));
 
     // Rutas relacionadas con operaciones de calidad y cantidad
     this.app.use(
