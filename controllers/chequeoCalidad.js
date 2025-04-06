@@ -1,5 +1,6 @@
 // Importaciones necesarias
 const { response, request } = require("express");
+const mongoose = require("mongoose"); // Importa mongoose
 const ChequeoCalidad = require("../models/chequeoCalidad");
 const Recepcion = require("../models/recepcion");
 const Despacho = require("../models/despacho");
@@ -25,42 +26,53 @@ const actualizarModeloRelacionado = async (idReferencia, tipo, datos) => {
   try {
     console.log(`Actualizando modelo relacionado: ${tipo}`);
     console.log(`ID de referencia: ${idReferencia}`);
-    console.log(`Datos enviados:`, datos);
+    console.log(`Datos enviados para la actualización:`, datos);
 
-    let resultado;
+    if (!mongoose.Types.ObjectId.isValid(idReferencia)) {
+      throw new Error(`El ID de referencia no es válido: ${idReferencia}`);
+    }
 
-    if (tipo === "Recepcion") {
-      resultado = await Recepcion.findByIdAndUpdate(
-        idReferencia,
-        { $set: datos },
-        { new: true } // Asegúrate de incluir esta opción
-      );
-    } else if (tipo === "Despacho") {
-      resultado = await Despacho.findByIdAndUpdate(
-        idReferencia,
-        { $set: datos },
-        { new: true }
-      );
-    } else if (tipo === "Tanque") {
-      resultado = await Tanque.findByIdAndUpdate(
-        idReferencia,
-        { $set: datos },
-        { new: true }
+    const modelo =
+      tipo === "Recepcion"
+        ? Recepcion
+        : tipo === "Despacho"
+        ? Despacho
+        : tipo === "Tanque"
+        ? Tanque
+        : null;
+
+    if (!modelo) {
+      throw new Error(`Tipo de modelo no válido: ${tipo}`);
+    }
+
+    const documentoExistente = await modelo.findById(idReferencia);
+    if (!documentoExistente) {
+      throw new Error(
+        `No se encontró el modelo ${tipo} con ID: ${idReferencia}`
       );
     }
+
+    const resultado = await modelo.findByIdAndUpdate(
+      idReferencia,
+      { $set: datos },
+      { new: true }
+    );
 
     console.log("Resultado de la actualización:", resultado);
 
     if (!resultado) {
       throw new Error(
-        `No se encontró el modelo ${tipo} con ID: ${idReferencia}`
+        `No se pudo actualizar el modelo ${tipo} con ID: ${idReferencia}`
       );
     }
+
+    return resultado;
   } catch (err) {
     console.error(`Error al actualizar el modelo ${tipo}:`, err);
-    throw new Error(`Error al actualizar el modelo ${tipo}`);
+    throw new Error(`Error al actualizar el modelo ${tipo}: ${err.message}`);
   }
 };
+
 // Controlador para obtener todos los chequeos de calidad
 const chequeoCalidadGets = async (req = request, res = response) => {
   const query = { eliminado: false }; // Filtro para obtener solo chequeos activos y no eliminados
@@ -167,9 +179,20 @@ const chequeoCalidadPut = async (req = request, res = response) => {
   const { _id, aplicar, ...resto } = req.body;
 
   try {
+    // Validar que idReferencia sea un ObjectId válido
+    if (
+      aplicar &&
+      aplicar.idReferencia &&
+      !mongoose.Types.ObjectId.isValid(aplicar.idReferencia)
+    ) {
+      return res.status(400).json({
+        error: "El ID de referencia no es válido.",
+      });
+    }
+
     const chequeoActualizado = await ChequeoCalidad.findOneAndUpdate(
       { _id: id, eliminado: false },
-      resto,
+      { ...resto, aplicar }, // Actualiza el chequeo y la referencia
       { new: true }
     ).populate(populateOptions);
 
@@ -180,7 +203,7 @@ const chequeoCalidadPut = async (req = request, res = response) => {
     // Actualizar el modelo relacionado
     if (aplicar && aplicar.idReferencia && aplicar.tipo) {
       await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
-        chequeoCalidad: chequeoActualizado._id,
+        idChequeoCalidad: chequeoActualizado._id,
       });
     }
 
