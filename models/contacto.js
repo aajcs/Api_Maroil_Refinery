@@ -16,7 +16,7 @@ const ContactoSchema = new Schema(
       minlength: [3, "El nombre debe tener al menos 3 caracteres"],
       maxlength: [50, "El nombre no puede exceder los 50 caracteres"],
     },
-    ubicacion: {
+    ciudad: {
       type: String,
       required: [false, "La ubicación es obligatoria"],
       minlength: [3, "La ubicación debe tener al menos 3 caracteres"],
@@ -207,8 +207,7 @@ const ContactoSchema = new Schema(
     // Estado del contacto
     estado: {
       type: String,
-      enum: ["true", "false"], // Define los valores permitidos para el campo estado
-      default: "true",
+
       required: false,
     },
 
