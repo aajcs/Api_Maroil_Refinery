@@ -11,6 +11,23 @@ const RefineriaSchema = Schema(
       maxlength: [100, "La ubicación no puede exceder los 100 caracteres"], // Validación de longitud máxima
     },
 
+    //Correo electrónico de la refinería
+    correo: {
+      type: String,
+      required: [false, "El correo electrónico es necesario"], // Campo obligatorio
+      unique: true, // Índice único para evitar duplicados
+      minlength: [5, "El correo debe tener al menos 5 caracteres"], // Validación de longitud mínima
+      maxlength: [100, "El correo no puede exceder los 100 caracteres"], // Validación de longitud máxima
+    },
+
+    //Telefono de la refinería
+    telefono: {
+      type: String,
+      required: [false, "El teléfono es necesario"], // Campo obligatorio
+      minlength: [3, "El teléfono debe tener al menos 3 caracteres"], // Validación de longitud mínima
+      maxlength: [15, "El teléfono no puede exceder los 15 caracteres"], // Validación de longitud máxima
+    },
+
     //Capacidad de la refinería
     procesamientoDia: {
       type: Number,
@@ -33,6 +50,17 @@ const RefineriaSchema = Schema(
       unique: true, // Índice único para evitar duplicados
       minlength: [5, "El NIT debe tener al menos 5 caracteres"], // Validación de longitud mínima
       maxlength: [20, "El NIT no puede exceder los 20 caracteres"], // Validación de longitud máxima
+    },
+
+    //Representante legal de la refinería
+    legal: {
+      type: String,
+      required: [false, "El representante legal es necesario"], // Campo obligatorio
+      minlength: [3, "El representante legal debe tener al menos 3 caracteres"], // Validación de longitud mínima
+      maxlength: [
+        50,
+        "El representante legal no puede exceder los 50 caracteres",
+      ], // Validación de longitud máxima
     },
 
     // Imagen asociada a la refinería (opcional)
