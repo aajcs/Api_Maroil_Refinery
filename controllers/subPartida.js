@@ -1,5 +1,6 @@
 // Importaciones necesarias
 const { response, request } = require("express");
+const mongoose = require("mongoose"); // Importa mongoose
 const SubPartida = require("../models/subPartida");
 
 // Opciones de población reutilizables
@@ -91,36 +92,75 @@ const subPartidaPost = async (req = request, res = response) => {
   }
 };
 
-// Controlador para actualizar una línea de carga existente
 const subPartidaPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body; // Excluye el campo _id del cuerpo de la solicitud
 
+  // Log para verificar el ID recibido
+  console.log("ID recibido en la solicitud PUT:", id);
+
   try {
+    // Verifica si el ID es válido
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.log("ID no válido:", id);
+      return res.status(400).json({
+        errors: [
+          {
+            value: id,
+            msg: "ID de subpartida no válido.",
+            param: "id",
+            location: "params",
+          },
+        ],
+      });
+    }
+
+    // Verifica si la subpartida existe
+    console.log("Buscando subpartida existente...");
+    const subPartidaExistente = await SubPartida.findOne({
+      _id: id,
+      eliminado: false,
+    });
+    if (!subPartidaExistente) {
+      console.log("Subpartida no encontrada o está eliminada:", id);
+      return res.status(404).json({
+        msg: "Subpartida no encontrada o está eliminada",
+      });
+    }
+
+    // Actualiza la subpartida
+    console.log("Actualizando subpartida con ID:", id, "y datos:", resto);
     const subPartidaActualizada = await SubPartida.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar la subPartida no eliminada
+      { _id: id, eliminado: false }, // Filtro para encontrar la subpartida no eliminada
       resto, // Datos a actualizar
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Aplica las opciones de población
 
     if (!subPartidaActualizada) {
+      console.log("No se pudo actualizar la subpartida:", id);
       return res.status(404).json({
-        msg: "Sub Partida no encontrada",
+        msg: "Subpartida no encontrada",
       });
     }
 
-    res.json(subPartidaActualizada); // Responde con los datos de la subPartida actualizada
+    console.log("Subpartida actualizada con éxito:", subPartidaActualizada);
+    res.json(subPartidaActualizada); // Responde con los datos de la subpartida actualizada
   } catch (err) {
-    console.error("Error en subPartidaPut:", err);
+    // Log detallado del error
+    console.error("Error en subPartidaPut:", {
+      message: err.message,
+      stack: err.stack,
+      name: err.name,
+    });
 
     if (err.name === "CastError") {
       return res.status(400).json({
-        error: "ID de subPartida no válido.",
+        error: "ID de subpartida no válido.",
       });
     }
 
     res.status(500).json({
-      error: "Error interno del servidor al actualizar la subPartida.",
+      error: "Error interno del servidor al actualizar la subpartida.",
     });
   }
 };
