@@ -71,7 +71,7 @@ const ContratoSchema = Schema(
         type: String,
         enum: ["Contado", "Crédito"],
         default: "Contado",
-        required: true,
+        required: false,
       },
       plazo: {
         type: Number, // Días de plazo si es crédito
@@ -118,7 +118,7 @@ const ContratoSchema = Schema(
       type: String,
       enum: ["Pendiente", "En Tránsito", "Entregado", "Cancelado"],
       default: "Pendiente",
-      required: true,
+      required: false,
     },
 
     // Cláusulas del contrato
