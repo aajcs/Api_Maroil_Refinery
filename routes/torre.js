@@ -53,7 +53,7 @@ router.post(
   [
     //check("numero", "El numero es obligatorio").not().isEmpty(),
     //check("nit").custom(nitExiste),
-    check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
+    // check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
     // check("refineria").custom(existeTorrePorId),
 
     // check('rol', 'No es un rol válido').isIn(['ADMIN_ROLE','USER_ROLE']),

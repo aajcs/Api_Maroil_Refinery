@@ -60,7 +60,7 @@ const TorreSchema = Schema(
         // Estado del material procesado
         estadoMaterial: {
           type: String,
-          enum: ["bueno", "regular", "malo"], // Valores permitidos
+
           required: false, // Campo opcional
         },
       },
