@@ -68,6 +68,7 @@ const facturaPost = async (req = request, res = response) => {
     aprobada,
     idPartida,
     idSubPartida,
+    fechaFactura,
   } = req.body;
 
   try {
@@ -79,6 +80,7 @@ const facturaPost = async (req = request, res = response) => {
       aprobada,
       idPartida,
       idSubPartida,
+      fechaFactura,
     });
 
     await nuevaFactura.save(); // Guarda la nueva factura en la base de datos

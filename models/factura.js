@@ -24,6 +24,11 @@ const LineaFacturaSchema = new Schema(
       min: [0, "El subtotal no puede ser negativo"], // Validación para evitar valores negativos
       required: [true, "El subtotal es obligatorio"], // Campo obligatorio
     },
+
+    fecha: {
+      type: Date,
+      default: Date.now, // Valor por defecto: fecha actual
+    },
   },
   {
     _id: false, // No se generará un _id para cada línea
@@ -82,7 +87,7 @@ const FacturaSchema = new Schema(
     },
 
     // Fechas de la factura
-    fecha: {
+    fechaFactura: {
       type: Date,
       default: Date.now, // Valor por defecto: fecha actual
     },
