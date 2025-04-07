@@ -49,8 +49,6 @@ const ProductoSchema = Schema(
     // Estado del producto (activo o inactivo)
     estado: {
       type: String,
-      enum: ["true", "false"], // Valores permitidos
-      default: "true", // Valor por defecto
     },
 
     // Eliminación lógica
