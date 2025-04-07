@@ -20,7 +20,7 @@ const lineaDespachoSchema = Schema(
     // Ubicación de la línea de carga
     ubicacion: {
       type: String,
-      required: [true, "La ubicación de la línea es obligatoria"], // Campo obligatorio
+
       minlength: [3, "La ubicación debe tener al menos 3 caracteres"], // Validación de longitud mínima
       maxlength: [100, "La ubicación no puede exceder los 100 caracteres"], // Validación de longitud máxima
     },
@@ -32,12 +32,15 @@ const lineaDespachoSchema = Schema(
       minlength: [3, "El nombre debe tener al menos 3 caracteres"], // Validación de longitud mínima
       maxlength: [50, "El nombre no puede exceder los 50 caracteres"], // Validación de longitud máxima
     },
-
+    // Referencia al producto almacenado en el tanque (si aplica)
+    idProducto: {
+      type: Schema.Types.ObjectId,
+      ref: "Producto", // Relación con el modelo Producto
+      required: [false, "El ID del Producto del derivado es obligatorio"], // Campo opcional
+    },
     // Estado de la línea (activo o inactivo)
     estado: {
       type: String,
-      enum: ["activo", "inactivo"], // Valores permitidos
-      default: "activo", // Valor por defecto
     },
 
     // Eliminación lógica

@@ -76,7 +76,7 @@ const contactoPost = async (req = request, res = response) => {
     representanteLegal,
     telefono,
     tipo,
-    ubicacion,
+    ciudad,
     idRefineria,
   } = req.body; // Extrae los datos del cuerpo de la solicitud
 
@@ -93,7 +93,7 @@ const contactoPost = async (req = request, res = response) => {
       representanteLegal,
       telefono,
       tipo,
-      ubicacion,
+      ciudad,
       idRefineria,
     });
 

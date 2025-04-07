@@ -3,7 +3,13 @@ const { response, request } = require("express"); // Objetos de Express para man
 const LineaDespacho = require("../models/lineaDespacho"); // Modelo LineaDespacho para interactuar con la base de datos
 
 // Opciones de población reutilizables para consultas
-const populateOptions = [{ path: "idRefineria", select: "nombre" }]; // Relación con el modelo Refineria, seleccionando solo el campo "nombre"
+const populateOptions = [
+  { path: "idRefineria", select: "nombre" },
+  {
+    path: "idProducto", // Relación con el modelo Producto
+    select: "nombre color posicion", // Selecciona solo los campos nombre y color
+  },
+]; // Relación con el modelo Refineria, seleccionando solo el campo "nombre"
 
 // Controlador para obtener todas las líneas de carga con población de referencias
 const lineaDespachoGets = async (req = request, res = response) => {
@@ -48,7 +54,8 @@ const lineaDespachoGet = async (req = request, res = response) => {
 
 // Controlador para crear una nueva línea de carga
 const lineaDespachoPost = async (req = request, res = response) => {
-  const { ubicacion, nombre, idRefineria, tipoLinea } = req.body; // Extrae los datos del cuerpo de la solicitud
+  const { ubicacion, nombre, idRefineria, tipoLinea, estado, idProducto } =
+    req.body; // Extrae los datos del cuerpo de la solicitud
 
   try {
     const nuevaLineaDespacho = new LineaDespacho({
@@ -56,6 +63,8 @@ const lineaDespachoPost = async (req = request, res = response) => {
       nombre,
       idRefineria,
       tipoLinea,
+      estado,
+      idProducto,
     });
 
     await nuevaLineaDespacho.save(); // Guarda la nueva línea de carga en la base de datos
