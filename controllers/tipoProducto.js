@@ -52,7 +52,6 @@ const tipoProductoGet = async (req = request, res = response) => {
     // Busca el tipo de producto por ID y verifica que esté activo y no eliminado
     const tipoProducto = await TipoProducto.findOne({
       _id: id,
-      estado: true,
       eliminado: false,
     }).populate(populateOptions); // Población de referencias
 
