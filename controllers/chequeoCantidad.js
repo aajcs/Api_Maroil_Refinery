@@ -158,23 +158,35 @@ const chequeoCantidadPost = async (req = request, res = response) => {
 // Controlador para actualizar un chequeo de cantidad existente
 const chequeoCantidadPut = async (req = request, res = response) => {
   const { id } = req.params;
-  const { ...resto } = req.body;
+  const { _id, aplicar, ...resto } = req.body;
 
   try {
-    const chequeoActualizado = await ChequeoCantidad.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar el chequeo no eliminado
-      resto, // Datos a actualizar
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions);
 
-    if (!chequeoActualizado) {
-      return res.status(404).json({ msg: "Chequeo de cantidad no encontrado" });
-    }
+    // Validar que idReferencia sea un ObjectId válido
+       if (
+         aplicar &&
+         aplicar.idReferencia &&
+         !mongoose.Types.ObjectId.isValid(aplicar.idReferencia)
+       ) {
+         return res.status(400).json({
+           error: "El ID de referencia no es válido.",
+         });
+       }
+   
+       const chequeoActualizado = await ChequeoCantidad.findOneAndUpdate(
+         { _id: id, eliminado: false },
+         { ...resto, aplicar }, // Actualiza el chequeo y la referencia
+         { new: true }
+       ).populate(populateOptions);
+   
+       if (!chequeoActualizado) {
+         return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
+       }
     
     // Actualizar el modelo relacionado
     if (aplicar && aplicar.idReferencia && aplicar.tipo) {
       await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
-        chequeoCalidad: chequeoActualizado._id,
+        chequeoCantidad: chequeoActualizado._id,
       });
     }
 
@@ -211,7 +223,7 @@ const chequeoCantidadDelete = async (req = request, res = response) => {
         chequeo.aplicar.idReferencia,
         chequeo.aplicar.tipo,
         {
-          chequeoCalidad: null, // Eliminar la referencia al chequeo
+          chequeoCantidad: null, // Eliminar la referencia al chequeo
         }
       );
     }
