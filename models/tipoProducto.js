@@ -21,7 +21,7 @@ const TipoProductoSchema = Schema(
     nombre: {
       type: String,
       required: [true, "El nombre del producto es obligatorio"], // Campo obligatorio
-      minlength: [3, "El nombre debe tener al menos 3 caracteres"], // Validación de longitud mínima
+      minlength: [1, "El nombre debe tener al menos 3 caracteres"], // Validación de longitud mínima
       maxlength: [50, "El nombre no puede exceder los 50 caracteres"], // Validación de longitud máxima
     },
 
