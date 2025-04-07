@@ -63,7 +63,7 @@ const torrePost = async (req = request, res = response) => {
     nombre,
     ubicacion,
   } = req.body;
-
+  console.log(req.body);
   try {
     // Crea una nueva instancia del modelo Torre con los datos proporcionados
     const nuevaTorre = new Torre({
