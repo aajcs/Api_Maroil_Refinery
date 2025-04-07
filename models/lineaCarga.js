@@ -10,21 +10,6 @@ const lineaCargaSchema = Schema(
       required: true, // Campo obligatorio
     },
 
-    // Tipo de línea (Carga o Despacho)
-    tipoLinea: {
-      type: String,
-      enum: ["Carga", "Despacho"], // Valores permitidos
-      default: "Carga", // Valor por defecto
-    },
-
-    // Ubicación de la línea de carga
-    ubicacion: {
-      type: String,
-      required: [true, "La ubicación de la línea es obligatoria"], // Campo obligatorio
-      minlength: [3, "La ubicación debe tener al menos 3 caracteres"], // Validación de longitud mínima
-      maxlength: [100, "La ubicación no puede exceder los 100 caracteres"], // Validación de longitud máxima
-    },
-
     // Nombre de la línea de carga
     nombre: {
       type: String,
@@ -36,8 +21,6 @@ const lineaCargaSchema = Schema(
     // Estado de la línea (activo o inactivo)
     estado: {
       type: String,
-      enum: ["activo", "inactivo"], // Valores permitidos
-      default: "activo", // Valor por defecto
     },
 
     // Eliminación lógica

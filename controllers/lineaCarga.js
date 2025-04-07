@@ -48,7 +48,7 @@ const lineaCargaGet = async (req = request, res = response) => {
 
 // Controlador para crear una nueva línea de carga
 const lineaCargaPost = async (req = request, res = response) => {
-  const { ubicacion, nombre, idRefineria, tipoLinea } = req.body; // Extrae los datos del cuerpo de la solicitud
+  const { ubicacion, nombre, idRefineria, tipoLinea, estado } = req.body; // Extrae los datos del cuerpo de la solicitud
 
   try {
     const nuevaLineaCarga = new LineaCarga({
@@ -56,6 +56,7 @@ const lineaCargaPost = async (req = request, res = response) => {
       nombre,
       idRefineria,
       tipoLinea,
+      estado,
     });
 
     await nuevaLineaCarga.save(); // Guarda la nueva línea de carga en la base de datos
