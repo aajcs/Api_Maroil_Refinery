@@ -74,6 +74,7 @@ const TipoProductoSchema = Schema(
         bunker: { type: Number, min: 0, required: false },
         costoVenta: { type: Number, min: 0, required: false },
         porcentaje: { type: Number, min: 0, required: false },
+        convenio: { type: Number, min: 0, required: false },
       },
     ],
 
