@@ -20,33 +20,18 @@ const TorreSchema = Schema(
       maxlength: [50, "El nombre no puede exceder los 50 caracteres"], // Validación de longitud máxima
     },
 
+    capacidad: {
+      type: Number,
+      min: [0, "La capacidad no puede ser negativa"], // Validación para evitar valores negativos
+      required: [true, "La capacidad es obligatoria"], // Campo obligatorio
+    },
+
     // Ubicación física de la torre dentro de la refinería
     ubicacion: {
       type: String,
       required: [false, "La ubicación es obligatoria"], // Campo obligatorio
       //maxlength: [100, "La ubicación no puede exceder los 100 caracteres"], // Validación de longitud máxima
     },
-
-    // Caudal de la torre (opcional)
-    // caudal: {
-    //   type: Number,
-    //   min: [0, "El caudal no puede ser negativo"], // Validación para evitar valores negativos
-    //   required: false, // Campo opcional
-    // },
-
-    // // Densidad de los materiales procesados en la torre (opcional)
-    // densidad: {
-    //   type: Number,
-    //   min: [0, "La densidad no puede ser negativa"], // Validación para evitar valores negativos
-    //   required: false, // Campo opcional
-    // },
-
-    // // Presión de operación de la torre (opcional)
-    // presion: {
-    //   type: Number,
-    //   min: [0, "La presión no puede ser negativa"], // Validación para evitar valores negativos
-    //   required: false, // Campo opcional
-    // },
 
     // Materiales procesados en la torre
     material: [
@@ -60,8 +45,12 @@ const TorreSchema = Schema(
         // Estado del material procesado
         estadoMaterial: {
           type: String,
-
           required: false, // Campo opcional
+        },
+
+        porcentaje: {
+          type: Number,
+          required: [true, "El porcentaje del producto es obligatorio"], // Campo obligatorio
         },
       },
     ],
