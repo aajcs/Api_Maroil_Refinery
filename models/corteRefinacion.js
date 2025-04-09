@@ -6,7 +6,7 @@ const DetalleCorteSchema = new Schema({
   idTanque: {
     type: Schema.Types.ObjectId,
     ref: "Tanque",
-    required: [true, "El ID del tanque es obligatorio"],
+    // required: [true, "El ID del tanque es obligatorio"]
   },
   idProducto: {
     type: Schema.Types.ObjectId,
@@ -52,11 +52,11 @@ const CorteRefinacionSchema = new Schema(
       minlength: [10, "Mínimo 10 caracteres"],
       maxlength: [200, "Máximo 200 caracteres"],
     },
-    idOperador: {
-      type: Schema.Types.ObjectId,
-      ref: "Operador",
-      required: [true, "El ID del operador es obligatorio"],
-    },
+    // idOperador: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "Operador",
+    //   required: [true, "El ID del operador es obligatorio"],
+    // },
     estado: {
       type: String,
       enum: ["activo", "inactivo", "eliminado"],
@@ -86,7 +86,7 @@ CorteRefinacionSchema.index(
 CorteRefinacionSchema.pre("save", async function (next) {
   if (this.isNew && this.idRefineria) {
     try {
-      const counterKey = `refinacionSalida_${this.idRefineria}`; // Corrección aquí
+      const counterKey = `corteRefinacion_${this.idRefineria}`; // Corrección aquí
       const result = await counter.findOneAndUpdate(
         { _id: counterKey },
         { $inc: { seq: 1 } },

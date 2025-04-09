@@ -4,7 +4,7 @@ const CorteRefinacion = require("../models/corteRefinacion");
 // Opciones de población reutilizables
 const populateOptions = [
   { path: "idRefineria", select: "nombre" },
-  { path: "idOperador", select: "nombre" },
+  // { path: "idOperador", select: "nombre" },
   { path: "corteTorre.idTorre", select: "nombre" },
   { path: "corteTorre.detalles.idTanque", select: "nombre" },
   { path: "corteTorre.detalles.idProducto", select: "nombre" },
@@ -68,6 +68,7 @@ const corteRefinacionGet = async (req = request, res = response) => {
 
 // Controlador para crear un nuevo corte de refinación
 const corteRefinacionPost = async (req = request, res = response) => {
+  console.log("req.body", JSON.stringify(req.body, null, 2)); // Log para depuración
   const {
     idRefineria,
     corteTorre,
@@ -77,7 +78,6 @@ const corteRefinacionPost = async (req = request, res = response) => {
     idOperador,
     estado,
   } = req.body;
-
   try {
     const nuevoCorte = new CorteRefinacion({
       idRefineria,
