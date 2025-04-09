@@ -16,6 +16,12 @@ const CorteRefinacionSchema = new Schema(
       type: Number,
     },
 
+    idTorre: {
+      type: Schema.Types.ObjectId,
+      ref: "Torre", // Relación con el modelo Torre
+      required: [true, "El ID de la torre es obligatorio"], // Campo obligatorio
+    },
+
     detalles: [
       {
         idTanque: {

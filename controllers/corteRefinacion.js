@@ -69,6 +69,7 @@ const corteRefinacionGet = async (req = request, res = response) => {
 const corteRefinacionPost = async (req = request, res = response) => {
   const {
     idRefineria,
+    idTorre,
     numeroCorteRefinacion,
     detalles,
     fechaCorte,
@@ -81,6 +82,7 @@ const corteRefinacionPost = async (req = request, res = response) => {
   try {
     const nuevoCorte = new CorteRefinacion({
       idRefineria,
+      idTorre,
       numeroCorteRefinacion,
       detalles,
       fechaCorte,
