@@ -15,12 +15,12 @@ const corteRefinacionGets = async (req = request, res = response) => {
   const query = { eliminado: false }; // Filtro para obtener solo cortes no eliminados
 
   try {
-    const [total, cortes] = await Promise.all([
+    const [total, corteRefinacions] = await Promise.all([
       CorteRefinacion.countDocuments(query), // Cuenta el total de cortes
       CorteRefinacion.find(query).populate(populateOptions), // Obtiene los cortes con referencias pobladas
     ]);
 
-    res.json({ total, cortes }); // Responde con el total y la lista de cortes
+    res.json({ total, corteRefinacions }); // Responde con el total y la lista de cortes
   } catch (err) {
     console.error("Error en corteRefinacionGets:", err);
 
