@@ -1,131 +1,113 @@
 const { Schema, model } = require("mongoose");
 const counter = require("./counter");
 
-// Esquema para la asignación de tanques a derivados
+// Esquemas anidados
+const DetalleCorteSchema = new Schema({
+  idTanque: {
+    type: Schema.Types.ObjectId,
+    ref: "Tanque",
+    required: [true, "El ID del tanque es obligatorio"],
+  },
+  idProducto: {
+    type: Schema.Types.ObjectId,
+    ref: "Producto",
+    required: [true, "El ID del producto es obligatorio"],
+  },
+  cantidad: {
+    type: Number,
+    min: [0, "La cantidad no puede ser negativa"],
+    required: [true, "La cantidad es obligatoria"],
+  },
+});
+
+const CorteTorreSchema = new Schema({
+  idTorre: {
+    type: Schema.Types.ObjectId,
+    ref: "Torre",
+    required: [true, "El ID de la torre es obligatorio"],
+  },
+  detalles: [DetalleCorteSchema],
+});
+
+// Esquema principal
 const CorteRefinacionSchema = new Schema(
   {
-    // Relación con el modelo Refinería
     idRefineria: {
       type: Schema.Types.ObjectId,
-      ref: "Refineria", // Relación con el modelo Refineria
-      required: [true, "El ID de la refinería es obligatorio"], // Campo obligatorio
+      ref: "Refineria",
+      required: [true, "El ID de la refinería es obligatorio"],
     },
-
-    // Número único de refinación de salida
     numeroCorteRefinacion: {
       type: Number,
+      unique: true, // Garantiza unicidad junto con el índice compuesto
     },
-    corteTorre: [
-      {
-        idTorre: {
-          type: Schema.Types.ObjectId,
-          ref: "Torre", // Relación con el modelo Torre
-          required: [true, "El ID de la torre es obligatorio"], // Campo obligatorio
-        },
-
-        detalles: [
-          {
-            idTanque: {
-              type: Schema.Types.ObjectId,
-              ref: "Tanque", // Relación con el modelo Tanque
-              required: true, // Campo obligatorio
-            },
-            idProducto: {
-              type: Schema.Types.ObjectId,
-              ref: "Producto", // Relación con el modelo Producto
-              required: [true, "El ID del producto es obligatorio"], // Campo obligatorio
-            },
-            cantidad: {
-              type: Number,
-              min: [0, "La cantidad total no puede ser negativa"], // Validación para evitar valores negativos
-              required: [true, "La cantidad a enviar al tanque es obligatoria"], // Campo obligatorio
-            },
-          },
-        ],
-      },
-    ],
-    // Relación con el modelo Refinación
+    corteTorre: [CorteTorreSchema],
     fechaCorte: {
       type: Date,
-      required: true, // Campo obligatorio
+      required: [true, "La fecha del corte es obligatoria"],
     },
-
     observacion: {
       type: String,
-      required: [
-        true,
-        "La descripción del proceso de refinación es obligatoria",
-      ], // Campo obligatorio
-      minlength: [3, "La descripción debe tener al menos 10 caracteres"], // Validación de longitud mínima
-      maxlength: [200, "La descripción no puede exceder los 200 caracteres"], // Validación de longitud máxima
+      required: [true, "La observación es obligatoria"],
+      minlength: [10, "Mínimo 10 caracteres"],
+      maxlength: [200, "Máximo 200 caracteres"],
     },
-
-    // Nombre del operador responsable
     idOperador: {
       type: Schema.Types.ObjectId,
-      ref: "Operador", // Relación con el modelo Usuario
-      required: [true, "El ID del operador es obligatorio"], // Campo obligatorio
+      ref: "Operador",
+      required: [true, "El ID del operador es obligatorio"],
     },
-
-    // Eliminación lógica
-    eliminado: {
-      type: Boolean,
-      default: false, // Valor por defecto
-    },
-
-    // Estado general (activo o inactivo)
     estado: {
       type: String,
-      enum: ["activo", "inactivo"], // Valores permitidos
-      default: "activo", // Valor por defecto
+      enum: ["activo", "inactivo", "eliminado"],
+      default: "activo",
+    },
+
+    eliminado: {
+      type: Boolean,
+      default: "false",
     },
   },
-
   {
-    // Agrega automáticamente las propiedades createdAt y updatedAt
     timestamps: true,
-    // Elimina la propiedad __v que agrega Mongoose por defecto
     versionKey: false,
   }
 );
 
-// Método para transformar el objeto devuelto por Mongoose
-CorteRefinacionSchema.set("toJSON", {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString(); // Convierte _id a id
-    delete returnedObject._id; // Elimina _id
-    delete returnedObject.__v; // Elimina __v (si no lo has desactivado en las opciones del esquema)
-  },
-});
+// Índices
+CorteRefinacionSchema.index({ idRefineria: 1 });
+CorteRefinacionSchema.index({ fechaCorte: -1 });
+CorteRefinacionSchema.index(
+  { numeroCorteRefinacion: 1, idRefineria: 1 },
+  { unique: true }
+);
 
-// Middleware para generar un número único de refinación de salida
+// Middleware para el contador atómico
 CorteRefinacionSchema.pre("save", async function (next) {
   if (this.isNew && this.idRefineria) {
     try {
-      // Generar la clave del contador específico para cada refinería
-      const counterKey = `refinacionSalida_${this.idRefineria.toString()}`;
-
-      // Buscar el contador
-      let refineriaCounter = await counter.findOne({ _id: counterKey });
-
-      // Si el contador no existe, crearlo con el valor inicial de 1000
-      if (!refineriaCounter) {
-        refineriaCounter = new counter({ _id: counterKey, seq: 999 });
-        await refineriaCounter.save();
-      }
-
-      // Incrementar el contador en 1
-      refineriaCounter.seq += 1;
-      await refineriaCounter.save();
-
-      // Asignar el valor actualizado al campo "numeroCorteRefinacion"
-      this.numeroCorteRefinacion = refineriaCounter.seq;
+      const counterKey = `refinacionSalida_${this.idRefineria}`; // Corrección aquí
+      const result = await counter.findOneAndUpdate(
+        { _id: counterKey },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+      );
+      this.numeroCorteRefinacion = result.seq;
       next();
     } catch (error) {
-      next(error); // Manejo de errores
+      next(error);
     }
   } else {
     next();
   }
 });
+
+// Transformación toJSON
+CorteRefinacionSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    ret.id = ret._id.toString();
+    delete ret._id;
+  },
+});
+
 module.exports = model("CorteRefinacion", CorteRefinacionSchema);

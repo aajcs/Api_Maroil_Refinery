@@ -5,8 +5,9 @@ const CorteRefinacion = require("../models/corteRefinacion");
 const populateOptions = [
   { path: "idRefineria", select: "nombre" },
   { path: "idOperador", select: "nombre" },
-  { path: "detalles.idTanque", select: "nombre" },
-  { path: "detalles.idProducto", select: "nombre" },
+  { path: "corteTorre.idTorre", select: "nombre" },
+  { path: "corteTorre.detalles.idTanque", select: "nombre" },
+  { path: "corteTorre.detalles.idProducto", select: "nombre" },
 ];
 
 // Controlador para obtener todas las refinaciones con paginación y población de referencias
@@ -69,26 +70,22 @@ const corteRefinacionGet = async (req = request, res = response) => {
 const corteRefinacionPost = async (req = request, res = response) => {
   const {
     idRefineria,
-    idTorre,
+    corteTorre,
     numeroCorteRefinacion,
-    detalles,
     fechaCorte,
     observacion,
     idOperador,
-    cantidadTotal,
     estado,
   } = req.body;
 
   try {
     const nuevoCorte = new CorteRefinacion({
       idRefineria,
-      idTorre,
+      corteTorre,
       numeroCorteRefinacion,
-      detalles,
       fechaCorte,
       observacion,
       idOperador,
-      cantidadTotal,
       estado,
     });
 
