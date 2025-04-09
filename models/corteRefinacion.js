@@ -15,33 +15,35 @@ const CorteRefinacionSchema = new Schema(
     numeroCorteRefinacion: {
       type: Number,
     },
-
-    idTorre: {
-      type: Schema.Types.ObjectId,
-      ref: "Torre", // Relación con el modelo Torre
-      required: [true, "El ID de la torre es obligatorio"], // Campo obligatorio
-    },
-
-    detalles: [
+    corteTorre: [
       {
-        idTanque: {
+        idTorre: {
           type: Schema.Types.ObjectId,
-          ref: "Tanque", // Relación con el modelo Tanque
-          required: true, // Campo obligatorio
+          ref: "Torre", // Relación con el modelo Torre
+          required: [true, "El ID de la torre es obligatorio"], // Campo obligatorio
         },
-        idProducto: {
-          type: Schema.Types.ObjectId,
-          ref: "Producto", // Relación con el modelo Producto
-          required: [true, "El ID del producto es obligatorio"], // Campo obligatorio
-        },
-        cantidad: {
-          type: Number,
-          min: [0, "La cantidad total no puede ser negativa"], // Validación para evitar valores negativos
-          required: [true, "La cantidad a enviar al tanque es obligatoria"], // Campo obligatorio
-        },
+
+        detalles: [
+          {
+            idTanque: {
+              type: Schema.Types.ObjectId,
+              ref: "Tanque", // Relación con el modelo Tanque
+              required: true, // Campo obligatorio
+            },
+            idProducto: {
+              type: Schema.Types.ObjectId,
+              ref: "Producto", // Relación con el modelo Producto
+              required: [true, "El ID del producto es obligatorio"], // Campo obligatorio
+            },
+            cantidad: {
+              type: Number,
+              min: [0, "La cantidad total no puede ser negativa"], // Validación para evitar valores negativos
+              required: [true, "La cantidad a enviar al tanque es obligatoria"], // Campo obligatorio
+            },
+          },
+        ],
       },
     ],
-
     // Relación con el modelo Refinación
     fechaCorte: {
       type: Date,
