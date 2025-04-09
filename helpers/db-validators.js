@@ -25,6 +25,7 @@ const {
   Partida,
   SubPartida,
   Factura,
+  CorteRefinacion,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -262,6 +263,14 @@ const existeSubPartidaPorId = async (id) => {
   }
 };
 
+const existeCorteRefinacionPorId = async (id) => {
+  // Verificar si la corte existe
+  const existeCorteRefinacion = await CorteRefinacion.findById(id);
+  if (!existeCorteRefinacion) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+
 /**
  * Validar colecciones permitidas
  */
@@ -305,6 +314,7 @@ module.exports = {
   existePartidaPorId,
   existeSubPartidaPorId,
   existeFacturaPorId,
+  existeCorteRefinacionPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

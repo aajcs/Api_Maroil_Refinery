@@ -39,7 +39,7 @@ const Partida = require("./partida");
 const SubPartida = require("./subPartida");
 const Operador = require("./operador");
 const Factura = require("./factura");
-
+const CorteRefinacion = require("./corteRefinacion");
 /*const contactos = require ('./contactos');
 const bombas = require('./bombas');
 const inspeccion_tanque = require('./inspeccion_tanque');
@@ -90,6 +90,7 @@ module.exports = {
   Refineria,
   Operador,
   Factura,
+  CorteRefinacion,
 
   /*contactos,
     bombas,

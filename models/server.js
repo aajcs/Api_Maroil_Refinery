@@ -6,6 +6,7 @@ const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
+const corteRefinacion = require("./corteRefinacion");
 
 class Server {
   constructor() {
@@ -43,6 +44,7 @@ class Server {
       subpartida: "/api/subpartida",
       operador: "/api/operador",
       factura: "/api/factura",
+      corteRefinacion: "/api/corteRefinacion",
       bunker: "/api/bunker/bunker",
       balanceBunker: "/api/bunker/balanceBunker",
       barcaza: "/api/bunker/barcaza",
@@ -146,6 +148,10 @@ class Server {
       require("../routes/refinacionSalida")
     );
     this.app.use(this.paths.refinerias, require("../routes/refinerias"));
+    this.app.use(
+      this.paths.corteRefinacion,
+      require("../routes/corteRefinacion")
+    );
 
     // Rutas de infraestructura
     this.app.use(this.paths.bomba, require("../routes/bomba"));
