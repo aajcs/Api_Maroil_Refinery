@@ -51,6 +51,7 @@ class Server {
       lineaDespacho: "/api/lineaDespacho",
       tanque: "/api/tanque",
       torre: "/api/torre",
+      refinerias: "/api/refinerias",
 
       // Contactos y contratos
       contacto: "/api/contacto",
@@ -175,6 +176,7 @@ class Server {
     this.app.use(this.paths.lineaDespacho, require("../routes/lineaDespacho"));
     this.app.use(this.paths.tanque, require("../routes/tanque"));
     this.app.use(this.paths.torre, require("../routes/torre"));
+    this.app.use(this.paths.refinerias, require("../routes/refinerias"));
 
     // Contactos y contratos
     this.app.use(this.paths.contacto, require("../routes/contacto"));
