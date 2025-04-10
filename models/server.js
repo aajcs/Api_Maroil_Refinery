@@ -41,7 +41,7 @@ class Server {
       simulacion: "/api/simulacion",
       inventario: "/api/inventario",
       partida: "/api/partida",
-      subpartida: "/api/subpartida",
+      subPartida: "/api/subpartida",
       operador: "/api/operador",
       factura: "/api/factura",
       corteRefinacion: "/api/corteRefinacion",
@@ -128,7 +128,7 @@ class Server {
     this.app.use(this.paths.simulacion, require("../routes/simulacion"));
     this.app.use(this.paths.inventario, require("../routes/inventario"));
     this.app.use(this.paths.partida, require("../routes/partida"));
-    this.app.use(this.paths.subpartida, require("../routes/subpartida"));
+    this.app.use(this.paths.subPartida, require("../routes/subpartida"));
     this.app.use(this.paths.cuenta, require("../routes/cuenta"));
 
     // Rutas relacionadas con el módulo de cuentas
