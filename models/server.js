@@ -12,55 +12,40 @@ class Server {
     this.app = express();
     this.port = process.env.PORT;
 
-    // Categorías de paths
+    // Definición de rutas
     this.paths = {
-      // Autenticación y usuarios
       auth: "/api/auth",
-      usuarios: "/api/usuarios",
-
-      // Gestión general
       buscar: "/api/buscar",
       categorias: "/api/categorias",
       producto: "/api/producto",
+      usuarios: "/api/usuarios",
+      uploads: "/api/uploads",
+      refinerias: "/api/refinerias",
+      lineaCarga: "/api/lineaCarga",
+      lineaDespacho: "/api/lineaDespacho",
+      bomba: "/api/bomba",
+      tanque: "/api/tanque",
+      torre: "/api/torre",
+      contrato: "/api/contrato",
+      contacto: "/api/contacto",
+      recepcion: "/api/recepcion",
+      refinacion: "/api/refinacion",
+      despacho: "/api/despacho",
+      chequeoCalidad: "/api/chequeoCalidad",
+      chequeoCantidad: "/api/chequeoCantidad",
+      historial: "/api/historial",
+      costo: "/api/costo",
+      refinacionSalida: "/api/refinacionSalida",
+      ventana: "/api/ventana",
       tipoProducto: "/api/tipoProducto",
       simulacion: "/api/simulacion",
       inventario: "/api/inventario",
       partida: "/api/partida",
       subpartida: "/api/subpartida",
-      ventana: "/api/ventana",
-
-      // Finanzas y cuentas
-      cuenta: "/api/cuenta",
-      factura: "/api/factura",
       operador: "/api/operador",
-
-      // Operaciones de calidad y cantidad
-      chequeoCalidad: "/api/chequeoCalidad",
-      chequeoCantidad: "/api/chequeoCantidad",
-
-      // Refinación y despacho
-      despacho: "/api/despacho",
-      recepcion: "/api/recepcion",
-      refinacion: "/api/refinacion",
-      refinacionSalida: "/api/refinacionSalida",
+      factura: "/api/factura",
       corteRefinacion: "/api/corteRefinacion",
-
-      // Infraestructura
-      bomba: "/api/bomba",
-      lineaCarga: "/api/lineaCarga",
-      lineaDespacho: "/api/lineaDespacho",
-      tanque: "/api/tanque",
-      torre: "/api/torre",
-      refinerias: "/api/refinerias",
-
-      // Contactos y contratos
-      contacto: "/api/contacto",
-      contrato: "/api/contrato",
-
-      // Archivos y cargas
-      uploads: "/api/uploads",
-
-      // Módulo Bunker
+      cuenta: "/api/cuenta",
       bunker: "/api/bunker/bunker",
       balanceBunker: "/api/bunker/balanceBunker",
       barcaza: "/api/bunker/barcaza",
@@ -81,7 +66,7 @@ class Server {
     // Middlewares
     this.middlewares();
 
-    // Http server
+    // Crear servidor HTTP
     this.server = http.createServer(this.app);
 
     // Configuración de sockets
@@ -93,6 +78,7 @@ class Server {
       transports: ["websocket", "polling"], // Acepta WebSocket y polling
     });
 
+    // Middleware para inyectar sockets en las solicitudes
     this.app.use((req, res, next) => {
       req.io = this.io;
       next();
@@ -127,27 +113,30 @@ class Server {
   }
 
   routes() {
-    // Autenticación y usuarios
+    // Rutas de autenticación y usuarios
     this.app.use(this.paths.auth, require("../routes/auth"));
     this.app.use(this.paths.usuarios, require("../routes/usuarios"));
 
-    // Gestión general
+    // Rutas de gestión general
+    this.app.use(this.paths.ventana, require("../routes/ventana"));
     this.app.use(this.paths.buscar, require("../routes/buscar"));
     this.app.use(this.paths.categorias, require("../routes/categorias"));
+    this.app.use(this.paths.costo, require("../routes/costo"));
+    this.app.use(this.paths.historial, require("../routes/historial"));
     this.app.use(this.paths.producto, require("../routes/producto"));
     this.app.use(this.paths.tipoProducto, require("../routes/tipoProducto"));
     this.app.use(this.paths.simulacion, require("../routes/simulacion"));
     this.app.use(this.paths.inventario, require("../routes/inventario"));
     this.app.use(this.paths.partida, require("../routes/partida"));
-    this.app.use(this.paths.subpartida, require("../routes/subpartida"));
-    this.app.use(this.paths.ventana, require("../routes/ventana"));
-
-    // Finanzas y cuentas
     this.app.use(this.paths.cuenta, require("../routes/cuenta"));
-    this.app.use(this.paths.factura, require("../routes/factura"));
+
+    // Rutas relacionadas con el módulo de cuentas
     this.app.use(this.paths.operador, require("../routes/operador"));
 
-    // Operaciones de calidad y cantidad
+    // Rutas relacionadas con el módulo de finanzas
+    this.app.use(this.paths.factura, require("../routes/factura"));
+
+    // Rutas relacionadas con operaciones de calidad y cantidad
     this.app.use(
       this.paths.chequeoCalidad,
       require("../routes/chequeoCalidad")
@@ -157,7 +146,7 @@ class Server {
       require("../routes/chequeoCantidad")
     );
 
-    // Refinación y despacho
+    // Rutas específicas de refinación y despacho
     this.app.use(this.paths.despacho, require("../routes/despacho"));
     this.app.use(this.paths.recepcion, require("../routes/recepcion"));
     this.app.use(this.paths.refinacion, require("../routes/refinacion"));
@@ -165,27 +154,27 @@ class Server {
       this.paths.refinacionSalida,
       require("../routes/refinacionSalida")
     );
+    this.app.use(this.paths.refinerias, require("../routes/refinerias"));
     this.app.use(
       this.paths.corteRefinacion,
       require("../routes/corteRefinacion")
     );
 
-    // Infraestructura
+    // Rutas de infraestructura
     this.app.use(this.paths.bomba, require("../routes/bomba"));
     this.app.use(this.paths.lineaCarga, require("../routes/lineaCarga"));
     this.app.use(this.paths.lineaDespacho, require("../routes/lineaDespacho"));
     this.app.use(this.paths.tanque, require("../routes/tanque"));
     this.app.use(this.paths.torre, require("../routes/torre"));
-    this.app.use(this.paths.refinerias, require("../routes/refinerias"));
 
-    // Contactos y contratos
+    // Rutas relacionadas con contactos y contratos
     this.app.use(this.paths.contacto, require("../routes/contacto"));
     this.app.use(this.paths.contrato, require("../routes/contrato"));
 
-    // Archivos y cargas
+    // Rutas de archivos y cargas
     this.app.use(this.paths.uploads, require("../routes/uploads"));
 
-    // Módulo Bunker
+    // Rutas específicas del módulo Bunker
     const bunkerRoutes = "../routes/bunker";
     this.app.use(this.paths.bunker, require(`${bunkerRoutes}/bunker`));
     this.app.use(
