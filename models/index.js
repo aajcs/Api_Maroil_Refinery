@@ -40,6 +40,7 @@ const SubPartida = require("./subPartida");
 const Operador = require("./operador");
 const Factura = require("./factura");
 const CorteRefinacion = require("./corteRefinacion");
+const Cuenta = require("./cuenta");
 /*const contactos = require ('./contactos');
 const bombas = require('./bombas');
 const inspeccion_tanque = require('./inspeccion_tanque');
@@ -64,6 +65,7 @@ module.exports = {
   Contrato,
   ContratoBunker,
   Costo,
+  Cuenta,
   CostoBunker,
   Despacho,
   Historial,

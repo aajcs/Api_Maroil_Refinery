@@ -7,6 +7,7 @@ const fileUpload = require("express-fileupload");
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
 const corteRefinacion = require("./corteRefinacion");
+const cuenta = require("./cuenta");
 
 class Server {
   constructor() {
@@ -45,6 +46,7 @@ class Server {
       operador: "/api/operador",
       factura: "/api/factura",
       corteRefinacion: "/api/corteRefinacion",
+      cuenta: "/api/cuenta",
       bunker: "/api/bunker/bunker",
       balanceBunker: "/api/bunker/balanceBunker",
       barcaza: "/api/bunker/barcaza",
@@ -122,8 +124,10 @@ class Server {
     this.app.use(this.paths.simulacion, require("../routes/simulacion"));
     this.app.use(this.paths.inventario, require("../routes/inventario"));
     this.app.use(this.paths.partida, require("../routes/partida"));
-    this.app.use(this.paths.subpartida, require("../routes/subPartida"));
-
+    
+    this.app.use(this.paths.cuenta, require("../routes/cuenta"));
+    
+    //Rutas relacionadas con el módulo de cuentas
     this.app.use(this.paths.operador, require("../routes/operador"));
 
     //Rutas relacionadas con el módulo de finanzas
