@@ -162,7 +162,7 @@ const contratoPost = async (req, res = response) => {
 // Actualizar un contrato existente
 const contratoPut = async (req, res = response) => {
   const { id } = req.params;
-  const { items, idItems, ...resto } = req.body;
+  const { items, abono, ...resto } = req.body;
 
   try {
     // Validar que el contrato exista
@@ -181,10 +181,21 @@ const contratoPut = async (req, res = response) => {
         .json({ error: "El campo 'items' debe ser un array válido." });
     }
 
+    // Detectar nuevos abonos
+    let nuevosAbonos = [];
+    if (abono && Array.isArray(abono)) {
+      const abonosExistentes = contratoExistente.abono.map((a) =>
+        JSON.stringify(a)
+      );
+      nuevosAbonos = abono.filter(
+        (a) => !abonosExistentes.includes(JSON.stringify(a))
+      );
+    }
+
     // Actualizar el contrato
     const contratoActualizado = await Contrato.findOneAndUpdate(
       { _id: id, eliminado: false },
-      resto,
+      { ...resto, abono },
       { new: true }
     );
 
@@ -245,6 +256,11 @@ const contratoPut = async (req, res = response) => {
       cuentaExistente.idContacto =
         contratoActualizado.idContacto || cuentaExistente.idContacto;
       cuentaExistente.montoTotalContrato = montoTotalContrato;
+
+      // Agregar los nuevos abonos a la cuenta
+      if (nuevosAbonos.length > 0) {
+        cuentaExistente.abonos.push(...nuevosAbonos);
+      }
 
       await cuentaExistente.save();
     }
