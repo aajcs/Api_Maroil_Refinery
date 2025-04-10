@@ -6,13 +6,13 @@ const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
-const corteRefinacion = require("./corteRefinacion");
 
 class Server {
   constructor() {
     this.app = express();
     this.port = process.env.PORT;
 
+    // Definición de rutas
     this.paths = {
       auth: "/api/auth",
       buscar: "/api/buscar",
@@ -41,10 +41,11 @@ class Server {
       simulacion: "/api/simulacion",
       inventario: "/api/inventario",
       partida: "/api/partida",
-      subpartida: "/api/subpartida",
+      subPartida: "/api/subpartida",
       operador: "/api/operador",
       factura: "/api/factura",
       corteRefinacion: "/api/corteRefinacion",
+      cuenta: "/api/cuenta",
       bunker: "/api/bunker/bunker",
       balanceBunker: "/api/bunker/balanceBunker",
       barcaza: "/api/bunker/barcaza",
@@ -61,12 +62,14 @@ class Server {
 
     // Conectar a base de datos
     this.conectarDB();
-    // Http server
-    this.middlewares();
-    this.server = http.createServer(this.app);
 
     // Middlewares
-    // Configuraciones de sockets
+    this.middlewares();
+
+    // Crear servidor HTTP
+    this.server = http.createServer(this.app);
+
+    // Configuración de sockets
     this.io = socketio(this.server, {
       cors: {
         origin: "*",
@@ -74,11 +77,14 @@ class Server {
       },
       transports: ["websocket", "polling"], // Acepta WebSocket y polling
     });
+
+    // Middleware para inyectar sockets en las solicitudes
     this.app.use((req, res, next) => {
       req.io = this.io;
       next();
     });
-    // Rutas de mi aplicación
+
+    // Rutas de la aplicación
     this.routes();
   }
 
@@ -122,11 +128,13 @@ class Server {
     this.app.use(this.paths.simulacion, require("../routes/simulacion"));
     this.app.use(this.paths.inventario, require("../routes/inventario"));
     this.app.use(this.paths.partida, require("../routes/partida"));
-    this.app.use(this.paths.subpartida, require("../routes/subPartida"));
+    // this.app.use(this.paths.subPartida, require("../routes/subpartida"));
+    this.app.use(this.paths.cuenta, require("../routes/cuenta"));
 
+    // Rutas relacionadas con el módulo de cuentas
     this.app.use(this.paths.operador, require("../routes/operador"));
 
-    //Rutas relacionadas con el módulo de finanzas
+    // Rutas relacionadas con el módulo de finanzas
     this.app.use(this.paths.factura, require("../routes/factura"));
 
     // Rutas relacionadas con operaciones de calidad y cantidad
@@ -216,6 +224,7 @@ class Server {
   configurarSockets() {
     new Sockets(this.io);
   }
+
   listen() {
     // Inicializar sockets
     this.configurarSockets();
