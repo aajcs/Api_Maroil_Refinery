@@ -136,7 +136,8 @@ const contratoPost = async (req, res = response) => {
     const nuevaCuenta = new Cuenta({
       idContrato: nuevoContrato._id,
       idContacto: nuevoContrato.idContacto,
-      tipoCuenta: tipoContrato === "Venta" ? "Cuentas por Cobrar" : "Cuentas por Pagar",
+      tipoCuenta:
+        tipoContrato === "Venta" ? "Cuentas por Cobrar" : "Cuentas por Pagar",
       abonos: abono || [],
       montoTotalContrato: montoTotal || 0,
     });
@@ -174,7 +175,7 @@ const contratoPut = async (req, res = response) => {
     }
 
     // Validar que el campo 'items' sea un array válido
-    if (!items || !Array.isArray(items)) {
+    if (items && !Array.isArray(items)) {
       return res
         .status(400)
         .json({ error: "El campo 'items' debe ser un array válido." });
@@ -188,30 +189,65 @@ const contratoPut = async (req, res = response) => {
     );
 
     // Actualizar o crear los ítems asociados al contrato
-    const nuevosItems = await Promise.all(
-      items.map(async (item) => {
-        if (item.id) {
-          // Si el ítem tiene un ID, actualizarlo
-          return await contratoItems.findByIdAndUpdate(item.id, item, {
-            new: true,
-          });
-        } else {
-          // Si el ítem no tiene un ID, crearlo
-          const nuevoItem = new contratoItems({
-            ...item,
-            idContrato: id,
-          });
-          return await nuevoItem.save();
-        }
-      })
-    );
+    if (items) {
+      const nuevosItems = await Promise.all(
+        items.map(async (item) => {
+          if (item.id) {
+            // Si el ítem tiene un ID, actualizarlo
+            return await contratoItems.findByIdAndUpdate(item.id, item, {
+              new: true,
+            });
+          } else {
+            // Si el ítem no tiene un ID, crearlo
+            const nuevoItem = new contratoItems({
+              ...item,
+              idContrato: id,
+            });
+            return await nuevoItem.save();
+          }
+        })
+      );
 
-    // Actualizar el contrato con los IDs de los ítems
-    contratoActualizado.idItems = nuevosItems.map((item) => item.id);
-    await contratoActualizado.save();
+      // Actualizar el contrato con los IDs de los ítems
+      contratoActualizado.idItems = nuevosItems.map((item) => item.id);
+      await contratoActualizado.save();
+    }
 
     // Sincronizar la cuenta asociada al contrato
-    await Cuenta.syncFromContrato(contratoActualizado);
+    let cuentaExistente = await Cuenta.findOne({ idContrato: id });
+
+    // Usar el montoTotal del contrato existente
+    const montoTotalContrato = contratoExistente.montoTotal;
+
+    if (!montoTotalContrato || montoTotalContrato <= 0) {
+      return res.status(400).json({
+        error:
+          "El monto total del contrato no es válido. Asegúrate de que el contrato tenga un monto total mayor a 0.",
+      });
+    }
+
+    if (!cuentaExistente) {
+      // Si no existe la cuenta, crearla
+      const nuevaCuenta = new Cuenta({
+        idContrato: contratoActualizado._id,
+        idContacto: contratoActualizado.idContacto,
+        tipoCuenta:
+          contratoActualizado.tipoContrato === "Venta"
+            ? "Cuentas por Cobrar"
+            : "Cuentas por Pagar",
+        abonos: contratoActualizado.abono || [],
+        montoTotalContrato,
+      });
+
+      await nuevaCuenta.save();
+    } else {
+      // Si existe la cuenta, actualizar los campos necesarios
+      cuentaExistente.idContacto =
+        contratoActualizado.idContacto || cuentaExistente.idContacto;
+      cuentaExistente.montoTotalContrato = montoTotalContrato;
+
+      await cuentaExistente.save();
+    }
 
     // Poblar referencias y responder con el contrato actualizado
     await contratoActualizado.populate(populateOptions);
