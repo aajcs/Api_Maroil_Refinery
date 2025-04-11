@@ -35,7 +35,8 @@ const ProductoSchema = Schema(
     tipoMaterial: {
       type: String,
       enum: ["Materia Prima", "Derivado"], // Valores permitidos
-      required: [false, "El tipo de material es obligatorio"], // Campo obligatorio
+      default: "Materia Prima", // Valor por defectoS
+      required: [true, "El tipo de material es obligatorio"], // Campo obligatorio
     },
 
     // Relación con el modelo TipoProducto
