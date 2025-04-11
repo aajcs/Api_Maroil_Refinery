@@ -36,7 +36,7 @@ const TanqueSchema = Schema(
     // Ubicación física del tanque dentro de la refinería
     ubicacion: {
       type: String,
-      required: [true, "La ubicación es obligatoria"], // Campo obligatorio
+      required: [false, "La ubicación es obligatoria"], // Campo obligatorio
       maxlength: [100, "La ubicación no puede exceder los 100 caracteres"], // Validación de longitud máxima
     },
 
@@ -63,10 +63,10 @@ const TanqueSchema = Schema(
 
     // Relación con el chequeo de cantidad
     idChequeoCantidad: {
-          type: Schema.Types.ObjectId,
-          ref: "ChequeoCantidad", // Relación con el chequeo cantidad
-          required: false, // Campo obligatorio
-        },
+      type: Schema.Types.ObjectId,
+      ref: "ChequeoCantidad", // Relación con el chequeo cantidad
+      required: false, // Campo obligatorio
+    },
 
     // Estado del tanque (activo o inactivo)
     estado: {
