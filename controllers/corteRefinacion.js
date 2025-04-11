@@ -7,7 +7,7 @@ const populateOptions = [
   // { path: "idOperador", select: "nombre" },
   { path: "corteTorre.idTorre", select: "nombre" },
   { path: "corteTorre.detalles.idTanque", select: "nombre" },
-  { path: "corteTorre.detalles.idProducto", select: "nombre" },
+  { path: "corteTorre.detalles.idProducto", select: "nombre tipoMaterial" },
 ];
 
 // Controlador para obtener todas las refinaciones con paginación y población de referencias
@@ -17,7 +17,10 @@ const corteRefinacionGets = async (req = request, res = response) => {
   try {
     const [total, corteRefinacions] = await Promise.all([
       CorteRefinacion.countDocuments(query), // Cuenta el total de cortes
-      CorteRefinacion.find(query).populate(populateOptions), // Obtiene los cortes con referencias pobladas
+      CorteRefinacion.find(query)
+        .populate(populateOptions)
+        .sort({ fechaCorte: -1 }), // Obtiene los cortes con referencias pobladas
+      ,
     ]);
 
     res.json({ total, corteRefinacions }); // Responde con el total y la lista de cortes
