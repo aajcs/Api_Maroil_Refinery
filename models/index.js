@@ -41,14 +41,7 @@ const Operador = require("./operador");
 const Factura = require("./factura");
 const CorteRefinacion = require("./corteRefinacion");
 const Cuenta = require("./cuenta");
-/*const contactos = require ('./contactos');
-const bombas = require('./bombas');
-const inspeccion_tanque = require('./inspeccion_tanque');
-const recepcion = require('./recepcion');
-const tanque = require('./tanque');
-const refineria = require('./refineria');
-const lotes_producto = require('./lotes_producto');
-const linea_carga = require('./linea_carga');*/
+const Balance = require("./balance");
 
 module.exports = {
   Ventana,
@@ -93,14 +86,4 @@ module.exports = {
   Operador,
   Factura,
   CorteRefinacion,
-
-  /*contactos,
-    bombas,
-    inspeccion_tanque,
-    despacho,
-    recepcion,
-    tanque,
-    refineria,
-    lotes_producto,
-    linea_carga, */
 };

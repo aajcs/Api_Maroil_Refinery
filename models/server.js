@@ -16,6 +16,7 @@ class Server {
     this.paths = {
       auth: "/api/auth",
       buscar: "/api/buscar",
+      balance: "/api/balance",
       categorias: "/api/categorias",
       producto: "/api/producto",
       usuarios: "/api/usuarios",
@@ -136,6 +137,7 @@ class Server {
 
     // Rutas relacionadas con el módulo de finanzas
     this.app.use(this.paths.factura, require("../routes/factura"));
+    this.app.use(this.paths.balance, require("../routes/balance"));
 
     // Rutas relacionadas con operaciones de calidad y cantidad
     this.app.use(
