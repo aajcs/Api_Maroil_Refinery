@@ -69,7 +69,7 @@ const ContactoSchema = new Schema(
     // Tipo de contacto
     tipo: {
       type: String,
-      // enum: ["cliente", "proveedor"],
+      enum: ["Cliente", "Proveedor"],
       required: [false, "Seleccione qué tipo de contacto es"],
     },
 

@@ -23,7 +23,7 @@ const TorreSchema = Schema(
     capacidad: {
       type: Number,
       min: [0, "La capacidad no puede ser negativa"], // Validación para evitar valores negativos
-      required: [true, "La capacidad es obligatoria"], // Campo obligatorio
+      required: [false, "La capacidad es obligatoria"], // Campo obligatorio
     },
 
     // Ubicación física de la torre dentro de la refinería
@@ -50,7 +50,7 @@ const TorreSchema = Schema(
 
         porcentaje: {
           type: Number,
-          required: [true, "El porcentaje del producto es obligatorio"], // Campo obligatorio
+          required: [false, "El porcentaje del producto es obligatorio"], // Campo obligatorio
         },
       },
     ],
@@ -58,8 +58,6 @@ const TorreSchema = Schema(
     // Estado de la torre (activo o inactivo)
     estado: {
       type: String,
-      enum: ["activo", "inactivo"], // Valores permitidos
-      default: "activo", // Valor por defecto
     },
 
     // Indica si la torre ha sido eliminada (eliminación lógica)
