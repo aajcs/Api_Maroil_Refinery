@@ -65,7 +65,7 @@ const TipoProductoSchema = Schema(
         "El punto de inflamación (Punto De Inflamacion) del producto es obligatorio",
       ], // Campo obligatorio
     },
-    // Rendimiento del producto
+    // Rendimiento del productos
 
     rendimientos: [
       {
