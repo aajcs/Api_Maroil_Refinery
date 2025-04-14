@@ -20,8 +20,7 @@ const TanqueSchema = Schema(
     // Porcentaje de almacenamiento actual del tanque
     almacenamiento: {
       type: Number,
-      min: [0, "El porcentaje de almacenamiento no puede ser negativo"], // Validación para evitar valores negativos
-      max: [100, "El porcentaje de almacenamiento no puede exceder el 100%"], // Validación para evitar valores mayores al 100%
+
       required: [true, "El porcentaje de almacenamiento es obligatorio"], // Campo obligatorio
     },
 

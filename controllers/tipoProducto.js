@@ -17,7 +17,7 @@ const populateOptions = [
     path: "rendimientos", // Relación con el modelo Rendimiento
     populate: {
       path: "idProducto",
-      select: "nombre color", // Relación con el modelo Producto dentro de Rendimiento
+      // select: "nombre color", // Relación con el modelo Producto dentro de Rendimiento
     },
   },
 ];

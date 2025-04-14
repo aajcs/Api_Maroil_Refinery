@@ -53,7 +53,6 @@ router.post(
   [
     //Validación de campos.
 
-    check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
     check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),
     check("capacidad", "La capacidad del tanque es obligatoria")
       .not()

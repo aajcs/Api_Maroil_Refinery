@@ -107,7 +107,7 @@ const contactoPost = async (req = request, res = response) => {
 
     if (err.name === "ValidationError") {
       return res.status(400).json({
-        error: "Datos de contacto no válidos.",
+        error: `Datos de contacto no válidos.${err.message}`,
       }); // Responde con un error 400 si los datos no son válidos
     }
 
