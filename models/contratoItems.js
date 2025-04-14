@@ -88,11 +88,11 @@ const ContratoItemsSchema = Schema(
       min: [0, "El contenido de agua no puede ser negativo"], // Validación para evitar valores negativos
     },
 
-    // Flashpoint del producto
-    flashPoint: {
+    // Punto De Inflamacion del producto
+    puntoDeInflamacion: {
       type: Number,
-      required: [false, "El Flashpoint es obligatorio"],
-      min: [0, "El Flashpoint no puede ser negativo"], // Validación para evitar valores negativos
+      required: [false, "El puntoDeInflamacion es obligatorio"],
+      min: [0, "El puntoDeInflamacion no puede ser negativo"], // Validación para evitar valores negativos
     },
 
     // Estado del contrato

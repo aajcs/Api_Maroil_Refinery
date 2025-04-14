@@ -7,13 +7,13 @@ const populateOptions = [
   {
     path: "idTipoProducto",
     select:
-      "nombre clasificacion gravedadAPI azufre contenidoAgua flashPoint rendimientos",
+      "nombre clasificacion gravedadAPI azufre contenidoAgua puntoDeInflamacion rendimientos",
     // Selecciona los campos que sean necesarios del modelo TipoProducto.
   },
   // {
   //   path: "idTipoProducto", // Relación con el modelo ChequeoCalidad
   //   select:
-  //     "idProducto nombre clasificacion gravedadAPI azufre contenidoAgua flashPoint",
+  //     "idProducto nombre clasificacion gravedadAPI azufre contenidoAgua puntoDeInflamacion",
   //   populate: [{ path: "idTipoProducto" }],
   // },
 
