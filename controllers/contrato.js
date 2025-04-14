@@ -81,6 +81,7 @@ const contratoPost = async (req, res = response) => {
     plazo,
     tipoContrato,
     observacion,
+    brent,
   } = req.body;
 
   let nuevoContrato;
@@ -106,6 +107,7 @@ const contratoPost = async (req, res = response) => {
       plazo,
       tipoContrato,
       observacion,
+      brent,
     });
 
     if (!items || items.length === 0) {

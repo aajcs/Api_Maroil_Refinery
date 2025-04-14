@@ -30,12 +30,12 @@ const ContratoItemsSchema = Schema(
       min: [0, "El precio unitario no puede ser negativo"], // Validación para evitar valores negativos
     },
 
-    // Precio Brent del producto
-    brent: {
-      type: Number,
-      required: [false, "El precio Brent del producto es obligatorio"],
-      min: [0, "El precio Brent no puede ser negativo"], // Validación para evitar valores negativos
-    },
+    // // Precio Brent del producto
+    // brent: {
+    //   type: Number,
+    //   required: [false, "El precio Brent del producto es obligatorio"],
+    //   min: [0, "El precio Brent no puede ser negativo"], // Validación para evitar valores negativos
+    // },
 
     // Porcentaje acordado por encima o por debajo del Brent
     convenio: {
