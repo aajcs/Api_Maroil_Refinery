@@ -65,6 +65,11 @@ const ContratoSchema = Schema(
       required: [true, "La fecha de finalización es obligatoria"],
     },
 
+    brent: {
+      type: Number,
+      required: [true, "El Brent es Obligatorio"],
+    },
+
     // Condiciones de pago
     condicionesPago: {
       tipo: {

@@ -56,13 +56,13 @@ const TipoProductoSchema = Schema(
       required: [true, "El contenido de agua en el producto es obligatorio"], // Campo obligatorio
     },
 
-    // Punto de inflamación (Flashpoint) del producto
-    flashPoint: {
+    // Punto de inflamación (Punto De Inflamacion) del producto
+    puntoDeInflamacion: {
       type: Number,
       min: [0, "El punto de inflamación no puede ser negativo"], // Validación para evitar valores negativos
       required: [
         false,
-        "El punto de inflamación (Flashpoint) del producto es obligatorio",
+        "El punto de inflamación (Punto De Inflamacion) del producto es obligatorio",
       ], // Campo obligatorio
     },
     // Rendimiento del producto

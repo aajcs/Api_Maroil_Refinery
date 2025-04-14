@@ -21,10 +21,10 @@ const ContratoItemsSchema = Schema({
     required: [false, "El precio unitario es obligatorio"],
   },
 
-  brent: {
-    type: Number,
-    required: [false, "El precio Brent del producto es obligatorio"],
-  },
+  // brent: {
+  //   type: Number,
+  //   required: [false, "El precio Brent del producto es obligatorio"],
+  // },
 
   convenio: {
     type: Number,
