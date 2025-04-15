@@ -4,6 +4,7 @@ const ChequeoCantidad = require("../models/chequeoCantidad");
 const Recepcion = require("../models/recepcion");
 const Despacho = require("../models/despacho");
 const Tanque = require("../models/tanque");
+const mongoose = require("mongoose"); // Importar mongoose
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
@@ -137,8 +138,8 @@ const chequeoCantidadPost = async (req = request, res = response) => {
     await nuevoChequeo.save(); // Guarda el nuevo chequeo en la base de datos
     await nuevoChequeo.populate(populateOptions); // Poblar referencias después de guardar
 
-     // Actualizar el modelo relacionado
-     if (aplicar && aplicar.idReferencia && aplicar.tipo) {
+    // Actualizar el modelo relacionado
+    if (aplicar && aplicar.idReferencia && aplicar.tipo) {
       await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
         idChequeoCantidad: nuevoChequeo._id, // Cambiado a idChequeoCantidad
       });
@@ -161,28 +162,27 @@ const chequeoCantidadPut = async (req = request, res = response) => {
   const { _id, aplicar, ...resto } = req.body;
 
   try {
-
     // Validar que idReferencia sea un ObjectId válido
-       if (
-         aplicar &&
-         aplicar.idReferencia &&
-         !mongoose.Types.ObjectId.isValid(aplicar.idReferencia)
-       ) {
-         return res.status(400).json({
-           error: "El ID de referencia no es válido.",
-         });
-       }
-   
-       const chequeoActualizado = await ChequeoCantidad.findOneAndUpdate(
-         { _id: id, eliminado: false },
-         { ...resto, aplicar }, // Actualiza el chequeo y la referencia
-         { new: true }
-       ).populate(populateOptions);
-   
-       if (!chequeoActualizado) {
-         return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
-       }
-    
+    if (
+      aplicar &&
+      aplicar.idReferencia &&
+      !mongoose.Types.ObjectId.isValid(aplicar.idReferencia)
+    ) {
+      return res.status(400).json({
+        error: "El ID de referencia no es válido.",
+      });
+    }
+
+    const chequeoActualizado = await ChequeoCantidad.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { ...resto, aplicar }, // Actualiza el chequeo y la referencia
+      { new: true }
+    ).populate(populateOptions);
+
+    if (!chequeoActualizado) {
+      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
+    }
+
     // Actualizar el modelo relacionado
     if (aplicar && aplicar.idReferencia && aplicar.tipo) {
       await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
@@ -213,8 +213,8 @@ const chequeoCantidadDelete = async (req = request, res = response) => {
     if (!chequeo) {
       return res.status(404).json({ msg: "Chequeo de cantidad no encontrado" });
     }
-     // Actualizar el modelo relacionado
-     if (
+    // Actualizar el modelo relacionado
+    if (
       chequeo.aplicar &&
       chequeo.aplicar.idReferencia &&
       chequeo.aplicar.tipo
@@ -252,8 +252,8 @@ const chequeoCantidadPatch = async (req = request, res = response) => {
     if (!chequeoActualizado) {
       return res.status(404).json({ msg: "Chequeo de cantidad no encontrado" });
     }
-     // Actualizar el modelo relacionado
-     if (aplicar && aplicar.idReferencia && aplicar.tipo) {
+    // Actualizar el modelo relacionado
+    if (aplicar && aplicar.idReferencia && aplicar.tipo) {
       await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
         chequeoCantidad: chequeoActualizado._id,
       });
