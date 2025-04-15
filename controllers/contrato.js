@@ -62,6 +62,8 @@ const contratoGet = async (req = request, res = response) => {
 
 // Crear un nuevo contrato
 const contratoPost = async (req, res = response) => {
+  console.log(req.body);
+
   const {
     idRefineria,
     idContacto,
@@ -163,6 +165,7 @@ const contratoPost = async (req, res = response) => {
 
 // Actualizar un contrato existente
 const contratoPut = async (req, res = response) => {
+  console.log(req.body);
   const { id } = req.params;
   const { items, abono, ...resto } = req.body;
 
