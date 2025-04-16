@@ -74,13 +74,13 @@ const CorteRefinacionSchema = new Schema(
   }
 );
 
-// Índices
-CorteRefinacionSchema.index({ idRefineria: 1 });
-CorteRefinacionSchema.index({ fechaCorte: -1 });
-CorteRefinacionSchema.index(
-  { numeroCorteRefinacion: 1, idRefineria: 1 },
-  { unique: true }
-);
+// // Índices
+// CorteRefinacionSchema.index({ idRefineria: 1 });
+// CorteRefinacionSchema.index({ fechaCorte: -1 });
+// CorteRefinacionSchema.index(
+//   { numeroCorteRefinacion: 1, idRefineria: 1 },
+//   { unique: true }
+// );
 
 // Middleware para el contador atómico
 CorteRefinacionSchema.pre("save", async function (next) {

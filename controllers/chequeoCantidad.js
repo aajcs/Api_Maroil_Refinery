@@ -158,6 +158,7 @@ const chequeoCantidadPost = async (req = request, res = response) => {
 
 // Controlador para actualizar un chequeo de cantidad existente
 const chequeoCantidadPut = async (req = request, res = response) => {
+  console.log(req.body);
   const { id } = req.params;
   const { _id, aplicar, ...resto } = req.body;
 
