@@ -20,7 +20,6 @@ const TanqueSchema = Schema(
     // Porcentaje de almacenamiento actual del tanque
     almacenamiento: {
       type: Number,
-
       required: [true, "El porcentaje de almacenamiento es obligatorio"], // Campo obligatorio
     },
 
@@ -67,6 +66,14 @@ const TanqueSchema = Schema(
       required: false, // Campo obligatorio
     },
 
+    // Campo para almacenar los cortes de refinación asociados al tanque
+    cortesRefinacion: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "CorteRefinacion", // Relación con el modelo CorteRefinacion
+      },
+    ],
+
     // Estado del tanque (activo o inactivo)
     estado: {
       type: String,
@@ -94,7 +101,6 @@ TanqueSchema.set("toJSON", {
     // Cambia el nombre de _id a id
     returnedObject.id = returnedObject._id.toString();
     // Elimina las propiedades innecesarias del objeto devuelto
-    // delete returnedObject._id;
     delete returnedObject.__v;
   },
 });
