@@ -1,10 +1,10 @@
 const { response, request } = require("express");
 const CorteRefinacion = require("../models/corteRefinacion");
-const Tanque = require("../models/tanque"); // Importar el modelo Tanque
 
 // Opciones de población reutilizables
 const populateOptions = [
   { path: "idRefineria", select: "nombre" },
+  // { path: "idOperador", select: "nombre" },
   { path: "corteTorre.idTorre", select: "nombre" },
   { path: "corteTorre.detalles.idTanque", select: "nombre" },
   { path: "corteTorre.detalles.idProducto", select: "nombre tipoMaterial" },
@@ -20,11 +20,18 @@ const corteRefinacionGets = async (req = request, res = response) => {
       CorteRefinacion.find(query)
         .populate(populateOptions)
         .sort({ fechaCorte: -1 }), // Obtiene los cortes con referencias pobladas
+      ,
     ]);
 
     res.json({ total, corteRefinacions }); // Responde con el total y la lista de cortes
   } catch (err) {
     console.error("Error en corteRefinacionGets:", err);
+
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        error: "Error en las referencias. Verifica que los IDs sean válidos.",
+      });
+    }
 
     res.status(500).json({
       error: "Error interno del servidor al obtener los cortes de refinación.",
@@ -50,6 +57,12 @@ const corteRefinacionGet = async (req = request, res = response) => {
   } catch (err) {
     console.error("Error en corteRefinacionGet:", err);
 
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        error: "ID de corte de refinación no válido.",
+      });
+    }
+
     res.status(500).json({
       error: "Error interno del servidor al obtener el corte de refinación.",
     });
@@ -58,6 +71,7 @@ const corteRefinacionGet = async (req = request, res = response) => {
 
 // Controlador para crear un nuevo corte de refinación
 const corteRefinacionPost = async (req = request, res = response) => {
+  console.log("req.body", JSON.stringify(req.body, null, 2)); // Log para depuración
   const {
     idRefineria,
     corteTorre,
@@ -67,9 +81,7 @@ const corteRefinacionPost = async (req = request, res = response) => {
     idOperador,
     estado,
   } = req.body;
-
   try {
-    // Crear el nuevo corte de refinación
     const nuevoCorte = new CorteRefinacion({
       idRefineria,
       corteTorre,
@@ -82,32 +94,18 @@ const corteRefinacionPost = async (req = request, res = response) => {
 
     await nuevoCorte.save(); // Guarda el nuevo corte en la base de datos
 
-    // Actualizar los tanques asociados al corte
-    await Promise.all(
-      corteTorre.map(async (torre) => {
-        return Promise.all(
-          torre.detalles.map(async (detalle) => {
-            if (detalle.idTanque) {
-              return Tanque.findByIdAndUpdate(
-                detalle.idTanque,
-                { $push: { cortesRefinacion: nuevoCorte._id } }, // Agrega el ID del corte al tanque
-                { new: true }
-              );
-            }
-          })
-        );
-      })
-    );
-
     // Poblar referencias después de guardar
     await nuevoCorte.populate(populateOptions);
 
-    res.status(201).json({
-      msg: "Corte de refinación creado y asociado a los tanques correctamente.",
-      nuevoCorte,
-    });
+    res.status(201).json(nuevoCorte); // Responde con el corte creado
   } catch (err) {
     console.error("Error en corteRefinacionPost:", err);
+
+    if (err.name === "ValidationError") {
+      return res.status(400).json({
+        error: "Datos del corte de refinación no válidos.",
+      });
+    }
 
     res.status(500).json({
       error: "Error interno del servidor al crear el corte de refinación.",
@@ -135,6 +133,12 @@ const corteRefinacionPut = async (req = request, res = response) => {
   } catch (err) {
     console.error("Error en corteRefinacionPut:", err);
 
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        error: "ID de corte de refinación no válido.",
+      });
+    }
+
     res.status(500).json({
       error: "Error interno del servidor al actualizar el corte de refinación.",
     });
@@ -156,29 +160,15 @@ const corteRefinacionDelete = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Corte de refinación no encontrado" });
     }
 
-    // Eliminar la referencia del corte en los tanques asociados
-    await Promise.all(
-      corte.corteTorre.map(async (torre) => {
-        return Promise.all(
-          torre.detalles.map(async (detalle) => {
-            if (detalle.idTanque) {
-              return Tanque.findByIdAndUpdate(
-                detalle.idTanque,
-                { $pull: { cortesRefinacion: corte._id } }, // Elimina el ID del corte del tanque
-                { new: true }
-              );
-            }
-          })
-        );
-      })
-    );
-
-    res.json({
-      msg: "Corte de refinación eliminado y referencias actualizadas en los tanques.",
-      corte,
-    });
+    res.json(corte);
   } catch (err) {
     console.error("Error en corteRefinacionDelete:", err);
+
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        error: "ID de corte de refinación no válido.",
+      });
+    }
 
     res.status(500).json({
       error: "Error interno del servidor al eliminar el corte de refinación.",
@@ -205,6 +195,12 @@ const corteRefinacionPatch = async (req = request, res = response) => {
     res.json(corteActualizado);
   } catch (err) {
     console.error("Error en corteRefinacionPatch:", err);
+
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        error: "ID de corte de refinación no válido.",
+      });
+    }
 
     res.status(500).json({
       error: "Error interno del servidor al actualizar parcialmente el corte.",
