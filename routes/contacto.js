@@ -28,10 +28,11 @@ const {
 
 const router = Router();
 
-router.get("/", contactoGets);
+router.get("/", [validarJWT], contactoGets);
 router.get(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un id de Mongo válido").isMongoId(),
     // check('id').custom( existeProductoPorId ),
     validarCampos,
@@ -41,6 +42,7 @@ router.get(
 router.put(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeContactoPorId),
     //check("rol").custom(esRoleValido),
@@ -52,6 +54,7 @@ router.put(
 router.post(
   "/",
   [
+    validarJWT,
     //Validación de campos.
     //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
     //check("nombre", "El nombre del contacto es obligatorio").not().isEmpty(),

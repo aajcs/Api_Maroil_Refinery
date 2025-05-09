@@ -9,6 +9,11 @@ const populateOptions = [
     path: "idProducto", // Relación con el modelo Producto
     select: "nombre color posicion", // Selecciona solo los campos nombre y color
   },
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
 ]; // Relación con el modelo Refineria, seleccionando solo el campo "nombre"
 
 // Controlador para obtener todas las líneas de carga con población de referencias
@@ -20,7 +25,11 @@ const lineaDespachoGets = async (req = request, res = response) => {
       LineaDespacho.countDocuments(query), // Cuenta el total de líneas de carga
       LineaDespacho.find(query).populate(populateOptions), // Obtiene las líneas de carga con referencias pobladas
     ]);
-
+    lineaDespachos.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     res.json({
       total,
       lineaDespachos,
@@ -40,7 +49,11 @@ const lineaDespachoGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions); // Busca la línea de carga por ID y popula las referencias
-
+    lineaDespacho.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (!lineaDespacho) {
       return res.status(404).json({ msg: "Línea de carga no encontrada" }); // Responde con un error 404 si no se encuentra la línea de carga
     }
@@ -56,7 +69,6 @@ const lineaDespachoGet = async (req = request, res = response) => {
 const lineaDespachoPost = async (req = request, res = response) => {
   const { ubicacion, nombre, idRefineria, tipoLinea, estado, idProducto } =
     req.body; // Extrae los datos del cuerpo de la solicitud
-
   try {
     const nuevaLineaDespacho = new LineaDespacho({
       ubicacion,
@@ -65,6 +77,7 @@ const lineaDespachoPost = async (req = request, res = response) => {
       tipoLinea,
       estado,
       idProducto,
+      createdBy: req.usuario._id, // Auditoría: quién crea
     });
 
     await nuevaLineaDespacho.save(); // Guarda la nueva línea de carga en la base de datos
@@ -84,9 +97,19 @@ const lineaDespachoPut = async (req = request, res = response) => {
   const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
 
   try {
+    const antes = await LineaDespacho.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
     const lineaDespachoActualizada = await LineaDespacho.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar la línea de carga no eliminada
-      resto, // Datos a actualizar
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Datos a actualizar
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Poblar referencias después de actualizar
 
@@ -106,9 +129,15 @@ const lineaDespachoDelete = async (req = request, res = response) => {
   const { id } = req.params; // Obtiene el ID de la línea de carga desde los parámetros de la URL
 
   try {
+    // Auditoría: captura estado antes de eliminar
+    const antes = await LineaDespacho.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const lineaDespacho = await LineaDespacho.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar la línea de carga no eliminada
-      { eliminado: true }, // Marca la línea de carga como eliminada
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Poblar referencias después de actualizar
 

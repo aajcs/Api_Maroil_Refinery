@@ -9,6 +9,11 @@ const populateOptions = [
     select: "nombre", // Selecciona el campo nombre
   },
   { path: "idTipoProducto" }, // Relación con el modelo TipoProducto
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
 ];
 
 // Controlador para obtener todos los productos con población de referencias
@@ -20,7 +25,12 @@ const productoGets = async (req = request, res = response) => {
       Producto.countDocuments(query), // Cuenta el total de productos
       Producto.find(query).populate(populateOptions).sort({ posicion: 1 }), // Obtiene los productos con referencias pobladas y los ordena por posición
     ]);
-
+    // Ordenar historial por fecha ascendente en cada torre
+    productos.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     res.json({
       total,
       productos,
@@ -41,7 +51,12 @@ const productoGet = async (req = request, res = response) => {
       estado: true,
       eliminado: false,
     }).populate(populateOptions); // Busca el producto por ID y popula las referencias
-
+    // Ordenar historial por fecha ascendente en cada torre
+    producto.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (!producto) {
       return res.status(404).json({ msg: "Producto no encontrado" }); // Responde con un error 404 si no se encuentra el producto
     }
@@ -72,6 +87,7 @@ const productoPost = async (req = request, res = response) => {
       color,
       estado,
       tipoMaterial,
+      createdBy: req.usuario._id, // ID del usuario que creó el tanque
     });
 
     await nuevoProducto.save(); // Guarda el nuevo producto en la base de datos
@@ -90,9 +106,19 @@ const productoPut = async (req, res = response) => {
   const { ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud
 
   try {
+    const antes = await Producto.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
     const productoActualizado = await Producto.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar el producto no eliminado
-      resto, // Datos a actualizar
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Datos a actualizar
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Poblar referencias después de actualizar
 
@@ -112,9 +138,15 @@ const productoDelete = async (req = request, res = response) => {
   const { id } = req.params; // Obtiene el ID del producto desde los parámetros de la URL
 
   try {
+    // Auditoría: captura estado antes de eliminar
+    const antes = await Producto.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const producto = await Producto.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar el producto no eliminado
-      { eliminado: true }, // Marca el producto como eliminado
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Poblar referencias después de actualizar
 

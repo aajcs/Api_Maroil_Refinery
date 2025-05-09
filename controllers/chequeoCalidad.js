@@ -19,6 +19,12 @@ const populateOptions = [
   },
   { path: "idProducto", select: "nombre" },
   { path: "idOperador", select: "nombre" },
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
 ];
 
 // Función auxiliar para actualizar el modelo relacionado
@@ -83,12 +89,12 @@ const chequeoCalidadGets = async (req = request, res = response) => {
       ChequeoCalidad.find(query).populate(populateOptions), // Obtiene los chequeos con IdReferencia pobladas
     ]);
 
-    if (chequeoCalidads.length === 0) {
-      return res.status(404).json({
-        message:
-          "No se encontraron chequeos de calidad con los criterios proporcionados.",
-      });
-    }
+    // Ordenar historial por fecha ascendente en cada torre
+    chequeoCalidads.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
 
     res.json({ total, chequeoCalidads }); // Responde con el total y la lista de chequeos
   } catch (err) {
@@ -104,17 +110,22 @@ const chequeoCalidadGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const chequeo = await ChequeoCalidad.findOne({
+    const chequeoCalidad = await ChequeoCalidad.findOne({
       _id: id,
       estado: "true",
       eliminado: false,
     }).populate(populateOptions);
-
-    if (!chequeo) {
+    // Ordenar historial por fecha ascendente en cada torre
+    chequeoCalidad.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    if (!chequeoCalidad) {
       return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
     }
 
-    res.json(chequeo);
+    res.json(chequeoCalidad);
   } catch (err) {
     console.error("Error en chequeoCalidadGet:", err);
     res.status(500).json({
@@ -152,6 +163,7 @@ const chequeoCalidadPost = async (req = request, res = response) => {
       cetano,
       idOperador,
       estado,
+      createdBy: req.usuario._id, // ID del usuario que creó el tanque
     });
 
     await nuevoChequeo.save();
@@ -189,10 +201,21 @@ const chequeoCalidadPut = async (req = request, res = response) => {
         error: "El ID de referencia no es válido.",
       });
     }
+    const antes = await ChequeoCalidad.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    } // Actualiza el tipo de producto en la base de datos y devuelve el tipo de producto actualizado
 
     const chequeoActualizado = await ChequeoCalidad.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { ...resto, aplicar }, // Actualiza el chequeo y la referencia
+      {
+        ...resto,
+        aplicar,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Datos a actualizar
       { new: true }
     ).populate(populateOptions);
 
@@ -254,9 +277,15 @@ const chequeoCalidadDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
+    // Auditoría: captura estado antes de eliminar
+    const antes = await ChequeoCalidad.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const chequeo = await ChequeoCalidad.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { eliminado: true },
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true }
     ).populate(populateOptions);
 

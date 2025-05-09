@@ -27,10 +27,11 @@ const {
 
 const router = Router();
 
-router.get("/", tanqueGets);
+router.get("/", [validarJWT], tanqueGets);
 router.get(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un id de Mongo válido").isMongoId(),
     // check('id').custom( existeProductoPorId ),
     validarCampos,
@@ -40,6 +41,7 @@ router.get(
 router.put(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeTanquePorId),
     //check("rol").custom(esRoleValido),
@@ -51,6 +53,7 @@ router.put(
 router.post(
   "/",
   [
+    validarJWT,
     //Validación de campos.
 
     check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),

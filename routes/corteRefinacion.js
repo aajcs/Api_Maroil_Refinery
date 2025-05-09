@@ -23,15 +23,20 @@ const {
 
 const router = Router();
 
-router.get("/", corteRefinacionGets);
+router.get("/", [validarJWT], corteRefinacionGets);
 router.get(
   "/:id",
-  [check("id", "No es un id de Mongo válido").isMongoId(), validarCampos],
+  [
+    validarJWT,
+    check("id", "No es un id de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
   corteRefinacionGet
 );
 router.put(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeCorteRefinacionPorId),
     // check("idRefineria").custom(existeRefineriaPorId),
@@ -46,6 +51,7 @@ router.put(
 router.post(
   "/",
   [
+    validarJWT,
     // // check("idRefineria").custom(existeRefineriaPorId),
     // // check("idTanque").custom(existeTanquePorId),
     // // check("idTorre").custom(existeTorrePorId),

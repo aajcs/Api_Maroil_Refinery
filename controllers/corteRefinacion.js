@@ -8,6 +8,11 @@ const populateOptions = [
   { path: "corteTorre.idTorre", select: "nombre" },
   { path: "corteTorre.detalles.idTanque", select: "nombre" },
   { path: "corteTorre.detalles.idProducto", select: "nombre tipoMaterial" },
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
 ];
 
 // Controlador para obtener todas las refinaciones con paginación y población de referencias
@@ -21,7 +26,12 @@ const corteRefinacionGets = async (req = request, res = response) => {
         .populate(populateOptions)
         .sort({ fechaCorte: -1 }), // Obtiene los cortes con referencias pobladas
     ]);
-
+    // Ordenar historial por fecha ascendente en cada torre
+    corteRefinacions.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     res.json({ total, corteRefinacions }); // Responde con el total y la lista de cortes
   } catch (err) {
     console.error("Error en corteRefinacionGets:", err);
@@ -37,16 +47,21 @@ const corteRefinacionGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const corte = await CorteRefinacion.findOne({
+    const corteRefinacion = await CorteRefinacion.findOne({
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-
-    if (!corte) {
+    // Ordenar historial por fecha ascendente en cada torre
+    corteRefinacion.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    if (!corteRefinacion) {
       return res.status(404).json({ msg: "Corte de refinación no encontrado" });
     }
 
-    res.json(corte);
+    res.json(corteRefinacion);
   } catch (err) {
     console.error("Error en corteRefinacionGet:", err);
 
@@ -78,6 +93,7 @@ const corteRefinacionPost = async (req = request, res = response) => {
       observacion,
       idOperador,
       estado,
+      createdBy: req.usuario._id, // ID del usuario que creó el tanque
     });
 
     await nuevoCorte.save(); // Guarda el nuevo corte en la base de datos
@@ -121,9 +137,19 @@ const corteRefinacionPut = async (req = request, res = response) => {
   const { _id, ...resto } = req.body;
 
   try {
+    const antes = await CorteRefinacion.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
     const corteActualizado = await CorteRefinacion.findOneAndUpdate(
       { _id: id, eliminado: false },
-      resto,
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Datos a actualizar
       { new: true }
     ).populate(populateOptions);
 
@@ -146,9 +172,15 @@ const corteRefinacionDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
+    // Auditoría: captura estado antes de eliminar
+    const antes = await Contrato.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const corte = await CorteRefinacion.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { eliminado: true },
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true }
     ).populate(populateOptions);
 

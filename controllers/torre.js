@@ -5,6 +5,11 @@ const Torre = require("../models/torre"); // Modelo Torre para interactuar con l
 const populateOptions = [
   { path: "idRefineria", select: "nombre" }, // Población del campo idRefineria, seleccionando solo el nombre
   { path: "material.idProducto", select: "nombre posicion color" }, // Población del campo material.idProducto, seleccionando nombre, posición y color
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
 ];
 
 // Controlador para obtener todas las torres con paginación y población de referencias
@@ -17,6 +22,13 @@ const torreGets = async (req = request, res = response) => {
       Torre.countDocuments(query), // Cuenta el total de torres no eliminadas
       Torre.find(query).populate(populateOptions), // Obtiene las torres no eliminadas con las referencias pobladas
     ]);
+
+    // Ordenar historial por fecha ascendente en cada torre
+    torres.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
 
     // Responde con el total de torres y la lista de torres
     res.json({
@@ -39,6 +51,11 @@ const torreGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions); // Población de referencias
+
+    // Ordenar historial por fecha ascendente
+    if (Array.isArray(torre.historial)) {
+      torre.historial.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+    }
 
     if (!torre) {
       return res.status(404).json({ msg: "Torre no encontrada" }); // Responde con un error 404 si no se encuentra la torre
@@ -74,6 +91,7 @@ const torrePost = async (req = request, res = response) => {
       numero,
       nombre,
       ubicacion,
+      createdBy: req.usuario._id, // Auditoría: quién crea
     });
 
     await nuevaTorre.save(); // Guarda la nueva torre en la base de datos
@@ -93,10 +111,21 @@ const torrePut = async (req = request, res = response) => {
   const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
 
   try {
+    const antes = await Torre.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
+
     // Actualiza la torre en la base de datos y devuelve la torre actualizada
     const torreActualizada = await Torre.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar la torre no eliminada
-      resto, // Datos a actualizar
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Datos a actualizar
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Población de referencias
 
@@ -116,12 +145,19 @@ const torreDelete = async (req = request, res = response) => {
   const { id } = req.params; // Obtiene el ID de la torre desde los parámetros de la URL
 
   try {
-    // Marca la torre como eliminada (eliminación lógica)
+    // Auditoría: captura estado antes de eliminar
+    const antes = await Torre.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
+
+    // Marca la torre como eliminada y registra en historial
     const torre = await Torre.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar la torre no eliminada
-      { eliminado: true }, // Marca la torre como eliminada
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Población de referencias
+      { _id: id, eliminado: false },
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
+      { new: true }
+    ).populate(populateOptions);
 
     if (!torre) {
       return res.status(404).json({ msg: "Torre no encontrada" }); // Responde con un error 404 si no se encuentra la torre

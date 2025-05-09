@@ -1,8 +1,14 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
+const Counter = require("./counter");
 
 // Definición del esquema para el modelo Recepción
 const RecepcionSchema = new Schema(
   {
+    // Número de despacho
+    numeroRecepcion: {
+      type: Number,
+    },
     // Relación con el modelo Contrato
     idContrato: {
       type: Schema.Types.ObjectId,
@@ -48,8 +54,8 @@ const RecepcionSchema = new Schema(
       required: false, // Campo obligatorio
     },
 
-     // Relación con el chequeo de cantidad
-     idChequeoCantidad: {
+    // Relación con el chequeo de cantidad
+    idChequeoCantidad: {
       type: Schema.Types.ObjectId,
       ref: "ChequeoCantidad", // Relación con el chequeo cantidad
       required: false, // Campo obligatorio
@@ -138,6 +144,7 @@ const RecepcionSchema = new Schema(
     versionKey: false,
   }
 );
+RecepcionSchema.plugin(auditPlugin);
 
 // Método para transformar el objeto devuelto por Mongoose
 RecepcionSchema.set("toJSON", {
@@ -147,6 +154,35 @@ RecepcionSchema.set("toJSON", {
     delete returnedObject.__v; // Elimina __v
   },
 });
+// Middleware para generar un número único de refinación
+RecepcionSchema.pre("save", async function (next) {
+  if (this.isNew && this.idRefineria) {
+    try {
+      // Generar la clave del contador específico para cada refinería
+      const counterKey = `recepcion_${this.idRefineria.toString()}`;
 
+      // Buscar el contador
+      let refineriaCounter = await Counter.findOne({ _id: counterKey });
+
+      // Si el contador no existe, crearlo con el valor inicial de 1000
+      if (!refineriaCounter) {
+        refineriaCounter = new Counter({ _id: counterKey, seq: 999 });
+        await refineriaCounter.save();
+      }
+
+      // Incrementar el contador en 1
+      refineriaCounter.seq += 1;
+      await refineriaCounter.save();
+
+      // Asignar el valor actualizado al campo "numeroRefinacion"
+      this.numeroRecepcion = refineriaCounter.seq;
+      next();
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    next();
+  }
+});
 // Exporta el modelo Recepción basado en el esquema definido
 module.exports = model("Recepcion", RecepcionSchema);

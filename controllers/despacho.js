@@ -28,6 +28,11 @@ const populateOptions = [
       select: "nombre", // Selecciona el campo nombre
     },
   },
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
 ];
 
 // Controlador para obtener todas las despachoes con población de referencias
@@ -39,7 +44,12 @@ const despachoGets = async (req = request, res = response) => {
       Despacho.countDocuments(query), // Cuenta el total de despachoes
       Despacho.find(query).populate(populateOptions), // Obtiene las despachoes con referencias pobladas
     ]);
-
+    // Ordenar historial por fecha ascendente en cada torre
+    despachos.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     res.json({
       total,
       despachos,
@@ -57,7 +67,12 @@ const despachoGet = async (req = request, res = response) => {
   try {
     const despachoActualizada = await Despacho.findById(id).populate(
       populateOptions
-    ); // Busca la recepción por ID y la popula
+    ); // Busca la recepción por ID y la popula// Ordenar historial por fecha ascendente en cada torre
+    despachoActualizada.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (despachoActualizada) {
       res.json(despachoActualizada); // Responde con los datos de la recepción
     } else {
@@ -72,6 +87,8 @@ const despachoGet = async (req = request, res = response) => {
 
 // Controlador para crear una nueva recepción
 const despachoPost = async (req, res = response) => {
+  console.log("aqui?");
+
   const {
     idContrato,
     idContratoItems,
@@ -122,6 +139,7 @@ const despachoPost = async (req, res = response) => {
     placa,
     tipo,
     nombreChofer,
+    createdBy: req.usuario._id, // ID del usuario que creó el tanque
   });
 
   try {
@@ -131,6 +149,7 @@ const despachoPost = async (req, res = response) => {
 
     res.json({ despacho: nuevaDespacho }); // Responde con la recepción creada
   } catch (err) {
+    console.log(err); // Muestra el error en la consola
     res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
   }
 };
@@ -141,9 +160,23 @@ const despachoPut = async (req, res = response) => {
   const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
 
   try {
-    const despachoActualizada = await Despacho.findByIdAndUpdate(id, resto, {
-      new: true,
-    }).populate(populateOptions); // Actualiza la recepción y popula las referencias
+    const antes = await Despacho.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
+    const despachoActualizada = await Despacho.findByIdAndUpdate(
+      id,
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Actualiza la recepción y agrega un historial de cambios
+      {
+        new: true,
+      }
+    ).populate(populateOptions); // Actualiza la recepción y popula las referencias
 
     if (!despachoActualizada) {
       return res.status(404).json({
@@ -162,9 +195,15 @@ const despachoDelete = async (req, res = response) => {
   const { id } = req.params; // Obtiene el ID de la recepción desde los parámetros de la URL
 
   try {
+    // Auditoría: captura estado antes de eliminar
+    const antes = await Despacho.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const despacho = await Despacho.findByIdAndUpdate(
       id,
-      { eliminado: true }, // Marca la recepción como eliminada
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true }
     ).populate(populateOptions); // Poblar referencias después de actualizar
 

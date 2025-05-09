@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 // Definición del esquema para el modelo TipoProducto
 const TipoProductoSchema = Schema(
@@ -121,6 +122,10 @@ TipoProductoSchema.path("rendimientos").validate(function (rendimientos) {
   const uniqueIds = new Set(ids);
   return ids.length === uniqueIds.size; // Verifica que no haya duplicados
 }, "El campo idProducto debe ser único dentro de rendimientos.");
+
+// Agrega índice compuesto único para nombre por refinería
+TipoProductoSchema.index({ idRefineria: 1, nombre: 1 }, { unique: true });
+TipoProductoSchema.plugin(auditPlugin);
 
 // Configuración para transformar el objeto JSON al devolverlo
 TipoProductoSchema.set("toJSON", {

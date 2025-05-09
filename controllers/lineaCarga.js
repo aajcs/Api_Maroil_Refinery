@@ -3,7 +3,14 @@ const { response, request } = require("express"); // Objetos de Express para man
 const LineaCarga = require("../models/lineaCarga"); // Modelo LineaCarga para interactuar con la base de datos
 
 // Opciones de población reutilizables para consultas
-const populateOptions = [{ path: "idRefineria", select: "nombre" }]; // Relación con el modelo Refineria, seleccionando solo el campo "nombre"
+const populateOptions = [
+  { path: "idRefineria", select: "nombre" },
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
+]; // Relación con el modelo Refineria, seleccionando solo el campo "nombre"
 
 // Controlador para obtener todas las líneas de carga con población de referencias
 const lineaCargaGets = async (req = request, res = response) => {
@@ -14,7 +21,11 @@ const lineaCargaGets = async (req = request, res = response) => {
       LineaCarga.countDocuments(query), // Cuenta el total de líneas de carga
       LineaCarga.find(query).populate(populateOptions), // Obtiene las líneas de carga con referencias pobladas
     ]);
-
+    lineaCargas.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     res.json({
       total,
       lineaCargas,
@@ -34,7 +45,11 @@ const lineaCargaGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions); // Busca la línea de carga por ID y popula las referencias
-
+    lineaCarga.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (!lineaCarga) {
       return res.status(404).json({ msg: "Línea de carga no encontrada" }); // Responde con un error 404 si no se encuentra la línea de carga
     }
@@ -57,6 +72,7 @@ const lineaCargaPost = async (req = request, res = response) => {
       idRefineria,
       tipoLinea,
       estado,
+      createdBy: req.usuario._id, // Auditoría: quién crea
     });
 
     await nuevaLineaCarga.save(); // Guarda la nueva línea de carga en la base de datos
@@ -76,9 +92,20 @@ const lineaCargaPut = async (req = request, res = response) => {
   const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
 
   try {
+    const antes = await LineaCarga.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
+
     const lineaCargaActualizada = await LineaCarga.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar la línea de carga no eliminada
-      resto, // Datos a actualizar
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Datos a actualizar
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Poblar referencias después de actualizar
 
@@ -98,9 +125,14 @@ const lineaCargaDelete = async (req = request, res = response) => {
   const { id } = req.params; // Obtiene el ID de la línea de carga desde los parámetros de la URL
 
   try {
+    const antes = await LineaCarga.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const lineaCarga = await LineaCarga.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar la línea de carga no eliminada
-      { eliminado: true }, // Marca la línea de carga como eliminada
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Poblar referencias después de actualizar
 

@@ -25,10 +25,11 @@ const {
 
 const router = Router();
 
-router.get("/", usuariosGets);
+router.get("/", [validarJWT], usuariosGets);
 router.get(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un id de Mongo válido").isMongoId(),
     // check('id').custom( existeProductoPorId ),
     validarCampos,
@@ -38,6 +39,7 @@ router.get(
 router.put(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeUsuarioPorId),
     //check("rol").custom(esRoleValido),
@@ -49,6 +51,7 @@ router.put(
 router.post(
   "/",
   [
+    validarJWT,
     check("nombre", "El nombre es obligatorio").not().isEmpty(),
     check("password", "El password debe de ser más de 6 letras").isLength({
       min: 6,

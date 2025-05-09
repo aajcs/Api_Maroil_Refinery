@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 const ContactoSchema = new Schema(
   {
@@ -221,6 +222,13 @@ const ContactoSchema = new Schema(
     timestamps: true,
   }
 );
+
+// Agrega índice compuesto único para nombre por refinería
+ContactoSchema.index(
+  { idRefineria: 1, identificacionFiscal: 1 },
+  { unique: true }
+);
+ContactoSchema.plugin(auditPlugin);
 
 ContactoSchema.set("toJSON", {
   transform: (document, returnedObject) => {

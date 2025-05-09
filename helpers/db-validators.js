@@ -61,6 +61,7 @@ const existeUsuarioPorId = async (id) => {
 
 const existeRefineriaPorId = async (id) => {
   // Verificar si la refineria existe
+  console.log("aqui entro?");
   const existeRefineria = await Refineria.findById(id);
   if (!existeRefineria) {
     throw new Error(`La refineria no existe ${id}`);

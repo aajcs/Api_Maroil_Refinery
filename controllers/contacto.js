@@ -3,7 +3,14 @@ const { response, request } = require("express"); // Objetos de Express para man
 const Contacto = require("../models/contacto"); // Modelo Contacto para interactuar con la base de datos
 
 // Opciones de población reutilizables para consultas
-const populateOptions = [{ path: "idRefineria", select: "nombre" }]; // Relación con el modelo Refineria, seleccionando solo el campo "nombre"
+const populateOptions = [
+  { path: "idRefineria", select: "nombre" },
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
+]; // Relación con el modelo Refineria, seleccionando solo el campo "nombre"
 
 // Controlador para obtener todos los contactos con población de referencias
 const contactoGets = async (req = request, res = response) => {
@@ -14,7 +21,12 @@ const contactoGets = async (req = request, res = response) => {
       Contacto.countDocuments(query), // Cuenta el total de contactos
       Contacto.find(query).populate(populateOptions), // Obtiene los contactos con referencias pobladas
     ]);
-
+    // Ordenar historial por fecha ascendente en cada torre
+    contactos.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     res.json({ total, contactos }); // Responde con el total y la lista de contactos
   } catch (err) {
     console.error("Error en contactoGets:", err);
@@ -41,7 +53,12 @@ const contactoGet = async (req = request, res = response) => {
       estado: true,
       eliminado: false,
     }).populate(populateOptions); // Busca el contacto por ID y popula las referencias
-
+    // Ordenar historial por fecha ascendente en cada torre
+    contacto.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (!contacto) {
       return res.status(404).json({ msg: "Contacto no encontrado" }); // Responde con un error 404 si no se encuentra el contacto
     }
@@ -95,6 +112,7 @@ const contactoPost = async (req = request, res = response) => {
       tipo,
       ciudad,
       idRefineria,
+      createdBy: req.usuario._id, // ID del usuario que creó el tanque
     });
 
     await nuevaContacto.save(); // Guarda el nuevo contacto en la base de datos
@@ -123,9 +141,19 @@ const contactoPut = async (req = request, res = response) => {
   const { _id, idChequeoCalidad, idChequeoCantidad, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo ciertos campos
 
   try {
+    const antes = await Contacto.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
     const contactoActualizada = await Contacto.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar el contacto no eliminado
-      resto, // Datos a actualizar
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Datos a actualizar
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Poblar referencias después de actualizar
 
@@ -154,9 +182,15 @@ const contactoDelete = async (req = request, res = response) => {
   const { id } = req.params; // Obtiene el ID del contacto desde los parámetros de la URL
 
   try {
+    // Auditoría: captura estado antes de eliminar
+    const antes = await Contacto.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const contacto = await Contacto.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar el contacto no eliminado
-      { eliminado: true }, // Marca el contacto como eliminado
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Poblar referencias después de actualizar
 

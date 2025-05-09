@@ -28,6 +28,11 @@ const populateOptions = [
       select: "nombre", // Selecciona el campo nombre
     },
   },
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
 ];
 
 // Controlador para obtener todas las recepciones con población de referencias
@@ -39,7 +44,12 @@ const recepcionGets = async (req = request, res = response) => {
       Recepcion.countDocuments(query), // Cuenta el total de recepciones
       Recepcion.find(query).populate(populateOptions), // Obtiene las recepciones con referencias pobladas
     ]);
-
+    // Ordenar historial por fecha ascendente en cada torre
+    recepcions.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     res.json({
       total,
       recepcions,
@@ -58,6 +68,12 @@ const recepcionGet = async (req = request, res = response) => {
     const recepcionActualizada = await Recepcion.findById(id).populate(
       populateOptions
     ); // Busca la recepción por ID y la popula
+    // Ordenar historial por fecha ascendente en cada torre
+    recepcionActualizada.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (recepcionActualizada) {
       res.json(recepcionActualizada); // Responde con los datos de la recepción
     } else {
@@ -122,6 +138,7 @@ const recepcionPost = async (req, res = response) => {
     placa,
     tipo,
     nombreChofer,
+    createdBy: req.usuario._id, // ID del usuario que creó el tanque
   });
 
   try {
@@ -141,9 +158,23 @@ const recepcionPut = async (req, res = response) => {
   const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
 
   try {
-    const recepcionActualizada = await Recepcion.findByIdAndUpdate(id, resto, {
-      new: true,
-    }).populate(populateOptions); // Actualiza la recepción y popula las referencias
+    const antes = await Recepcion.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
+    const recepcionActualizada = await Recepcion.findByIdAndUpdate(
+      id,
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Actualiza la recepción y agrega un historial de cambios
+      {
+        new: true,
+      }
+    ).populate(populateOptions); // Actualiza la recepción y popula las referencias
 
     if (!recepcionActualizada) {
       return res.status(404).json({
@@ -162,9 +193,15 @@ const recepcionDelete = async (req, res = response) => {
   const { id } = req.params; // Obtiene el ID de la recepción desde los parámetros de la URL
   console.log("aqui entro", id);
   try {
+    // Auditoría: captura estado antes de eliminar
+    const antes = await Recepcion.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const recepcion = await Recepcion.findByIdAndUpdate(
       id,
-      { eliminado: true }, // Marca la recepción como eliminada
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true }
     ).populate(populateOptions); // Poblar referencias después de actualizar
 

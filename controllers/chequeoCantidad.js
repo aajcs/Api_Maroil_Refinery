@@ -20,6 +20,12 @@ const populateOptions = [
   },
   { path: "idProducto", select: "nombre" }, // Relación con el modelo Producto
   { path: "idOperador", select: "nombre" }, // Relación con el modelo Operador
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
 ];
 // Función auxiliar para actualizar el modelo relacionado
 const actualizarModeloRelacionado = async (idReferencia, tipo, datos) => {
@@ -73,12 +79,12 @@ const chequeoCantidadGets = async (req = request, res = response) => {
       ChequeoCantidad.find(query).populate(populateOptions), // Obtiene los chequeos con referencias pobladas
     ]);
 
-    if (chequeoCantidads.length === 0) {
-      return res.status(404).json({
-        message:
-          "No se encontraron chequeos de cantidad con los criterios proporcionados.",
-      });
-    }
+    // Ordenar historial por fecha ascendente en cada torre
+    chequeoCantidads.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
 
     res.json({ total, chequeoCantidads }); // Responde con el total y la lista de chequeos
   } catch (err) {
@@ -94,16 +100,23 @@ const chequeoCantidadGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const chequeo = await ChequeoCantidad.findOne({
+    const chequeoCantidad = await ChequeoCantidad.findOne({
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
 
-    if (!chequeo) {
+    // Ordenar historial por fecha ascendente en cada torre
+    chequeoCantidad.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+
+    if (!chequeoCantidad) {
       return res.status(404).json({ msg: "Chequeo de cantidad no encontrado" });
     }
 
-    res.json(chequeo);
+    res.json(chequeoCantidad);
   } catch (err) {
     console.error("Error en chequeoCantidadGet:", err);
     res.status(500).json({
@@ -133,6 +146,7 @@ const chequeoCantidadPost = async (req = request, res = response) => {
       fechaChequeo,
       cantidad,
       estado,
+      createdBy: req.usuario._id, // ID del usuario que creó el tanque
     });
 
     await nuevoChequeo.save(); // Guarda el nuevo chequeo en la base de datos
@@ -173,10 +187,21 @@ const chequeoCantidadPut = async (req = request, res = response) => {
         error: "El ID de referencia no es válido.",
       });
     }
+    const antes = await ChequeoCantidad.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    } // Actualiza el tipo de producto en la base de datos y devuelve el tipo de producto actualizado
 
     const chequeoActualizado = await ChequeoCantidad.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { ...resto, aplicar }, // Actualiza el chequeo y la referencia
+      {
+        ...resto,
+        aplicar,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Datos a actualizar
       { new: true }
     ).populate(populateOptions);
 
@@ -205,9 +230,15 @@ const chequeoCantidadDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
+    // Auditoría: captura estado antes de eliminar
+    const antes = await ChequeoCalidad.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const chequeo = await ChequeoCantidad.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar el chequeo no eliminado
-      { eliminado: true }, // Marca el chequeo como eliminado
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions);
 

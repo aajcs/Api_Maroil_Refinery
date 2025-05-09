@@ -12,6 +12,9 @@ const TorreSchema = Schema(
       required: true, // Campo obligatorio
     },
 
+    // Relación con el usuario que creó la torre (auditoría)
+    createdBy: { type: Schema.Types.ObjectId, ref: 'Usuario', required: true },
+
     // Nombre de la torre
     nombre: {
       type: String,
@@ -65,6 +68,15 @@ const TorreSchema = Schema(
       type: Boolean,
       default: false, // Valor por defecto
     },
+
+    // Histórico de modificaciones
+    historial: [
+      {
+        modificadoPor: { type: Schema.Types.ObjectId, ref: 'Usuario', required: true },
+        fecha: { type: Date, default: Date.now },
+        cambios: { type: Schema.Types.Mixed }
+      }
+    ]
   },
 
   {
@@ -74,6 +86,9 @@ const TorreSchema = Schema(
     versionKey: false,
   }
 );
+
+// Agrega índice compuesto único para nombre por refinería
+TorreSchema.index({ idRefineria: 1, nombre: 1 }, { unique: true });
 
 // Configuración para transformar el objeto JSON al devolverlo
 TorreSchema.set("toJSON", {

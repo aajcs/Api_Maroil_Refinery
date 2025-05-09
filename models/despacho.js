@@ -1,5 +1,6 @@
 const { Schema, model } = require("mongoose");
 const Counter = require("./counter");
+const auditPlugin = require("./plugins/audit");
 
 // Definición del esquema para el modelo Recepción
 const DespachoSchema = new Schema(
@@ -53,11 +54,11 @@ const DespachoSchema = new Schema(
       required: false, // Campo obligatorio
     },
     // Relación con el chequeo de cantidad
-         idChequeoCantidad: {
-          type: Schema.Types.ObjectId,
-          ref: "ChequeoCantidad", // Relación con el chequeo cantidad
-          required: false, // Campo obligatorio
-        },
+    idChequeoCantidad: {
+      type: Schema.Types.ObjectId,
+      ref: "ChequeoCantidad", // Relación con el chequeo cantidad
+      required: false, // Campo obligatorio
+    },
 
     // Información de la recepción
     cantidadRecibida: {
@@ -113,13 +114,11 @@ const DespachoSchema = new Schema(
     },
     placa: {
       type: String,
-      required: [true, "La placa del transporte es obligatoria"], // Campo obligatorio
       minlength: [6, "La placa debe tener al menos 6 caracteres"], // Validación de longitud mínima
       maxlength: [10, "La placa no puede exceder los 10 caracteres"], // Validación de longitud máxima
     },
     nombreChofer: {
       type: String,
-      required: [true, "El nombre del chofer es obligatorio"], // Campo obligatorio
       minlength: [3, "El nombre del chofer debe tener al menos 3 caracteres"], // Validación de longitud mínima
       maxlength: [
         20,
@@ -140,6 +139,7 @@ const DespachoSchema = new Schema(
     versionKey: false,
   }
 );
+DespachoSchema.plugin(auditPlugin);
 
 // Método para transformar el objeto devuelto por Mongoose
 DespachoSchema.set("toJSON", {

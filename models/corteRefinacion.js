@@ -1,5 +1,6 @@
 const { Schema, model } = require("mongoose");
 const counter = require("./counter");
+const auditPlugin = require("./plugins/audit");
 
 // Esquemas anidados
 const DetalleCorteSchema = new Schema({
@@ -73,6 +74,7 @@ const CorteRefinacionSchema = new Schema(
     versionKey: false,
   }
 );
+CorteRefinacionSchema.plugin(auditPlugin);
 
 // // Índices
 // CorteRefinacionSchema.index({ idRefineria: 1 });

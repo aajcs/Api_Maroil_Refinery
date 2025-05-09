@@ -20,6 +20,12 @@ const populateOptions = [
       // select: "nombre color", // Relación con el modelo Producto dentro de Rendimiento
     },
   },
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
 ];
 
 // Controlador para obtener todos los tipos de producto con paginación y población de referencias
@@ -32,7 +38,12 @@ const tipoProductoGets = async (req = request, res = response) => {
       TipoProducto.countDocuments(query), // Cuenta el total de tipos de producto que cumplen el filtro
       TipoProducto.find(query).populate(populateOptions), // Obtiene los tipos de producto con las referencias pobladas
     ]);
-
+    // Ordenar historial por fecha ascendente en cada torre
+    tipoProductos.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     // Responde con el total de tipos de producto y la lista obtenida
     res.json({
       total,
@@ -54,7 +65,12 @@ const tipoProductoGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions); // Población de referencias
-
+    // Ordenar historial por fecha ascendente en cada torre
+    tipoProducto.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (!tipoProducto) {
       return res.status(404).json({ msg: "Tipo de Producto no encontrado" }); // Responde con un error 404 si no se encuentra el tipo de producto
     }
@@ -99,6 +115,7 @@ const tipoProductoPost = async (req = request, res = response) => {
       costoOperacional,
       transporte,
       convenio,
+      createdBy: req.usuario._id, // ID del usuario que creó el tanque
     });
 
     await nuevoTipoProducto.save(); // Guarda el nuevo tipo de producto en la base de datos
@@ -124,10 +141,20 @@ const tipoProductoPut = async (req = request, res = response) => {
   const { idProducto, datosProducto, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, incluyendo datos para actualizar en idProducto
 
   try {
-    // Actualiza el tipo de producto en la base de datos y devuelve el tipo de producto actualizado
+    const antes = await TipoProducto.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    } // Actualiza el tipo de producto en la base de datos y devuelve el tipo de producto actualizado
     const tipoProductoActualizado = await TipoProducto.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar el tipo de producto no eliminado
-      { ...resto, idProducto }, // Datos a actualizar
+      {
+        ...resto,
+        idProducto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Datos a actualizar
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Población de referencias
 
@@ -157,10 +184,16 @@ const tipoProductoDelete = async (req = request, res = response) => {
   const { id } = req.params; // Obtiene el ID del tipo de producto desde los parámetros de la URL
 
   try {
+    // Auditoría: captura estado antes de eliminar
+    const antes = await Producto.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
     // Marca el tipo de producto como eliminado (eliminación lógica)
     const tipoProducto = await TipoProducto.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar el tipo de producto no eliminado
-      { eliminado: true }, // Marca el tipo de producto como eliminado
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Población de referencias
 

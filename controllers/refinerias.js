@@ -2,6 +2,14 @@
 const { response, request } = require("express"); // Objetos de Express para manejar solicitudes y respuestas
 const Refineria = require("../models/refineria"); // Modelo Refineria para interactuar con la base de datos
 
+// Opciones de población para referencias en las consultas
+const populateOptions = [
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
+];
 // Controlador para obtener todas las refinerías con paginación y población de referencias
 const refineriasGets = async (req = request, res = response) => {
   const query = { eliminado: false }; // Filtro para obtener solo refinerías no eliminadas
@@ -10,9 +18,15 @@ const refineriasGets = async (req = request, res = response) => {
     // Ejecuta ambas consultas en paralelo para optimizar el tiempo de respuesta
     const [total, refinerias] = await Promise.all([
       Refineria.countDocuments(query), // Cuenta el total de refinerías que cumplen el filtro
-      Refineria.find(query).sort({ nombre: 1 }), // Obtiene las refinerías que cumplen el filtro
-      ,
+
+      Refineria.find(query).sort({ nombre: 1 }).populate(populateOptions), // Obtiene las refinerías que cumplen el filtro
     ]);
+    // Ordenar historial por fecha ascendente en cada torre
+    refinerias.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
 
     // Responde con el total de refinerías y la lista obtenida
     res.json({
@@ -34,7 +48,7 @@ const refineriasGet = async (req = request, res = response) => {
     const refineria = await Refineria.findOne({
       _id: id,
       eliminado: false,
-    });
+    }).populate(populateOptions);
     // .populate({
     //   path: "idContacto",
     //   select: "nombre",
@@ -43,7 +57,12 @@ const refineriasGet = async (req = request, res = response) => {
     //   path: "idLinea",
     //   select: "nombre",
     // });
-
+    // Ordenar historial por fecha ascendente en cada torre
+    refineria.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (!refineria) {
       return res.status(404).json({ msg: "Refinería no encontrada" }); // Responde con un error 404 si no se encuentra la refinería
     }
@@ -84,6 +103,7 @@ const refineriasPost = async (req = request, res = response) => {
       img,
       idContacto,
       idLinea,
+      createdBy: req.usuario._id, // Auditoría: quién crea
     });
 
     await nuevaRefineria.save(); // Guarda la nueva refinería en la base de datos
@@ -100,10 +120,21 @@ const refineriasPut = async (req = request, res = response) => {
   const { id } = req.params; // Obtiene el ID de la refinería desde los parámetros de la URL
   const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
   try {
+    const antes = await Refineria.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
+    console.log("entra aqui");
     // Actualiza la refinería en la base de datos y devuelve la refinería actualizada
     const refineriaActualizada = await Refineria.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar la refinería no eliminada
-      resto, // Datos a actualizar
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Datos a actualizar
       { new: true } // Devuelve el documento actualizado
     );
 
@@ -124,10 +155,16 @@ const refineriasDelete = async (req = request, res = response) => {
   const { id } = req.params; // Obtiene el ID de la refinería desde los parámetros de la URL
 
   try {
+    // Auditoría: captura estado antes de eliminar
+    const antes = await Refineria.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
     // Marca la refinería como eliminada (eliminación lógica)
     const refineria = await Refineria.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar la refinería no eliminada
-      { eliminado: true }, // Marca la refinería como eliminada
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true } // Devuelve el documento actualizado
     );
 

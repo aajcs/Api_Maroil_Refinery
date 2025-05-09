@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 // Definición del esquema para el modelo Tanque
 const TanqueSchema = Schema(
@@ -95,6 +96,9 @@ const TanqueSchema = Schema(
   }
 );
 
+// Agrega índice compuesto único para nombre por refinería
+TanqueSchema.index({ idRefineria: 1, nombre: 1 }, { unique: true });
+TanqueSchema.plugin(auditPlugin);
 // Configuración para transformar el objeto JSON al devolverlo
 TanqueSchema.set("toJSON", {
   transform: (document, returnedObject) => {

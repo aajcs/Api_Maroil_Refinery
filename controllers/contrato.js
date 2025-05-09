@@ -20,6 +20,11 @@ const populateOptions = [
       { path: "idTipoProducto", select: "nombre" },
     ],
   },
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
 ];
 
 // Obtener todos los contratos
@@ -31,7 +36,12 @@ const contratoGets = async (req = request, res = response) => {
       Contrato.countDocuments(query),
       Contrato.find(query).populate(populateOptions),
     ]);
-
+    // Ordenar historial por fecha ascendente en cada torre
+    contratos.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     res.json({ total, contratos });
   } catch (err) {
     console.error("Error en contratoGets:", err);
@@ -48,7 +58,12 @@ const contratoGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-
+    // Ordenar historial por fecha ascendente en cada torre
+    contrato.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (!contrato) {
       return res.status(404).json({ msg: "Contrato no encontrado" });
     }
@@ -110,6 +125,7 @@ const contratoPost = async (req, res = response) => {
       tipoContrato,
       observacion,
       brent,
+      createdBy: req.usuario._id, // ID del usuario que creó el tanque
     });
 
     if (!items || items.length === 0) {
@@ -170,6 +186,13 @@ const contratoPut = async (req, res = response) => {
   const { items, abono, ...resto } = req.body;
 
   try {
+    const antes = await Contrato.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
     // Validar que el contrato exista
     const contratoExistente = await Contrato.findOne({
       _id: id,
@@ -200,7 +223,11 @@ const contratoPut = async (req, res = response) => {
     // Actualizar el contrato
     const contratoActualizado = await Contrato.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { ...resto, abono },
+      {
+        ...resto,
+        abono,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Datos a actualizar
       { new: true }
     );
 
@@ -284,9 +311,15 @@ const contratoDelete = async (req, res = response) => {
   const { id } = req.params;
 
   try {
+    // Auditoría: captura estado antes de eliminar
+    const antes = await Contrato.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const contrato = await Contrato.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { eliminado: true },
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true }
     ).populate(populateOptions);
 

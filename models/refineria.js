@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 // Definición del esquema para el modelo Refinería
 const RefineriaSchema = Schema(
@@ -85,6 +86,7 @@ const RefineriaSchema = Schema(
     timestamps: true,
   }
 );
+RefineriaSchema.plugin(auditPlugin);
 
 // Configuración para transformar el objeto JSON al devolverlo
 RefineriaSchema.set("toJSON", {

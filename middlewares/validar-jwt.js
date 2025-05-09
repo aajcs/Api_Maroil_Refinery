@@ -9,6 +9,7 @@ const validarJWT = async (req = request, res = response, next) => {
   if (!token) {
     return res.status(401).json({
       msg: "No hay token en la petición",
+      logout: true,
     });
   }
 
@@ -21,6 +22,7 @@ const validarJWT = async (req = request, res = response, next) => {
     if (!usuario) {
       return res.status(401).json({
         msg: "Token no válido - usuario no existe DB",
+        logout: true,
       });
     }
 
@@ -37,6 +39,7 @@ const validarJWT = async (req = request, res = response, next) => {
     // console.log(error);
     res.status(401).json({
       msg: "Token no válido",
+      logout: true,
     });
   }
 };

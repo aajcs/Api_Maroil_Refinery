@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 const ContratoSchema = Schema(
   {
@@ -165,6 +166,7 @@ const ContratoSchema = Schema(
     versionKey: false, // Elimina el campo __v
   }
 );
+ContratoSchema.plugin(auditPlugin);
 
 // Método para transformar el objeto devuelto por Mongoose
 ContratoSchema.set("toJSON", {

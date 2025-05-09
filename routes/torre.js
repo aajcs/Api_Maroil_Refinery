@@ -27,10 +27,11 @@ const {
 
 const router = Router();
 
-router.get("/", torreGets);
+router.get("/", [validarJWT], torreGets);
 router.get(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un id de Mongo válido").isMongoId(),
     // check('id').custom( existeProductoPorId ),
     validarCampos,
@@ -40,6 +41,7 @@ router.get(
 router.put(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeTorrePorId),
     //check("rol").custom(esRoleValido),
@@ -51,6 +53,7 @@ router.put(
 router.post(
   "/",
   [
+    validarJWT,
     //check("numero", "El numero es obligatorio").not().isEmpty(),
     //check("nit").custom(nitExiste),
     // check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),

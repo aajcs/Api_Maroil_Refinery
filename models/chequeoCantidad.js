@@ -1,5 +1,6 @@
 const { Schema, model } = require("mongoose");
 const Counter = require("./counter");
+const auditPlugin = require("./plugins/audit");
 
 const ChequeoCantidadSchema = Schema(
   {
@@ -70,6 +71,7 @@ const ChequeoCantidadSchema = Schema(
     versionKey: false, // Elimina el campo __v
   }
 );
+ChequeoCantidadSchema.plugin(auditPlugin);
 
 // Método para transformar el objeto devuelto por Mongoose
 ChequeoCantidadSchema.set("toJSON", {

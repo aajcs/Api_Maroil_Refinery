@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 // Definición del esquema para el modelo LineaCarga
 const lineaCargaSchema = Schema(
@@ -36,7 +37,7 @@ const lineaCargaSchema = Schema(
     versionKey: false,
   }
 );
-
+lineaCargaSchema.plugin(auditPlugin);
 // Configuración para transformar el objeto JSON al devolverlo
 lineaCargaSchema.set("toJSON", {
   transform: (document, returnedObject) => {
@@ -45,6 +46,9 @@ lineaCargaSchema.set("toJSON", {
     delete returnedObject.__v;
   },
 });
+
+// Agrega un índice compuesto único para garantizar que 'nombre' sea único por 'idRefineria'
+lineaCargaSchema.index({ idRefineria: 1, nombre: 1 }, { unique: true });
 
 // Exporta el modelo LineaCarga basado en el esquema definido
 module.exports = model("LineaCarga", lineaCargaSchema);

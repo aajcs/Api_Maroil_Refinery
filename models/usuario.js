@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 const UsuarioSchema = Schema(
   {
@@ -57,11 +58,12 @@ const UsuarioSchema = Schema(
     versionKey: false,
   }
 );
+UsuarioSchema.plugin(auditPlugin);
 
 UsuarioSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
+    // delete returnedObject._id;
     delete returnedObject.__v;
     delete returnedObject.password;
   },
