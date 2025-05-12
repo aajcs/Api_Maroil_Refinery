@@ -56,9 +56,11 @@ class Server {
       contratoBunker: "/api/bunker/contratoBunker",
       contactoBunker: "/api/bunker/contactoBunker",
       recepcionBunker: "/api/bunker/recepcionBunker",
-      historialBunker: "/api/bunker/historialBunker",
       costoBunker: "/api/bunker/costoBunker",
       lineaCargaBunker: "/api/bunker/lineaCargaBunker",
+
+      // Agregar más rutas según sea necesario
+      bunkering: "/api/bunkering",
     };
 
     // Conectar a base de datos
@@ -176,7 +178,11 @@ class Server {
 
     // Rutas de archivos y cargas
     this.app.use(this.paths.uploads, require("../routes/uploads"));
-
+    // Rutas de bunkering
+    this.app.use(
+      this.paths.bunkering,
+      require("../routes/bunkering/bunkering")
+    );
     // Rutas específicas del módulo Bunker
     const bunkerRoutes = "../routes/bunker";
     this.app.use(this.paths.bunker, require(`${bunkerRoutes}/bunker`));
@@ -205,10 +211,7 @@ class Server {
       this.paths.costoBunker,
       require(`${bunkerRoutes}/costoBunker`)
     );
-    this.app.use(
-      this.paths.historialBunker,
-      require(`${bunkerRoutes}/historialBunker`)
-    );
+
     this.app.use(
       this.paths.lineaCargaBunker,
       require(`${bunkerRoutes}/lineaCargaBunker`)

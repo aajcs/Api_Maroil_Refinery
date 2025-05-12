@@ -16,7 +16,6 @@ const Costo = require("./costo");
 const CostoBunker = require("./bunker/costoBunker");
 const Despacho = require("./despacho");
 const Historial = require("./historial");
-const HistorialBunker = require("./bunker/historialBunker");
 const LineaCarga = require("./lineaCarga");
 const LineaDespacho = require("./lineaDespacho");
 const LineaCargaBunker = require("./bunker/lineaCargaBunker");
@@ -42,6 +41,7 @@ const Factura = require("./factura");
 const CorteRefinacion = require("./corteRefinacion");
 const Cuenta = require("./cuenta");
 const Balance = require("./balance");
+const Bunkering = require("./bunkering/bunkering");
 
 module.exports = {
   Ventana,
@@ -62,7 +62,6 @@ module.exports = {
   CostoBunker,
   Despacho,
   Historial,
-  HistorialBunker,
   LineaCarga,
   LineaDespacho,
   LineaCargaBunker,
@@ -86,4 +85,5 @@ module.exports = {
   Operador,
   Factura,
   CorteRefinacion,
+  Bunkering,
 };
