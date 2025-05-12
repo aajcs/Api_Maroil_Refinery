@@ -118,10 +118,7 @@ const corteRefinacionPost = async (req = request, res = response) => {
     // Poblar referencias después de guardar
     await nuevoCorte.populate(populateOptions);
 
-    res.status(201).json({
-      msg: "Corte de refinación creado y asociado a los tanques correctamente.",
-      nuevoCorte,
-    });
+    res.status(201).json(nuevoCorte);
   } catch (err) {
     console.error("Error en corteRefinacionPost:", err);
 
@@ -170,10 +167,9 @@ const corteRefinacionPut = async (req = request, res = response) => {
 // Controlador para eliminar (marcar como eliminado) un corte de refinación
 const corteRefinacionDelete = async (req = request, res = response) => {
   const { id } = req.params;
-
   try {
     // Auditoría: captura estado antes de eliminar
-    const antes = await Contrato.findById(id);
+    const antes = await CorteRefinacion.findById(id);
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const corte = await CorteRefinacion.findOneAndUpdate(
       { _id: id, eliminado: false },
