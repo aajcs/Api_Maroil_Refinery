@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 // Esquema para las líneas de facturación
 const LineaFacturaSchema = new Schema(
@@ -112,7 +113,7 @@ const FacturaSchema = new Schema(
     versionKey: false,
   }
 );
-
+FacturaSchema.plugin(auditPlugin);
 // Método para transformar el objeto devuelto por Mongoose
 FacturaSchema.set("toJSON", {
   transform: (document, returnedObject) => {

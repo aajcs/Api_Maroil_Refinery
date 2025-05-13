@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-
+const auditPlugin = require("./plugins/audit");
 const ContratoItemsSchema = Schema(
   {
     // Relación con el modelo Contrato
@@ -114,7 +114,7 @@ const ContratoItemsSchema = Schema(
     versionKey: false, // Elimina el campo __v
   }
 );
-
+ContratoItemsSchema.plugin(auditPlugin);
 ContratoItemsSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();

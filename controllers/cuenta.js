@@ -7,9 +7,6 @@ const populateOptions = [
   {
     path: "idContrato",
     select: "numeroContrato tipoContrato montoTotal descripcion estadoContrato",
-    // populate: [
-    //   { path: "idItems", populate: [{ path: "producto", select: "nombre" }, { path: "idTipoProducto", select: "nombre" }] },
-    // ],
   },
   {
     path: "idContacto",
@@ -19,15 +16,15 @@ const populateOptions = [
 
 // Controlador para obtener todas las cuentas
 const cuentaGets = async (req = request, res = response) => {
-  const query = {}; // Puedes agregar filtros si es necesario
+  const query = { eliminado: false }; // Filtro para obtener solo cuentas no eliminadas
 
   try {
     const [total, cuentas] = await Promise.all([
-      Cuenta.countDocuments(query), // Cuenta el total de cuentas
-      Cuenta.find(query).populate(populateOptions), // Usa las opciones de población
+      Cuenta.countDocuments(query),
+      Cuenta.find(query).populate(populateOptions),
     ]);
 
-    res.json({ total, cuentas }); // Responde con el total y la lista de cuentas
+    res.json({ total, cuentas });
   } catch (err) {
     console.error("Error en cuentaGets:", err);
     res.status(500).json({
@@ -41,7 +38,10 @@ const cuentaGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const cuenta = await Cuenta.findById(id).populate(populateOptions);
+    const cuenta = await Cuenta.findOne({
+      _id: id,
+      eliminado: false,
+    }).populate(populateOptions);
 
     if (!cuenta) {
       return res.status(404).json({ msg: "Cuenta no encontrada" });
@@ -61,8 +61,10 @@ const cuentaPostFromContrato = async (req = request, res = response) => {
   const { idContrato } = req.body;
 
   try {
-    // Buscar el contrato asociado
-    const contrato = await Contrato.findById(idContrato).populate("idContacto", "nombre");
+    const contrato = await Contrato.findById(idContrato).populate(
+      "idContacto",
+      "nombre"
+    );
 
     if (!contrato) {
       return res.status(404).json({
@@ -70,7 +72,6 @@ const cuentaPostFromContrato = async (req = request, res = response) => {
       });
     }
 
-    // Determinar el tipo de cuenta según el tipo de contrato
     let tipoCuenta;
     if (contrato.tipoContrato === "Venta") {
       tipoCuenta = "Cuentas por Cobrar";
@@ -82,16 +83,15 @@ const cuentaPostFromContrato = async (req = request, res = response) => {
       });
     }
 
-    // Crear la nueva cuenta
     const nuevaCuenta = new Cuenta({
       idContrato: contrato._id,
       tipoCuenta,
-      idContacto: contrato.idContacto, // Asociar el contacto del contrato
+      idContacto: contrato.idContacto,
       abonos: contrato.abono || [],
       montoTotalContrato: contrato.montoTotal || 0,
+      createdBy: req.usuario._id, // ID del usuario que creó la cuenta
     });
 
-    // Guardar la cuenta
     await nuevaCuenta.save();
 
     res.status(201).json({
@@ -112,9 +112,22 @@ const cuentaPut = async (req = request, res = response) => {
   const { _id, ...resto } = req.body;
 
   try {
-    const cuentaActualizada = await Cuenta.findByIdAndUpdate(id, resto, {
-      new: true,
-    }).populate(populateOptions);
+    const antes = await Cuenta.findById(id);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
+
+    const cuentaActualizada = await Cuenta.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
+      { new: true }
+    ).populate(populateOptions);
 
     if (!cuentaActualizada) {
       return res.status(404).json({ msg: "Cuenta no encontrada" });
@@ -123,7 +136,7 @@ const cuentaPut = async (req = request, res = response) => {
     res.json(cuentaActualizada);
   } catch (err) {
     console.error("Error en cuentaPut:", err);
-    res.status(400).json({
+    res.status(500).json({
       error: "Error interno del servidor al actualizar la cuenta.",
     });
   }
@@ -134,13 +147,26 @@ const cuentaDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const cuentaEliminada = await Cuenta.findByIdAndDelete(id);
+    const antes = await Cuenta.findById(id);
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
+
+    const cuentaEliminada = await Cuenta.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
+      { new: true }
+    ).populate(populateOptions);
 
     if (!cuentaEliminada) {
       return res.status(404).json({ msg: "Cuenta no encontrada" });
     }
 
-    res.json(cuentaEliminada);
+    res.json({
+      msg: "Cuenta eliminada correctamente.",
+      cuenta: cuentaEliminada,
+    });
   } catch (err) {
     console.error("Error en cuentaDelete:", err);
     res.status(500).json({
@@ -160,9 +186,33 @@ const cuentaSyncFromContrato = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Contrato no encontrado" });
     }
 
-    const cuenta = await Cuenta.syncFromContrato(contrato);
+    const cuentaExistente = await Cuenta.findOne({ idContrato: contratoId });
 
-    res.json(cuenta);
+    if (!cuentaExistente) {
+      return res.status(404).json({ msg: "Cuenta no encontrada para sincronizar." });
+    }
+
+    const cambios = {};
+    if (cuentaExistente.montoTotalContrato !== contrato.montoTotal) {
+      cambios.montoTotalContrato = {
+        from: cuentaExistente.montoTotalContrato,
+        to: contrato.montoTotal,
+      };
+    }
+
+    const cuentaSincronizada = await Cuenta.findOneAndUpdate(
+      { idContrato: contratoId },
+      {
+        montoTotalContrato: contrato.montoTotal,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
+      { new: true }
+    ).populate(populateOptions);
+
+    res.json({
+      msg: "Cuenta sincronizada correctamente desde el contrato.",
+      cuenta: cuentaSincronizada,
+    });
   } catch (err) {
     console.error("Error en cuentaSyncFromContrato:", err);
     res.status(500).json({
@@ -172,10 +222,10 @@ const cuentaSyncFromContrato = async (req = request, res = response) => {
 };
 
 module.exports = {
-  cuentaGets, // Obtener todas las cuentas
-  cuentaGet, // Obtener una cuenta específica por ID
-  cuentaPostFromContrato, // Crear una nueva cuenta desde un contrato
-  cuentaPut, // Actualizar una cuenta existente
-  cuentaDelete, // Eliminar una cuenta
-  cuentaSyncFromContrato, // Sincronizar una cuenta desde un contrato
+  cuentaGets,
+  cuentaGet,
+  cuentaPostFromContrato,
+  cuentaPut,
+  cuentaDelete,
+  cuentaSyncFromContrato,
 };

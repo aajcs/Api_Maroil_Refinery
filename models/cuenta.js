@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-
+const auditPlugin = require("./plugins/audit");
 const CuentaSchema = new Schema(
   {
     // Referencia al contrato del cual se extraen los datos
@@ -60,7 +60,7 @@ const CuentaSchema = new Schema(
     versionKey: false,
   }
 );
-
+CuentaSchema.plugin(auditPlugin);
 // Hook "pre("save")" para recalcular totales antes de guardar
 CuentaSchema.pre("save", function (next) {
   if (this.abonos && this.abonos.length > 0) {

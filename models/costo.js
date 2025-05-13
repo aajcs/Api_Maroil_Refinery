@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-
+const auditPlugin = require("./plugins/audit");
 const CostoSchema = Schema(
   {
     // Relación con el modelo Refineria
@@ -60,7 +60,7 @@ const CostoSchema = Schema(
     versionKey: false, // Elimina el campo __v
   }
 );
-
+CostoSchema.plugin(auditPlugin);
 // Método para transformar el objeto devuelto por Mongoose
 CostoSchema.set("toJSON", {
   transform: (document, returnedObject) => {

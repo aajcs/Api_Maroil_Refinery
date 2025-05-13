@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-
+const auditPlugin = require("./plugins/audit");
 const DerivadoSchema = Schema({
   nombreDerivado: {
     type: String,
@@ -36,7 +36,7 @@ const DerivadoSchema = Schema({
     default: false,
   },
 });
-
+DerivadoSchema.plugin(auditPlugin);
 DerivadoSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
