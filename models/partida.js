@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 // Esquema principal de refinación
 const PartidaSchema = new Schema(
@@ -35,7 +36,7 @@ const PartidaSchema = new Schema(
     versionKey: false,
   }
 );
-
+PartidaSchema.plugin(auditPlugin);
 // Método para transformar el objeto devuelto por Mongoose
 PartidaSchema.set("toJSON", {
   transform: (document, returnedObject) => {

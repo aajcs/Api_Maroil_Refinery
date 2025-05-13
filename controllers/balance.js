@@ -10,21 +10,28 @@ const populateOptions = [
   },
   { path: "contratosVentas", select: "numeroContrato montoTotal tipoContrato" },
   { path: "facturas", select: "total concepto fechaFactura" },
+  { path: "createdBy", select: "nombre correo" },
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  },
 ];
 
 // Obtener todos los balances
 const balanceGets = async (req, res = response) => {
-  try {
-    const balances = await Balance.find().populate(populateOptions);
+  const query = { eliminado: false }; // Filtro para balances no eliminados
 
-    res.json({
-      msg: "Balances obtenidos exitosamente.",
-      balances,
-    });
+  try {
+    const [total, balances] = await Promise.all([
+      Balance.countDocuments(query),
+      Balance.find(query).populate(populateOptions).sort({ fechaInicio: -1 }),
+    ]);
+
+    res.json({ total, balances });
   } catch (err) {
-    console.error("Error al obtener los balances:", err);
+    console.error("Error en balanceGets:", err);
     res.status(500).json({
-      msg: "Error interno del servidor.",
+      error: "Error interno del servidor al obtener los balances.",
     });
   }
 };
@@ -34,22 +41,20 @@ const balanceGet = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const balance = await Balance.findById(id).populate(populateOptions);
+    const balance = await Balance.findOne({
+      _id: id,
+      eliminado: false,
+    }).populate(populateOptions);
 
     if (!balance) {
-      return res.status(404).json({
-        msg: "Balance no encontrado.",
-      });
+      return res.status(404).json({ msg: "Balance no encontrado." });
     }
 
-    res.json({
-      msg: "Balance obtenido exitosamente.",
-      balance,
-    });
+    res.json(balance);
   } catch (err) {
-    console.error("Error al obtener el balance:", err);
+    console.error("Error en balanceGet:", err);
     res.status(500).json({
-      msg: "Error interno del servidor.",
+      error: "Error interno del servidor al obtener el balance.",
     });
   }
 };
@@ -60,33 +65,21 @@ const balancePost = async (req, res = response) => {
     req.body;
 
   try {
-    // Validar que las fechas sean válidas
-    if (!fechaInicio || !fechaFin) {
-      return res.status(400).json({
-        msg: "Debe proporcionar una fecha de inicio y una fecha de fin.",
-      });
-    }
-
-    // Obtener los contratos de compra
+    // Calcular totales
     const compras = await Contrato.find({
       _id: { $in: contratosCompras },
       tipoContrato: "Compra",
       eliminado: false,
     });
-
-    // Obtener los contratos de venta
     const ventas = await Contrato.find({
       _id: { $in: contratosVentas },
       tipoContrato: "Venta",
       eliminado: false,
     });
-
-    // Obtener las facturas
     const facturasSeleccionadas = await Factura.find({
       _id: { $in: facturas },
     });
 
-    // Calcular totales
     const totalCompras = compras.reduce(
       (total, compra) => total + (compra.montoTotal || 0),
       0
@@ -96,11 +89,10 @@ const balancePost = async (req, res = response) => {
       0
     );
     const totalFacturas = facturasSeleccionadas.reduce(
-      (total, factura) => total + (factura.total || 0), // Usar el campo `total` de las facturas
+      (total, factura) => total + (factura.total || 0),
       0
     );
 
-    // Calcular ganancia o pérdida
     const ganancia = totalVentas - totalCompras - totalFacturas;
     const perdida = ganancia < 0 ? Math.abs(ganancia) : 0;
 
@@ -112,120 +104,115 @@ const balancePost = async (req, res = response) => {
       contratosVentas,
       facturas,
       totalCompras,
-      totalVentas: totalVentas - totalFacturas, // Ventas netas después de restar facturas
+      totalVentas: totalVentas - totalFacturas,
       ganancia: ganancia > 0 ? ganancia : 0,
       perdida,
+      createdBy: req.usuario._id,
     });
 
-    // Guardar el balance en la base de datos
     await nuevoBalance.save();
-
-    // Popular el balance recién creado
     const balancePopulado = await Balance.findById(nuevoBalance._id).populate(
       populateOptions
     );
 
-    res.json({
-      msg: "Balance creado exitosamente.",
-      balance: balancePopulado,
-    });
+    res.status(201).json(balancePopulado);
   } catch (err) {
-    console.error("Error al crear el balance:", err);
+    console.error("Error en balancePost:", err);
     res.status(500).json({
-      msg: "Error interno del servidor.",
+      error: "Error interno del servidor al crear el balance.",
     });
   }
 };
 
-// Actualizar un balance específico por ID
+// Actualizar un balance existente
 const balancePut = async (req, res = response) => {
   const { id } = req.params;
-  const { fechaInicio, fechaFin, contratosCompras, contratosVentas, facturas } =
-    req.body;
+  const { _id, ...resto } = req.body;
 
   try {
-    const balance = await Balance.findById(id);
-
-    if (!balance) {
-      return res.status(404).json({
-        msg: "Balance no encontrado.",
-      });
+    const antes = await Balance.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Balance no encontrado." });
     }
 
-    // Obtener los contratos de compra
-    const compras = await Contrato.find({
-      _id: { $in: contratosCompras },
-      tipoContrato: "Compra",
-      eliminado: false,
-    });
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
 
-    // Obtener los contratos de venta
-    const ventas = await Contrato.find({
-      _id: { $in: contratosVentas },
-      tipoContrato: "Venta",
-      eliminado: false,
-    });
+    const balanceActualizado = await Balance.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
+      { new: true }
+    ).populate(populateOptions);
 
-    // Obtener las facturas
-    const facturasSeleccionadas = await Factura.find({
-      _id: { $in: facturas },
-    });
+    if (!balanceActualizado) {
+      return res.status(404).json({ msg: "Balance no encontrado." });
+    }
 
-    // Calcular totales
-    const totalCompras = compras.reduce(
-      (total, compra) => total + (compra.montoTotal || 0),
-      0
-    );
-    const totalVentas = ventas.reduce(
-      (total, venta) => total + (venta.montoTotal || 0),
-      0
-    );
-    const totalFacturas = facturasSeleccionadas.reduce(
-      (total, factura) => total + (factura.total || 0), // Usar el campo `total` de las facturas
-      0
-    );
-
-    // Calcular ganancia o pérdida
-    const ganancia = totalVentas - totalCompras - totalFacturas;
-    const perdida = ganancia < 0 ? Math.abs(ganancia) : 0;
-
-    // Actualizar los campos del balance
-    balance.fechaInicio = fechaInicio || balance.fechaInicio;
-    balance.fechaFin = fechaFin || balance.fechaFin;
-    balance.contratosCompras = contratosCompras || balance.contratosCompras;
-    balance.contratosVentas = contratosVentas || balance.contratosVentas;
-    balance.facturas = facturas || balance.facturas;
-    balance.totalCompras = totalCompras;
-    balance.totalVentas = totalVentas - totalFacturas; // Ventas netas después de restar facturas
-    balance.ganancia = ganancia > 0 ? ganancia : 0;
-    balance.perdida = perdida;
-
-    // Guardar los cambios
-    await balance.save();
-
-    res.json({
-      msg: "Balance actualizado exitosamente.",
-      balance,
-    });
+    res.json(balanceActualizado);
   } catch (err) {
-    console.error("Error al actualizar el balance:", err);
+    console.error("Error en balancePut:", err);
     res.status(500).json({
-      msg: "Error interno del servidor.",
+      error: "Error interno del servidor al actualizar el balance.",
     });
   }
 };
 
-// Eliminar un balance específico por ID
+// Actualizar parcialmente un balance existente
+const balancePatch = async (req, res = response) => {
+  const { id } = req.params;
+  const { ...resto } = req.body;
+
+  try {
+    const balanceActualizado = await Balance.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { $set: resto },
+      { new: true }
+    ).populate(populateOptions);
+
+    if (!balanceActualizado) {
+      return res.status(404).json({ msg: "Balance no encontrado." });
+    }
+
+    res.json(balanceActualizado);
+  } catch (err) {
+    console.error("Error en balancePatch:", err);
+    res.status(500).json({
+      error:
+        "Error interno del servidor al actualizar parcialmente el balance.",
+    });
+  }
+};
+
+// Eliminar un balance (eliminación lógica)
 const balanceDelete = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const balance = await Balance.findByIdAndDelete(id);
+    const antes = await Balance.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Balance no encontrado." });
+    }
+
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
+
+    const balance = await Balance.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
+      { new: true }
+    ).populate(populateOptions);
 
     if (!balance) {
-      return res.status(404).json({
-        msg: "Balance no encontrado.",
-      });
+      return res.status(404).json({ msg: "Balance no encontrado." });
     }
 
     res.json({
@@ -233,37 +220,9 @@ const balanceDelete = async (req, res = response) => {
       balance,
     });
   } catch (err) {
-    console.error("Error al eliminar el balance:", err);
+    console.error("Error en balanceDelete:", err);
     res.status(500).json({
-      msg: "Error interno del servidor.",
-    });
-  }
-};
-
-// Actualización parcial de un balance
-const balancePatch = async (req, res = response) => {
-  const { id } = req.params;
-  const cambios = req.body;
-
-  try {
-    const balance = await Balance.findByIdAndUpdate(id, cambios, {
-      new: true,
-    }).populate(populateOptions);
-
-    if (!balance) {
-      return res.status(404).json({
-        msg: "Balance no encontrado.",
-      });
-    }
-
-    res.json({
-      msg: "Balance actualizado parcialmente.",
-      balance,
-    });
-  } catch (err) {
-    console.error("Error al actualizar parcialmente el balance:", err);
-    res.status(500).json({
-      msg: "Error interno del servidor.",
+      error: "Error interno del servidor al eliminar el balance.",
     });
   }
 };

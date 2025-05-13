@@ -66,6 +66,15 @@ const TipoProductoSchema = Schema(
         "El punto de inflamación (Punto De Inflamacion) del producto es obligatorio",
       ], // Campo obligatorio
     },
+
+    // Porcentaje de azufre en el producto
+    indiceCetano: {
+      type: Number,
+      min: [0, "El porcentaje de azufre no puede ser negativo"], // Validación para evitar valores negativos
+      max: [100, "El porcentaje de azufre no puede exceder el 100%"], // Validación de rango máximo
+      required: [true, "El porcentaje de azufre en el producto es obligatorio"], // Campo obligatorio
+    },
+
     // Rendimiento del productos
 
     rendimientos: [
@@ -95,6 +104,14 @@ const TipoProductoSchema = Schema(
       type: Number,
       min: [0, "El costo de convenio no puede ser negativo"], // Validación para evitar valores negativos
       required: [false, "El costo de convenio del producto es obligatorio"], // Campo obligatorio
+    },
+
+    // Procedencia del producto
+    procedencia: {
+      type: String,
+      required: [true, "El nombre del producto es obligatorio"], // Campo obligatorio
+      minlength: [1, "El nombre debe tener al menos 3 caracteres"], // Validación de longitud mínima
+      maxlength: [50, "El nombre no puede exceder los 50 caracteres"], // Validación de longitud máxima
     },
 
     // Estado del producto (Activo o Inactivo)

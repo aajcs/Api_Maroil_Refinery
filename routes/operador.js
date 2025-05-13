@@ -31,6 +31,7 @@ router.get("/", operadorGets);
 router.get(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un id de Mongo válido").isMongoId(),
     check("id").custom(existeOperadorPorId),
     validarCampos,
@@ -42,6 +43,7 @@ router.get(
 router.put(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeOperadorPorId),
     check("idRefineria", "No es un ID válido de refinería")
@@ -57,6 +59,7 @@ router.put(
 router.post(
   "/",
   [
+    validarJWT,
     check("nombre", "El nombre del operador es obligatorio").not().isEmpty(),
     check("nombre", "El nombre debe tener al menos 3 caracteres").isLength({
       min: 3,
@@ -86,6 +89,6 @@ router.delete(
 );
 
 // Manejar solicitudes PATCH (ejemplo básico)
-router.patch("/", operadorPatch);
+router.patch("/", [validarJWT], operadorPatch);
 
 module.exports = router;

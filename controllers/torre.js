@@ -1,76 +1,72 @@
 // Importación del modelo Torre
-const Torre = require("../models/torre"); // Modelo Torre para interactuar con la base de datos
+const Torre = require("../models/torre");
 
 // Opciones de población para referencias en las consultas
 const populateOptions = [
-  { path: "idRefineria", select: "nombre" }, // Población del campo idRefineria, seleccionando solo el nombre
-  { path: "material.idProducto", select: "nombre posicion color" }, // Población del campo material.idProducto, seleccionando nombre, posición y color
-  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  { path: "idRefineria", select: "nombre" },
+  { path: "material.idProducto", select: "nombre posicion color" },
+  { path: "createdBy", select: "nombre correo" },
   {
     path: "historial",
     populate: { path: "modificadoPor", select: "nombre correo" },
-  }, // Popula historial.modificadoPor en el array
+  },
 ];
 
 // Controlador para obtener todas las torres con paginación y población de referencias
 const torreGets = async (req = request, res = response) => {
-  const query = { eliminado: false }; // Filtro para obtener solo torres no eliminadas
+  const query = { eliminado: false };
 
   try {
-    // Ejecuta ambas consultas en paralelo para optimizar el tiempo de respuesta
     const [total, torres] = await Promise.all([
-      Torre.countDocuments(query), // Cuenta el total de torres no eliminadas
-      Torre.find(query).populate(populateOptions), // Obtiene las torres no eliminadas con las referencias pobladas
+      Torre.countDocuments(query),
+      Torre.find(query).populate(populateOptions),
     ]);
 
-    // Ordenar historial por fecha ascendente en cada torre
+    // Ordenar historial por fecha descendente en cada torre
     torres.forEach((t) => {
       if (Array.isArray(t.historial)) {
         t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
 
-    // Responde con el total de torres y la lista de torres
-    res.json({
-      total,
-      torres,
-    });
+    res.json({ total, torres });
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    console.error("Error en torreGets:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al obtener las torres.",
+    });
   }
 };
 
 // Controlador para obtener una torre específica por ID
 const torreGet = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID de la torre desde los parámetros de la URL
+  const { id } = req.params;
 
   try {
-    // Busca la torre por ID y verifica que no esté marcada como eliminada
-    const torre = await Torre.findOne({
-      _id: id,
-      eliminado: false,
-    }).populate(populateOptions); // Población de referencias
-
-    // Ordenar historial por fecha ascendente
-    if (Array.isArray(torre.historial)) {
-      torre.historial.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-    }
+    const torre = await Torre.findOne({ _id: id, eliminado: false }).populate(
+      populateOptions
+    );
 
     if (!torre) {
-      return res.status(404).json({ msg: "Torre no encontrada" }); // Responde con un error 404 si no se encuentra la torre
+      return res.status(404).json({ msg: "Torre no encontrada." });
     }
 
-    res.json(torre); // Responde con los datos de la torre
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(torre.historial)) {
+      torre.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    }
+
+    res.json(torre);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    console.error("Error en torreGet:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al obtener la torre.",
+    });
   }
 };
 
 // Controlador para crear una nueva torre
 const torrePost = async (req = request, res = response) => {
-  // Extrae los datos del cuerpo de la solicitud
   const {
     idRefineria,
     almacenamiento,
@@ -80,9 +76,8 @@ const torrePost = async (req = request, res = response) => {
     nombre,
     ubicacion,
   } = req.body;
-  console.log(req.body);
+
   try {
-    // Crea una nueva instancia del modelo Torre con los datos proporcionados
     const nuevaTorre = new Torre({
       idRefineria,
       almacenamiento,
@@ -91,27 +86,32 @@ const torrePost = async (req = request, res = response) => {
       numero,
       nombre,
       ubicacion,
-      createdBy: req.usuario._id, // Auditoría: quién crea
+      createdBy: req.usuario._id,
     });
 
-    await nuevaTorre.save(); // Guarda la nueva torre en la base de datos
+    await nuevaTorre.save();
+    await nuevaTorre.populate(populateOptions);
 
-    await nuevaTorre.populate(populateOptions); // Población de referencias para la respuesta
-
-    res.status(201).json(nuevaTorre); // Responde con un código 201 (creado) y los datos de la torre
+    res.status(201).json(nuevaTorre);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    console.error("Error en torrePost:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al crear la torre.",
+    });
   }
 };
 
 // Controlador para actualizar una torre existente
 const torrePut = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID de la torre desde los parámetros de la URL
-  const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
+  const { id } = req.params;
+  const { _id, ...resto } = req.body;
 
   try {
     const antes = await Torre.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Torre no encontrada." });
+    }
+
     const cambios = {};
     for (let key in resto) {
       if (String(antes[key]) !== String(resto[key])) {
@@ -119,38 +119,41 @@ const torrePut = async (req = request, res = response) => {
       }
     }
 
-    // Actualiza la torre en la base de datos y devuelve la torre actualizada
     const torreActualizada = await Torre.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar la torre no eliminada
+      { _id: id, eliminado: false },
       {
         ...resto,
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
-      }, // Datos a actualizar
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Población de referencias
+      },
+      { new: true }
+    ).populate(populateOptions);
 
     if (!torreActualizada) {
-      return res.status(404).json({ msg: "Torre no encontrada" }); // Responde con un error 404 si no se encuentra la torre
+      return res.status(404).json({ msg: "Torre no encontrada." });
     }
 
-    res.json(torreActualizada); // Responde con los datos de la torre actualizada
+    res.json(torreActualizada);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    console.error("Error en torrePut:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al actualizar la torre.",
+    });
   }
 };
 
-// Controlador para eliminar (marcar como eliminado) una torre
+// Controlador para eliminar (marcar como eliminada) una torre
 const torreDelete = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID de la torre desde los parámetros de la URL
+  const { id } = req.params;
 
   try {
-    // Auditoría: captura estado antes de eliminar
     const antes = await Torre.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Torre no encontrada." });
+    }
+
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
 
-    // Marca la torre como eliminada y registra en historial
-    const torre = await Torre.findOneAndUpdate(
+    const torreEliminada = await Torre.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
         eliminado: true,
@@ -159,30 +162,50 @@ const torreDelete = async (req = request, res = response) => {
       { new: true }
     ).populate(populateOptions);
 
-    if (!torre) {
-      return res.status(404).json({ msg: "Torre no encontrada" }); // Responde con un error 404 si no se encuentra la torre
+    if (!torreEliminada) {
+      return res.status(404).json({ msg: "Torre no encontrada." });
     }
 
-    res.json(torre); // Responde con los datos de la torre eliminada
+    res.json(torreEliminada);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    console.error("Error en torreDelete:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al eliminar la torre.",
+    });
   }
 };
 
-// Controlador para manejar solicitudes PATCH (ejemplo básico)
-const torrePatch = (req = request, res = response) => {
-  res.json({
-    msg: "patch API - torrePatch", // Mensaje de prueba
-  });
+// Controlador para manejar actualizaciones parciales (PATCH)
+const torrePatch = async (req = request, res = response) => {
+  const { id } = req.params;
+  const { ...resto } = req.body;
+
+  try {
+    const torreActualizada = await Torre.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { $set: resto },
+      { new: true }
+    ).populate(populateOptions);
+
+    if (!torreActualizada) {
+      return res.status(404).json({ msg: "Torre no encontrada." });
+    }
+
+    res.json(torreActualizada);
+  } catch (err) {
+    console.error("Error en torrePatch:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al actualizar parcialmente la torre.",
+    });
+  }
 };
 
-// Exporta los controladores para que puedan ser utilizados en las rutas
+// Exporta los controladores
 module.exports = {
-  torrePost, // Crear una nueva torre
-  torreGet, // Obtener una torre específica por ID
-  torreGets, // Obtener todas las torres
-  torrePut, // Actualizar una torre existente
-  torreDelete, // Eliminar (marcar como eliminado) una torre
-  torrePatch, // Manejar solicitudes PATCH
+  torreGets,
+  torreGet,
+  torrePost,
+  torrePut,
+  torreDelete,
+  torrePatch,
 };

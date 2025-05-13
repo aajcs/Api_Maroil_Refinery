@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 const VentanaSchema = Schema(
   {
@@ -79,6 +80,9 @@ const VentanaSchema = Schema(
     versionKey: false, // Elimina el campo __v
   }
 );
+
+VentanaSchema.plugin(auditPlugin);
+
 // Método para transformar el objeto devuelto por Mongoose
 VentanaSchema.set("toJSON", {
   transform: (document, returnedObject) => {

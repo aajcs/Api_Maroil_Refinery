@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 const InventarioSchema = new Schema(
   {
@@ -71,6 +72,7 @@ const InventarioSchema = new Schema(
     versionKey: false,
   }
 );
+InventarioSchema.plugin(auditPlugin);
 
 // Método para transformar el objeto JSON (por ejemplo, para cambiar _id por id)
 InventarioSchema.set("toJSON", {

@@ -98,6 +98,8 @@ const tipoProductoPost = async (req = request, res = response) => {
     costoOperacional,
     transporte,
     convenio,
+    procedencia,
+    indiceCetano,
   } = req.body;
 
   try {
@@ -115,7 +117,9 @@ const tipoProductoPost = async (req = request, res = response) => {
       costoOperacional,
       transporte,
       convenio,
-      createdBy: req.usuario._id, // ID del usuario que creó el tanque
+      procedencia,
+      indiceCetano,
+      createdBy: req.usuario._id, // ID del usuario que creó el tipo de producto
     });
 
     await nuevoTipoProducto.save(); // Guarda el nuevo tipo de producto en la base de datos
