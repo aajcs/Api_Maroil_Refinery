@@ -3,7 +3,14 @@ const { response, request } = require("express");
 const Partida = require("../models/partida");
 
 // Opciones de población reutilizables
-const populateOptions = [{ path: "idRefineria", select: "nombre" }];
+const populateOptions = [
+  { path: "idRefineria", select: "nombre" },
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
+];
 
 // Controlador para obtener todas las partidas
 const partidaGets = async (req = request, res = response) => {
@@ -14,6 +21,13 @@ const partidaGets = async (req = request, res = response) => {
       Partida.countDocuments(query), // Cuenta el total de partidas
       Partida.find(query).populate(populateOptions), // Aplica las opciones de población
     ]);
+
+    // Ordenar historial por fecha ascendente en cada partida
+    partidas.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
 
     res.json({ total, partidas }); // Responde con el total y la lista de partidas
   } catch (err) {
@@ -30,6 +44,10 @@ const partidaGet = async (req = request, res = response) => {
 
   try {
     const partida = await Partida.findById(id).populate(populateOptions); // Aplica las opciones de población
+    // Ordenar historial por fecha ascendente en cada partida
+    if (Array.isArray(partida.historial)) {
+      partida.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    }
 
     if (!partida) {
       return res.status(404).json({
@@ -62,6 +80,7 @@ const partidaPost = async (req = request, res = response) => {
       idRefineria,
       descripcion,
       codigo,
+      createdBy: req.usuario._id, // ID del usuario que crea la partida
     });
 
     await nuevaPartida.save(); // Guarda la nueva partida en la base de datos
@@ -88,27 +107,37 @@ const partidaPut = async (req = request, res = response) => {
   const { _id, ...resto } = req.body; // Excluye el campo _id del cuerpo de la solicitud
 
   try {
+    // Obtener la partida antes de la actualización
+    const antes = await Partida.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Partida no encontrada" });
+    }
+
+    // Detectar cambios entre los datos actuales y los nuevos
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
+
+    // Actualizar la partida y registrar los cambios en el historial
     const partidaActualizada = await Partida.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar la partida no eliminada
-      resto, // Datos a actualizar
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      }, // Datos a actualizar
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Aplica las opciones de población
 
     if (!partidaActualizada) {
-      return res.status(404).json({
-        msg: "Partida no encontrada",
-      });
+      return res.status(404).json({ msg: "Partida no encontrada" });
     }
 
     res.json(partidaActualizada); // Responde con los datos de la partida actualizada
   } catch (err) {
     console.error("Error en partidaPut:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de partida no válido.",
-      });
-    }
 
     res.status(500).json({
       error: "Error interno del servidor al actualizar la partida.",
@@ -156,27 +185,37 @@ const partidaDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
+    // Auditoría: captura estado antes de eliminar
+    const antes = await Partida.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Partida no encontrada" });
+    }
+
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
+
+    // Marcar la partida como eliminada y registrar los cambios en el historial
     const partida = await Partida.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar la partida no eliminada
-      { eliminado: true }, // Marca la partida como eliminada
+      {
+        eliminado: true, // Marca la partida como eliminada
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } }, // Agrega los cambios al historial
+      },
       { new: true } // Devuelve el documento actualizado
     ).populate(populateOptions); // Aplica las opciones de población
 
     if (!partida) {
-      return res.status(404).json({
-        msg: "Partida no encontrada",
-      });
+      return res.status(404).json({ msg: "Partida no encontrada" });
     }
 
-    res.json(partida); // Responde con los datos de la partida eliminada
+    // Aquí puedes agregar lógica adicional si necesitas actualizar referencias relacionadas
+    // Por ejemplo, eliminar referencias de otras colecciones asociadas a la partida
+
+    res.json({
+      msg: "Partida eliminada y cambios registrados en el historial.",
+      partida,
+    });
   } catch (err) {
     console.error("Error en partidaDelete:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de partida no válido.",
-      });
-    }
 
     res.status(500).json({
       error: "Error interno del servidor al eliminar la partida.",

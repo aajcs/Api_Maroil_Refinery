@@ -31,6 +31,7 @@ router.get("/", partidaGets);
 router.get(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un id de Mongo válido").isMongoId(),
     // check('id').custom( existePartidaPorId ),
     validarCampos,
@@ -40,6 +41,7 @@ router.get(
 router.put(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existePartidaPorId),
     //check("rol").custom(esRoleValido),
@@ -51,6 +53,7 @@ router.put(
 router.post(
   "/",
   [
+    validarJWT,
     //Validación de campos.
     //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
     //check("nombre", "El nombre delpartida es obligatorio").not().isEmpty(),

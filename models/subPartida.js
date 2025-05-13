@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 // Esquema principal de refinación
 const SubPartidaSchema = new Schema(
@@ -41,6 +42,7 @@ const SubPartidaSchema = new Schema(
     versionKey: false,
   }
 );
+SubPartidaSchema.plugin(auditPlugin);
 
 // Método para transformar el objeto devuelto por Mongoose
 SubPartidaSchema.set("toJSON", {

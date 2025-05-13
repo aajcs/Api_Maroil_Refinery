@@ -113,7 +113,28 @@ const FacturaSchema = new Schema(
     versionKey: false,
   }
 );
-FacturaSchema.plugin(auditPlugin);
+
+
+// Middleware para generar un número único y secuencial
+FacturaSchema.pre("save", async function (next) {
+  if (this.isNew) {
+    try {
+      const counterKey = "factura"; // Clave para el contador
+      const result = await Counter.findOneAndUpdate(
+        { _id: counterKey },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+      );
+      this.numeroFactura = result.seq; // Asigna el número secuencial
+      next();
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    next();
+  }
+});
+
 // Método para transformar el objeto devuelto por Mongoose
 FacturaSchema.set("toJSON", {
   transform: (document, returnedObject) => {

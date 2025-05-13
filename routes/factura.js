@@ -28,10 +28,10 @@ const {
 
 const router = Router();
 
-router.get("/", [validarJWT], facturaGets);
+router.get("/", facturaGets);
 router.get(
   "/:id",
-  [ validarJWT,
+  [ 
     check("id", "No es un id de Mongo válido").isMongoId(),
     // check('id').custom( existeFacturaPorId ),
     validarCampos,
@@ -40,7 +40,7 @@ router.get(
 );
 router.put(
   "/:id",
-  [ validarJWT,
+  [
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeFacturaPorId),
     //check("rol").custom(esRoleValido),
@@ -51,7 +51,7 @@ router.put(
 
 router.post(
   "/",
-  [ validarJWT,
+  [
     //Validación de campos.
     //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
     //check("nombre", "El nombre delfactura es obligatorio").not().isEmpty(),

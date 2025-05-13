@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 const BalanceSchema = new Schema({
   fechaInicio: {
@@ -48,5 +49,6 @@ const BalanceSchema = new Schema({
     default: Date.now,
   },
 });
+BalanceSchema.plugin(auditPlugin);
 
 module.exports = model("Balance", BalanceSchema);

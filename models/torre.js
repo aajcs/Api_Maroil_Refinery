@@ -1,6 +1,7 @@
 const { Schema, model } = require("mongoose");
 // La importación de stringify no se utiliza, puedes eliminarla si no es necesaria
 const { stringify } = require("uuid");
+const auditPlugin = require("./plugins/audit");
 
 // Definición del esquema para el modelo Torre
 const TorreSchema = Schema(
@@ -13,7 +14,7 @@ const TorreSchema = Schema(
     },
 
     // Relación con el usuario que creó la torre (auditoría)
-    createdBy: { type: Schema.Types.ObjectId, ref: 'Usuario', required: true },
+    createdBy: { type: Schema.Types.ObjectId, ref: "Usuario", required: true },
 
     // Nombre de la torre
     nombre: {
@@ -72,11 +73,15 @@ const TorreSchema = Schema(
     // Histórico de modificaciones
     historial: [
       {
-        modificadoPor: { type: Schema.Types.ObjectId, ref: 'Usuario', required: true },
+        modificadoPor: {
+          type: Schema.Types.ObjectId,
+          ref: "Usuario",
+          required: true,
+        },
         fecha: { type: Date, default: Date.now },
-        cambios: { type: Schema.Types.Mixed }
-      }
-    ]
+        cambios: { type: Schema.Types.Mixed },
+      },
+    ],
   },
 
   {
@@ -86,6 +91,7 @@ const TorreSchema = Schema(
     versionKey: false,
   }
 );
+TorreSchema.plugin(auditPlugin);
 
 // Agrega índice compuesto único para nombre por refinería
 TorreSchema.index({ idRefineria: 1, nombre: 1 }, { unique: true });

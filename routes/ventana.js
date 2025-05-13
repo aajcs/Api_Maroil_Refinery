@@ -32,6 +32,7 @@ router.get(
 router.put(
   "/:id",
   [
+    validarJWT,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeVentanaPorId),
     // check("idRefineria").custom(existeRefineriaPorId),
@@ -46,6 +47,7 @@ router.put(
 router.post(
   "/",
   [
+    validarJWT,
     // // check("idRefineria").custom(existeRefineriaPorId),
     // // check("idTanque").custom(existeTanquePorId),
     // // check("idTorre").custom(existeTorrePorId),
@@ -69,6 +71,6 @@ router.delete(
   ventanaDelete
 );
 
-router.patch("/", ventanaPatch);
+router.patch("/", [validarJWT], ventanaPatch);
 
 module.exports = router;

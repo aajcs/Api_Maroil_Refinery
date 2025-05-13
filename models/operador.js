@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const auditPlugin = require("./plugins/audit");
 
 const OperadorSchema = new Schema(
   {
@@ -53,6 +54,7 @@ const OperadorSchema = new Schema(
     versionKey: false, // Elimina el campo __v
   }
 );
+OperadorSchema.plugin(auditPlugin);
 
 // Método para transformar el objeto devuelto por Mongoose
 OperadorSchema.set("toJSON", {
