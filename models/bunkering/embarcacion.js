@@ -1,8 +1,8 @@
 const { Schema, model } = require("mongoose");
 const auditPlugin = require("./plugins/audit");
 
-// Definición del esquema para el modelo Gabarra
-const GabarraSchema = Schema(
+// Definición del esquema para el modelo Embarcacion
+const EmbarcacionSchema = Schema(
   {
     // Referencia a la refinería a la que pertenece el tanque
     idBunkering: {
@@ -31,6 +31,14 @@ const GabarraSchema = Schema(
       required: [true, "El Nombre es obligatorio"], // Campo obligatorio
       minlength: [3, "El nombre debe tener al menos 3 caracteres"], // Validación de longitud mínima
       maxlength: [50, "El nombre no puede exceder los 50 caracteres"], // Validación de longitud máxima
+    },
+
+    // Tipo de material (Materia Prima o Derivado)
+    tipo: {
+      type: String,
+      enum: ["Gabarra", "Buque", "Remolcador"], // Valores permitidos
+      default: "Gabarra", // Valor por defectoS
+      required: [true, "El tipo de embarcacion es obligatorio"], // Campo obligatorio
     },
 
     // Relación con los tanques de la gabarra
@@ -64,10 +72,10 @@ const GabarraSchema = Schema(
 );
 
 // Agrega índice compuesto único para nombre por refinería
-GabarraSchema.index({ idBunkering: 1, nombre: 1 }, { unique: true });
-GabarraSchema.plugin(auditPlugin);
+EmbarcacionSchema.index({ idBunkering: 1, nombre: 1 }, { unique: true });
+EmbarcacionSchema.plugin(auditPlugin);
 // Configuración para transformar el objeto JSON al devolverlo
-GabarraSchema.set("toJSON", {
+EmbarcacionSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     // Cambia el nombre de _id a id
     returnedObject.id = returnedObject._id.toString();
@@ -76,5 +84,5 @@ GabarraSchema.set("toJSON", {
   },
 });
 
-// Exporta el modelo Gabarra basado en el esquema definido
-module.exports = model("Gabarra", GabarraSchema);
+// Exporta el modelo Embarcacion basado en el esquema definido
+module.exports = model("Embarcacion", EmbarcacionSchema);
