@@ -1,170 +1,154 @@
-// Importaciones necesarias
-const { response, request } = require("express"); // Objetos de Express para manejar solicitudes y respuestas
-const LineaDespacho = require("../models/lineaDespacho"); // Modelo LineaDespacho para interactuar con la base de datos
+const { response, request } = require("express");
+const LineaDespachoBK = require("../../models/bunkering/lineaDespachoBK");
 
-// Opciones de población reutilizables para consultas
+// Opciones de población reutilizables
 const populateOptions = [
-  { path: "idRefineria", select: "nombre" },
-  {
-    path: "idProducto", // Relación con el modelo Producto
-    select: "nombre color posicion", // Selecciona solo los campos nombre y color
-  },
-  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
-  {
-    path: "historial",
-    populate: { path: "modificadoPor", select: "nombre correo" },
-  }, // Popula historial.modificadoPor en el array
-]; // Relación con el modelo Refineria, seleccionando solo el campo "nombre"
+  { path: "idMuelle", select: "nombre" },
+  { path: "idProducto", select: "nombre" },
+];
 
-// Controlador para obtener todas las líneas de carga con población de referencias
-const lineaDespachoGets = async (req = request, res = response) => {
-  const query = { eliminado: false }; // Filtro para obtener solo líneas de carga no eliminadas
+// Obtener todas las líneas de despacho
+const lineaDespachoBKGets = async (req = request, res = response) => {
+  const query = { eliminado: false };
 
   try {
-    const [total, lineaDespachos] = await Promise.all([
-      LineaDespacho.countDocuments(query), // Cuenta el total de líneas de carga
-      LineaDespacho.find(query).populate(populateOptions), // Obtiene las líneas de carga con referencias pobladas
+    const [total, lineas] = await Promise.all([
+      LineaDespachoBK.countDocuments(query),
+      LineaDespachoBK.find(query).populate(populateOptions).sort({ nombre: 1 }),
     ]);
-    lineaDespachos.forEach((t) => {
-      if (Array.isArray(t.historial)) {
-        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      }
-    });
-    res.json({
-      total,
-      lineaDespachos,
-    });
+    res.json({ total, lineas });
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    console.error("Error en lineaDespachoBKGets:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al obtener las líneas de despacho.",
+    });
   }
 };
 
-// Controlador para obtener una línea de carga específica por ID
-const lineaDespachoGet = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID de la línea de carga desde los parámetros de la URL
-
+// Obtener una línea de despacho por ID
+const lineaDespachoBKGet = async (req = request, res = response) => {
+  const { id } = req.params;
   try {
-    const lineaDespacho = await LineaDespacho.findOne({
+    const linea = await LineaDespachoBK.findOne({
       _id: id,
       eliminado: false,
-    }).populate(populateOptions); // Busca la línea de carga por ID y popula las referencias
-    lineaDespacho.forEach((t) => {
-      if (Array.isArray(t.historial)) {
-        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      }
-    });
-    if (!lineaDespacho) {
-      return res.status(404).json({ msg: "Línea de carga no encontrada" }); // Responde con un error 404 si no se encuentra la línea de carga
+    }).populate(populateOptions);
+
+    if (!linea) {
+      return res.status(404).json({ msg: "Línea de despacho no encontrada" });
     }
 
-    res.json(lineaDespacho); // Responde con los datos de la línea de carga
+    res.json(linea);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
-  }
-};
-
-// Controlador para crear una nueva línea de carga
-const lineaDespachoPost = async (req = request, res = response) => {
-  const { ubicacion, nombre, idRefineria, tipoLinea, estado, idProducto } =
-    req.body; // Extrae los datos del cuerpo de la solicitud
-  try {
-    const nuevaLineaDespacho = new LineaDespacho({
-      ubicacion,
-      nombre,
-      idRefineria,
-      tipoLinea,
-      estado,
-      idProducto,
-      createdBy: req.usuario._id, // Auditoría: quién crea
+    console.error("Error en lineaDespachoBKGet:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al obtener la línea de despacho.",
     });
-
-    await nuevaLineaDespacho.save(); // Guarda la nueva línea de carga en la base de datos
-
-    await nuevaLineaDespacho.populate(populateOptions); // Poblar referencias después de guardar
-
-    res.status(201).json(nuevaLineaDespacho); // Responde con un código 201 (creado) y los datos de la línea de carga
-  } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
   }
 };
 
-// Controlador para actualizar una línea de carga existente
-const lineaDespachoPut = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID de la línea de carga desde los parámetros de la URL
-  const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
+// Crear una nueva línea de despacho
+const lineaDespachoBKPost = async (req = request, res = response) => {
+  try {
+    const data = req.body;
+    data.createdBy = req.usuario?._id; // Si usas auditoría de usuario
+
+    const nuevaLinea = new LineaDespachoBK(data);
+    await nuevaLinea.save();
+    await nuevaLinea.populate(populateOptions);
+
+    res.status(201).json(nuevaLinea);
+  } catch (err) {
+    console.error("Error en lineaDespachoBKPost:", err);
+    let errorMsg = "Error interno del servidor al crear la línea de despacho.";
+    if (err.code === 11000) {
+      errorMsg = "Ya existe una línea de despacho con ese nombre en el muelle.";
+    }
+    res.status(500).json({ error: errorMsg });
+  }
+};
+
+// Actualizar una línea de despacho existente
+const lineaDespachoBKPut = async (req = request, res = response) => {
+  const { id } = req.params;
+  const { _id, ...resto } = req.body;
 
   try {
-    const antes = await LineaDespacho.findById(id);
+    const antes = await LineaDespachoBK.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Línea de despacho no encontrada" });
+    }
     const cambios = {};
     for (let key in resto) {
-      if (String(antes[key]) !== String(resto[key])) {
+      if (JSON.stringify(antes[key]) !== JSON.stringify(resto[key])) {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
     }
-    const lineaDespachoActualizada = await LineaDespacho.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar la línea de carga no eliminada
+
+    const lineaActualizada = await LineaDespachoBK.findOneAndUpdate(
+      { _id: id, eliminado: false },
       {
         ...resto,
-        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
-      }, // Datos a actualizar
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Poblar referencias después de actualizar
+        $push: { historial: { modificadoPor: req.usuario?._id, cambios } },
+      },
+      { new: true }
+    ).populate(populateOptions);
 
-    if (!lineaDespachoActualizada) {
-      return res.status(404).json({ msg: "Línea de carga no encontrada" }); // Responde con un error 404 si no se encuentra la línea de carga
+    if (!lineaActualizada) {
+      return res.status(404).json({ msg: "Línea de despacho no encontrada" });
     }
 
-    res.json(lineaDespachoActualizada); // Responde con los datos de la línea de carga actualizada
+    res.json(lineaActualizada);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    console.error("Error en lineaDespachoBKPut:", err);
+    let errorMsg = "Error interno del servidor al actualizar la línea de despacho.";
+    if (err.code === 11000) {
+      errorMsg = "Ya existe una línea de despacho con ese nombre en el muelle.";
+    }
+    res.status(500).json({ error: errorMsg });
   }
 };
 
-// Controlador para eliminar (marcar como eliminado) una línea de carga
-const lineaDespachoDelete = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID de la línea de carga desde los parámetros de la URL
+// Eliminar (marcar como eliminada) una línea de despacho
+const lineaDespachoBKDelete = async (req = request, res = response) => {
+  const { id } = req.params;
 
   try {
-    // Auditoría: captura estado antes de eliminar
-    const antes = await LineaDespacho.findById(id);
+    const antes = await LineaDespachoBK.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Línea de despacho no encontrada" });
+    }
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
-    const lineaDespacho = await LineaDespacho.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar la línea de carga no eliminada
+
+    const lineaEliminada = await LineaDespachoBK.findOneAndUpdate(
+      { _id: id, eliminado: false },
       {
         eliminado: true,
-        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+        $push: { historial: { modificadoPor: req.usuario?._id, cambios } },
       },
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Poblar referencias después de actualizar
+      { new: true }
+    ).populate(populateOptions);
 
-    if (!lineaDespacho) {
-      return res.status(404).json({ msg: "Línea de carga no encontrada" }); // Responde con un error 404 si no se encuentra la línea de carga
+    if (!lineaEliminada) {
+      return res.status(404).json({ msg: "Línea de despacho no encontrada" });
     }
 
-    res.json(lineaDespacho); // Responde con los datos de la línea de carga eliminada
+    res.json({
+      msg: "Línea de despacho eliminada correctamente.",
+      linea: lineaEliminada,
+    });
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    console.error("Error en lineaDespachoBKDelete:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al eliminar la línea de despacho.",
+    });
   }
 };
 
-// Controlador para manejar solicitudes PATCH (ejemplo básico)
-const lineaDespachoPatch = (req = request, res = response) => {
-  res.json({
-    msg: "patch API - lineaDespachoPatch", // Mensaje de prueba
-  });
-};
-
-// Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
-  lineaDespachoPost, // Crear una nueva línea de carga
-  lineaDespachoGet, // Obtener una línea de carga específica por ID
-  lineaDespachoGets, // Obtener todas las líneas de carga
-  lineaDespachoPut, // Actualizar una línea de carga existente
-  lineaDespachoDelete, // Eliminar (marcar como eliminado) una línea de carga
-  lineaDespachoPatch, // Manejar solicitudes PATCH
+  lineaDespachoBKGets,
+  lineaDespachoBKGet,
+  lineaDespachoBKPost,
+  lineaDespachoBKPut,
+  lineaDespachoBKDelete,
 };
