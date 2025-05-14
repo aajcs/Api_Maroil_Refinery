@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-const auditPlugin = require("./plugins/audit");
+const auditPlugin = require("../plugins/audit");
 
 // Definición del esquema para el modelo LineaCarga
 const lineaCargaBKSchema = Schema(

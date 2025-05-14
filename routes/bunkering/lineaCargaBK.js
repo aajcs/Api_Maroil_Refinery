@@ -1,84 +1,27 @@
 const { Router } = require("express");
-const { check } = require("express-validator");
-
 const {
-  validarCampos,
-  validarJWT,
-  esAdminRole,
-  tieneRole,
-} = require("../middlewares");
-
-const {
-  //esRoleValido,
-  // emailExiste,
-  // existeUsuarioPorId,
-  // nitExiste,
-  existeLineaPorId,
-} = require("../helpers/db-validators");
-
-const {
-  lineaCargaGet,
-  lineaCargaPut,
-  lineaCargaPost,
-  lineaCargaDelete,
-  lineaCargaPatch,
-  lineaCargaGets,
-} = require("../controllers/lineaCarga");
+  lineaCargaBKGets,
+  lineaCargaBKGet,
+  lineaCargaBKPost,
+  lineaCargaBKPut,
+  lineaCargaBKDelete,
+} = require("../../controllers/bunkering/lineaCargaBK");
 
 const router = Router();
 
-router.get("/", [validarJWT], lineaCargaGets);
-router.get(
-  "/:id",
-  [
-    validarJWT,
-    check("id", "No es un id de Mongo válido").isMongoId(),
-    // check('id').custom( existeProductoPorId ),
-    validarCampos,
-  ],
-  lineaCargaGet
-);
-router.put(
-  "/:id",
-  [
-    validarJWT,
-    check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeLineaPorId),
-    //check("rol").custom(esRoleValido),
-    validarCampos,
-  ],
-  lineaCargaPut
-);
+// Obtener todas las líneas de carga
+router.get("/", lineaCargaBKGets);
 
-router.post(
-  "/",
-  [
-    validarJWT,
-    // check("numero", "El numero es obligatorio").not().isEmpty(),
-    //check("nit").custom(nitExiste),
-    //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    // check("refineria").custom(existeLineaPorId),
+// Obtener una línea de carga por ID
+router.get("/:id", lineaCargaBKGet);
 
-    // check('rol', 'No es un rol válido').isIn(['ADMIN_ROLE','USER_ROLE']),
-    // check('rol').custom( esRoleValido ),
-    validarCampos,
-  ],
-  lineaCargaPost
-);
+// Crear una nueva línea de carga
+router.post("/", lineaCargaBKPost);
 
-router.delete(
-  "/:id",
-  [
-    validarJWT,
-    // esAdminRole,
-    tieneRole("superAdmin", "admin"),
-    check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeLineaPorId),
-    validarCampos,
-  ],
-  lineaCargaDelete
-);
+// Actualizar una línea de carga existente
+router.put("/:id", lineaCargaBKPut);
 
-router.patch("/", lineaCargaPatch);
+// Eliminar (marcar como eliminada) una línea de carga
+router.delete("/:id", lineaCargaBKDelete);
 
 module.exports = router;
