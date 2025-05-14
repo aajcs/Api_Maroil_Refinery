@@ -1,197 +1,195 @@
 // Importaciones necesarias
-const { response, request } = require("express"); // Objetos de Express para manejar solicitudes y respuestas
-const Refineria = require("../models/refineria"); // Modelo Refineria para interactuar con la base de datos
+const { response, request } = require("express");
+const Embarcacion = require("../../models/bunkering/embarcacion");
 
 // Opciones de población para referencias en las consultas
 const populateOptions = [
-  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  { path: "idBunkering", select: "nombre" }, // Popula el nombre del bunkering
+  { path: "tanques", select: "nombre capacidad" }, // Popula los tanques asociados
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la embarcación
   {
     path: "historial",
-    populate: { path: "modificadoPor", select: "nombre correo" },
-  }, // Popula historial.modificadoPor en el array
+    populate: { path: "modificadoPor", select: "nombre correo" }, // Popula historial.modificadoPor
+  },
 ];
-// Controlador para obtener todas las refinerías con paginación y población de referencias
-const refineriasGets = async (req = request, res = response) => {
-  const query = { eliminado: false }; // Filtro para obtener solo refinerías no eliminadas
+
+// Controlador para obtener todas las embarcaciones
+const embarcacionesGets = async (req = request, res = response) => {
+  const query = { eliminado: false }; // Filtro para obtener solo embarcaciones no eliminadas
 
   try {
-    // Ejecuta ambas consultas en paralelo para optimizar el tiempo de respuesta
-    const [total, refinerias] = await Promise.all([
-      Refineria.countDocuments(query), // Cuenta el total de refinerías que cumplen el filtro
-
-      Refineria.find(query).sort({ nombre: 1 }).populate(populateOptions), // Obtiene las refinerías que cumplen el filtro
+    const [total, embarcaciones] = await Promise.all([
+      Embarcacion.countDocuments(query), // Cuenta el total de embarcaciones
+      Embarcacion.find(query).sort({ nombre: 1 }).populate(populateOptions), // Obtiene las embarcaciones con referencias pobladas
     ]);
-    // Ordenar historial por fecha ascendente en cada torre
-    refinerias.forEach((t) => {
-      if (Array.isArray(t.historial)) {
-        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      }
-    });
 
-    // Responde con el total de refinerías y la lista obtenida
-    res.json({
-      total,
-      refinerias,
-    });
+    res.json({ total, embarcaciones });
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    console.error("Error en embarcacionesGets:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al obtener las embarcaciones.",
+    });
   }
 };
 
-// Controlador para obtener una refinería específica por ID
-const refineriasGet = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID de la refinería desde los parámetros de la URL
+// Controlador para obtener una embarcación específica por ID
+const embarcacionGet = async (req = request, res = response) => {
+  const { id } = req.params;
 
   try {
-    // Busca la refinería por ID y verifica que no esté marcada como eliminada
-    const refineria = await Refineria.findOne({
+    const embarcacion = await Embarcacion.findOne({
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-    // .populate({
-    //   path: "idContacto",
-    //   select: "nombre",
-    // })
-    // .populate({
-    //   path: "idLinea",
-    //   select: "nombre",
-    // });
-    // Ordenar historial por fecha ascendente en cada torre
-    refineria.forEach((t) => {
-      if (Array.isArray(t.historial)) {
-        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      }
-    });
-    if (!refineria) {
-      return res.status(404).json({ msg: "Refinería no encontrada" }); // Responde con un error 404 si no se encuentra la refinería
+
+    if (!embarcacion) {
+      return res.status(404).json({ msg: "Embarcación no encontrada." });
     }
 
-    res.json(refineria); // Responde con los datos de la refinería
+    res.json(embarcacion);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    console.error("Error en embarcacionGet:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al obtener la embarcación.",
+    });
   }
 };
 
-// Controlador para crear una nueva refinería
-const refineriasPost = async (req = request, res = response) => {
-  // Extrae los datos del cuerpo de la solicitud
-  const {
-    ubicacion,
-    procesamientoDia,
-    nombre,
-    correo,
-    legal,
-    telefono,
-    nit,
-    img,
-    idContacto,
-    idLinea,
-  } = req.body;
+// Controlador para crear una nueva embarcación
+const embarcacionPost = async (req = request, res = response) => {
+  const { idBunkering, capacidad, nombre, imo, tipo, tanques } = req.body;
 
   try {
-    // Crea una nueva instancia del modelo Refineria con los datos proporcionados
-    const nuevaRefineria = new Refineria({
-      ubicacion,
-      procesamientoDia,
+    const nuevaEmbarcacion = new Embarcacion({
+      idBunkering,
+      capacidad,
       nombre,
-      correo,
-      legal,
-      telefono,
-      nit,
-      img,
-      idContacto,
-      idLinea,
+      imo,
+      tipo,
+      tanques,
       createdBy: req.usuario._id, // Auditoría: quién crea
     });
 
-    await nuevaRefineria.save(); // Guarda la nueva refinería en la base de datos
+    await nuevaEmbarcacion.save();
+    await nuevaEmbarcacion.populate(populateOptions);
 
-    res.status(201).json(nuevaRefineria); // Responde con un código 201 (creado) y los datos de la refinería
+    res.status(201).json(nuevaEmbarcacion);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    console.error("Error en embarcacionPost:", err);
+    res.status(400).json({
+      error:
+        "Error al crear la embarcación. Verifica los datos proporcionados.",
+    });
   }
 };
 
-// Controlador para actualizar una refinería existente
-const refineriasPut = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID de la refinería desde los parámetros de la URL
-  const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
+// Controlador para actualizar una embarcación existente
+const embarcacionPut = async (req = request, res = response) => {
+  const { id } = req.params;
+  const { _id, ...resto } = req.body;
+
   try {
-    const antes = await Refineria.findById(id);
+    const antes = await Embarcacion.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Embarcación no encontrada." });
+    }
+
     const cambios = {};
     for (let key in resto) {
       if (String(antes[key]) !== String(resto[key])) {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
     }
-    console.log("entra aqui");
-    // Actualiza la refinería en la base de datos y devuelve la refinería actualizada
-    const refineriaActualizada = await Refineria.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar la refinería no eliminada
+
+    const embarcacionActualizada = await Embarcacion.findOneAndUpdate(
+      { _id: id, eliminado: false },
       {
         ...resto,
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
-      }, // Datos a actualizar
-      { new: true } // Devuelve el documento actualizado
-    );
+      },
+      { new: true }
+    ).populate(populateOptions);
 
-    if (!refineriaActualizada) {
-      return res.status(404).json({ msg: "Refinería no encontrada" }); // Responde con un error 404 si no se encuentra la refinería
+    if (!embarcacionActualizada) {
+      return res.status(404).json({ msg: "Embarcación no encontrada." });
     }
 
-    req.io.emit("refineria-modificada", refineriaActualizada); // Emite un evento de WebSocket para notificar la modificación
-    res.json(refineriaActualizada); // Responde con los datos de la refinería actualizada
+    res.json(embarcacionActualizada);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    console.error("Error en embarcacionPut:", err);
+    res.status(400).json({
+      error:
+        "Error al actualizar la embarcación. Verifica los datos proporcionados.",
+    });
   }
 };
 
-// Controlador para eliminar (marcar como eliminado) una refinería
-const refineriasDelete = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID de la refinería desde los parámetros de la URL
+// Controlador para eliminar (marcar como eliminado) una embarcación
+const embarcacionDelete = async (req = request, res = response) => {
+  const { id } = req.params;
 
   try {
-    // Auditoría: captura estado antes de eliminar
-    const antes = await Refineria.findById(id);
+    const antes = await Embarcacion.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Embarcación no encontrada." });
+    }
+
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
-    // Marca la refinería como eliminada (eliminación lógica)
-    const refineria = await Refineria.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar la refinería no eliminada
+
+    const embarcacionEliminada = await Embarcacion.findOneAndUpdate(
+      { _id: id, eliminado: false },
       {
         eliminado: true,
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
       },
-      { new: true } // Devuelve el documento actualizado
-    );
+      { new: true }
+    ).populate(populateOptions);
 
-    if (!refineria) {
-      return res.status(404).json({ msg: "Refinería no encontrada" }); // Responde con un error 404 si no se encuentra la refinería
+    if (!embarcacionEliminada) {
+      return res.status(404).json({ msg: "Embarcación no encontrada." });
     }
 
-    res.json(refineria); // Responde con los datos de la refinería eliminada
+    res.json(embarcacionEliminada);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    console.error("Error en embarcacionDelete:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al eliminar la embarcación.",
+    });
   }
 };
 
-// Controlador para manejar solicitudes PATCH (ejemplo básico)
-const refineriasPatch = (req = request, res = response) => {
-  res.json({
-    msg: "patch API - refineriasPatch", // Mensaje de prueba
-  });
+// Controlador para manejar actualizaciones parciales (PATCH)
+const embarcacionPatch = async (req = request, res = response) => {
+  const { id } = req.params;
+  const { ...resto } = req.body;
+
+  try {
+    const embarcacionActualizada = await Embarcacion.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { $set: resto },
+      { new: true }
+    ).populate(populateOptions);
+
+    if (!embarcacionActualizada) {
+      return res.status(404).json({ msg: "Embarcación no encontrada." });
+    }
+
+    res.json(embarcacionActualizada);
+  } catch (err) {
+    console.error("Error en embarcacionPatch:", err);
+    res.status(500).json({
+      error:
+        "Error interno del servidor al actualizar parcialmente la embarcación.",
+    });
+  }
 };
 
-// Exporta los controladores para que puedan ser utilizados en las rutas
+// Exporta los controladores
 module.exports = {
-  refineriasPost, // Crear una nueva refinería
-  refineriasGet, // Obtener una refinería específica por ID
-  refineriasGets, // Obtener todas las refinerías
-  refineriasPut, // Actualizar una refinería existente
-  refineriasDelete, // Eliminar (marcar como eliminado) una refinería
-  refineriasPatch, // Manejar solicitudes PATCH
+  embarcacionesGets,
+  embarcacionGet,
+  embarcacionPost,
+  embarcacionPut,
+  embarcacionDelete,
+  embarcacionPatch,
 };

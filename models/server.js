@@ -64,6 +64,8 @@ class Server {
       muelle: "/api/bunkering/muelle",
       recepcionBK: "/api/bunkering/recepcionBK",
       lineaCargaBK: "/api/bunkering/lineaCargaBK",
+      embarcacion: "/api/bunkering/embarcacion",
+      tanqueBK: "/api/bunkering/tanqueBK",
     };
 
     // Conectar a base de datos
@@ -181,10 +183,15 @@ class Server {
 
     // Rutas de archivos y cargas
     this.app.use(this.paths.uploads, require("../routes/uploads"));
+
     // Rutas de bunkering
     this.app.use(this.paths.bunkering, require("../routes/bunkering/bunkering"));
     this.app.use(this.paths.muelle, require("../routes/bunkering/muelle"));
-    this.app.use(this.paths.lineaCargaBK, require("../routes/bunkering/lineaCargaBK"));
+    this.app.use(this.paths.embarcacion,
+      require("../routes/bunkering/embarcacion")
+    );
+
+    this.app.use(this.paths.tanqueBK, require("../routes/bunkering/tanqueBK"));
 
     // Rutas específicas del módulo Bunker
     const bunkerRoutes = "../routes/bunker";

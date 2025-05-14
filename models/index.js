@@ -43,6 +43,8 @@ const Cuenta = require("./cuenta");
 const Balance = require("./balance");
 const Bunkering = require("./bunkering/bunkering");
 const Muelle = require("./bunkering/muelle");
+const Embarcacion = require("./bunkering/embarcacion");
+const TanqueBK = require("./bunkering/tanqueBK");
 
 module.exports = {
   Ventana,
@@ -88,4 +90,6 @@ module.exports = {
   CorteRefinacion,
   Bunkering,
   Muelle,
+  Embarcacion,
+  TanqueBK,
 };
