@@ -5,9 +5,9 @@ const auditPlugin = require("./plugins/audit");
 const TanqueBKSchema = Schema(
   {
     // Referencia a la refinería a la que pertenece el tanque
-    idGabarra: {
+    idEmbarcacion: {
       type: Schema.Types.ObjectId,
-      ref: "Gabarra", // Relación con el modelo Gabarra
+      ref: "Embarcacion", // Relación con el modelo Embarcacion
       required: true, // Campo obligatorio
     },
 
@@ -89,7 +89,7 @@ const TanqueBKSchema = Schema(
 );
 
 // Agrega índice compuesto único para nombre por refinería
-TanqueBKSchema.index({ idGabarra: 1, nombre: 1 }, { unique: true });
+TanqueBKSchema.index({ idEmbarcacion: 1, nombre: 1 }, { unique: true });
 TanqueBKSchema.plugin(auditPlugin);
 // Configuración para transformar el objeto JSON al devolverlo
 TanqueBKSchema.set("toJSON", {

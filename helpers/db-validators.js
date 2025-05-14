@@ -27,6 +27,8 @@ const {
   SubPartida,
   Factura,
   CorteRefinacion,
+  Muelle,
+  Bunkering,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -282,6 +284,22 @@ const existeCorteRefinacionPorId = async (id) => {
   }
 };
 
+const existeMuellePorId = async (id) => {
+  // Verificar si la corte existe
+  const existeMuelle = await Muelle.findById(id);
+  if (!existeMuelle) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+
+const existeBunkeringPorId = async (id) => {
+  //Verificar si el bunkering existe
+  const existeBunkering = await Bunkering.findById(id);
+  if (!existeBunkering) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+
 /**
  * Validar colecciones permitidas
  */
@@ -327,6 +345,8 @@ module.exports = {
   existeFacturaPorId,
   existeCorteRefinacionPorId,
   existeBalancePorId,
+  existeMuellePorId,
+  existeBunkeringPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

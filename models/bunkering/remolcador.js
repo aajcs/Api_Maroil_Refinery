@@ -12,9 +12,9 @@ const RemolcadorSchema = Schema(
     },
 
     // Referencia a la refinería a la que pertenece el tanque
-    idGabarra: {
+    idEmbarcacion: {
       type: Schema.Types.ObjectId,
-      ref: "Gabarra", // Relación con el modelo Bunkering
+      ref: "Embarcacion", // Relación con el modelo Bunkering
       required: true, // Campo obligatorio
     },
 

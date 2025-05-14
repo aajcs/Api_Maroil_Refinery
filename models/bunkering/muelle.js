@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-const auditPlugin = require("./plugins/audit");
+const auditPlugin = require("../plugins/audit");
 
 // Definición del esquema para el modelo Muelle
 const MuelleSchema = Schema(
@@ -72,7 +72,7 @@ const MuelleSchema = Schema(
     idBunkering: {
       type: Schema.Types.ObjectId,
       ref: "Bunkering", // Referencia al modelo Bunkering
-      required: [true, "El id del bunkering es necesario"], // Campo obligatorio
+      required: [false, "El id del bunkering es necesario"], // Campo obligatorio
     },
 
     // Indica si el muelle ha sido eliminada (eliminación lógica)

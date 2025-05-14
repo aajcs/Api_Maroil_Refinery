@@ -61,6 +61,7 @@ class Server {
 
       // Agregar más rutas según sea necesario
       bunkering: "/api/bunkering",
+      muelle: "/api/bunkering/muelle",
     };
 
     // Conectar a base de datos
@@ -183,6 +184,9 @@ class Server {
       this.paths.bunkering,
       require("../routes/bunkering/bunkering")
     );
+
+    this.app.use(this.paths.muelle, require("../routes/bunkering/muelle"));
+
     // Rutas específicas del módulo Bunker
     const bunkerRoutes = "../routes/bunker";
     this.app.use(this.paths.bunker, require(`${bunkerRoutes}/bunker`));
