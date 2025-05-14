@@ -60,7 +60,7 @@ class Server {
       lineaCargaBunker: "/api/bunker/lineaCargaBunker",
 
       // Agregar más rutas según sea necesario
-      bunkering: "/api/bunkering",
+      bunkering: "/api/bunkering/bunkering",
       muelle: "/api/bunkering/muelle",
     };
 

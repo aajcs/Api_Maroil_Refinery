@@ -15,21 +15,20 @@ const populateOptions = [
 // Controlador para obtener todos los muelle con paginación y población de referencias
 const muelleGets = async (req = request, res = response) => {
   const query = { eliminado: false };
-  console.log("Query:", query);
   try {
-    const [total, muelle] = await Promise.all([
+    const [total, muelles] = await Promise.all([
       Muelle.countDocuments(query),
       Muelle.find(query).sort({ nombre: 1 }).populate(populateOptions),
     ]);
 
-    // Ordenar historial por fecha descendente en cada muelle
-    muelle.forEach((m) => {
+    // Ordenar historial por fecha descendente en cada muelles
+    muelles.forEach((m) => {
       if (Array.isArray(m.historial)) {
         m.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
 
-    res.json({ total, muelle });
+    res.json({ total, muelles });
   } catch (err) {
     console.error("Error en muelleGets:", err);
     res.status(500).json({
