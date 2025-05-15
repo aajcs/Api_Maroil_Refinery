@@ -54,6 +54,7 @@ const ContactoBK = require("./bunkering/contactoBK");
 const ProductoBK = require("./bunkering/productoBK");
 const TipoProductoBK = require("./bunkering/tipoProductoBK");
 const CuentaBK = require("./bunkering/cuentaBK");
+const ContratoBK = require("./bunkering/contratoBK");
 
 module.exports = {
   Ventana,
@@ -110,4 +111,5 @@ module.exports = {
   OperadorBK,
   ContactoBK,
   CuentaBK,
+  ContratoBK,
 };

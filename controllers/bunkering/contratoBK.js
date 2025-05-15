@@ -1,7 +1,7 @@
 const { response, request } = require("express");
 const ContratoBK = require("../../models/bunkering/contratoBK");
 const ContratoItemsBK = require("../../models/bunkering/contratoItemsBK");
-const Cuenta = require("../../models/bunkering/cuentaBK"); // Importar el modelo Cuenta
+const CuentaBK = require("../../models/bunkering/cuentaBK");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
@@ -21,46 +21,46 @@ const populateOptions = [
   },
 ];
 
-// Obtener todos los contratos
-const contratoGets = async (req = request, res = response) => {
+// Obtener todos los contratoBKs
+const contratoBKGets = async (req = request, res = response) => {
   const query = { eliminado: false };
 
   try {
-    const [total, contratos] = await Promise.all([
+    const [total, contratoBKs] = await Promise.all([
       ContratoBK.countDocuments(query),
       ContratoBK.find(query).populate(populateOptions),
     ]);
 
-    res.json({ total, contratos });
+    res.json({ total, contratoBKs });
   } catch (err) {
-    console.error("Error en contratoGets:", err);
+    console.error("Error en contratoBKGets:", err);
     res.status(500).json({ error: "Error interno del servidor." });
   }
 };
 
-// Obtener un contrato específico por ID
-const contratoGet = async (req = request, res = response) => {
+// Obtener un contratoBK específico por ID
+const contratoBKGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const contrato = await ContratoBK.findOne({
+    const contratoBK = await ContratoBK.findOne({
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
 
-    if (!contrato) {
+    if (!contratoBK) {
       return res.status(404).json({ msg: "Contrato no encontrado" });
     }
 
-    res.json(contrato);
+    res.json(contratoBK);
   } catch (err) {
-    console.error("Error en contratoGet:", err);
+    console.error("Error en contratoBKGet:", err);
     res.status(500).json({ error: "Error interno del servidor." });
   }
 };
 
-// Crear un nuevo contrato
-const contratoPost = async (req = request, res = response) => {
+// Crear un nuevo contratoBK
+const contratoBKPost = async (req = request, res = response) => {
   const {
     numeroContrato,
     descripcion,
@@ -85,7 +85,7 @@ const contratoPost = async (req = request, res = response) => {
   let nuevoContrato;
 
   try {
-    // Crear el contrato
+    // Crear el contratoBK
     nuevoContrato = new ContratoBK({
       numeroContrato,
       descripcion,
@@ -104,19 +104,20 @@ const contratoPost = async (req = request, res = response) => {
       estadoEntrega,
       clausulas,
       observacion,
-      createdBy: req.usuario._id, // ID del usuario que creó el contrato
+      createdBy: req.usuario._id,
     });
 
     if (!items || items.length === 0) {
       return res.status(400).json({
-        error: "El contrato debe incluir al menos un ítem en el campo 'items'.",
+        error:
+          "El contratoBK debe incluir al menos un ítem en el campo 'items'.",
       });
     }
 
-    // Guardar el contrato
+    // Guardar el contratoBK
     await nuevoContrato.save();
 
-    // Crear y guardar los ítems asociados al contrato
+    // Crear y guardar los ítems asociados al contratoBK
     const nuevosItems = await Promise.all(
       items.map(async (item) => {
         const nuevoItem = new ContratoItemsBK({
@@ -127,17 +128,32 @@ const contratoPost = async (req = request, res = response) => {
       })
     );
 
-    // Actualizar el contrato con los IDs de los ítems
+    // Actualizar el contratoBK con los IDs de los ítems
     nuevoContrato.idItems = nuevosItems.map((item) => item.id);
     await nuevoContrato.save();
 
-    // Poblar referencias y responder con el contrato creado
+    // Crear la cuenta asociada al contratoBK
+    const nuevaCuentaBK = new CuentaBK({
+      idContrato: nuevoContrato._id,
+      idContacto: nuevoContrato.idContacto,
+      tipoCuentaBK:
+        tipoContrato === "Venta"
+          ? "CuentaBKs por Cobrar"
+          : "CuentaBKs por Pagar",
+      abonos: abono || [],
+      montoTotalContrato: montoTotal || 0,
+    });
+
+    // Guardar la cuenta
+    await nuevaCuentaBK.save();
+
+    // Poblar referencias y responder con el contratoBK creado
     await nuevoContrato.populate(populateOptions);
     res.status(201).json(nuevoContrato);
   } catch (err) {
-    console.error("Error en contratoPost:", err);
+    console.error("Error en contratoBKPost:", err);
 
-    // Si ocurre un error, eliminar el contrato creado
+    // Si ocurre un error, eliminar el contratoBK creado
     if (nuevoContrato && nuevoContrato.id) {
       await ContratoBK.findByIdAndDelete(nuevoContrato.id);
     }
@@ -145,31 +161,30 @@ const contratoPost = async (req = request, res = response) => {
   }
 };
 
-// Actualizar un contrato existente
-const contratoPut = async (req = request, res = response) => {
+// Actualizar un contratoBK existente
+const contratoBKPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { items, abono, ...resto } = req.body;
 
   try {
-    const antes = await ContratoBK.findById(id);
-    const cambios = {};
-    for (let key in resto) {
-      if (String(antes[key]) !== String(resto[key])) {
-        cambios[key] = { from: antes[key], to: resto[key] };
-      }
-    }
-
-    // Validar que el contrato exista
-    const contratoExistente = await ContratoBK.findOne({
+    const contratoBKExistente = await ContratoBK.findOne({
       _id: id,
       eliminado: false,
     });
-    if (!contratoExistente) {
+
+    if (!contratoBKExistente) {
       return res.status(404).json({ msg: "Contrato no encontrado" });
     }
 
-    // Actualizar el contrato
-    const contratoActualizado = await ContratoBK.findOneAndUpdate(
+    const cambios = {};
+    for (let key in resto) {
+      if (String(contratoBKExistente[key]) !== String(resto[key])) {
+        cambios[key] = { from: contratoBKExistente[key], to: resto[key] };
+      }
+    }
+
+    // Actualizar el contratoBK
+    const contratoBKActualizado = await ContratoBK.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
         ...resto,
@@ -181,17 +196,15 @@ const contratoPut = async (req = request, res = response) => {
       { new: true }
     );
 
-    // Actualizar o crear los ítems asociados al contrato
+    // Actualizar o crear los ítems asociados al contratoBK
     if (items) {
       const nuevosItems = await Promise.all(
         items.map(async (item) => {
           if (item.id) {
-            // Si el ítem tiene un ID, actualizarlo
             return await ContratoItemsBK.findByIdAndUpdate(item.id, item, {
               new: true,
             });
           } else {
-            // Si el ítem no tiene un ID, crearlo
             const nuevoItem = new ContratoItemsBK({
               ...item,
               idContrato: id,
@@ -201,54 +214,56 @@ const contratoPut = async (req = request, res = response) => {
         })
       );
 
-      // Actualizar el contrato con los IDs de los ítems
-      contratoActualizado.idItems = nuevosItems.map((item) => item.id);
-      await contratoActualizado.save();
+      contratoBKActualizado.idItems = nuevosItems.map((item) => item.id);
+      await contratoBKActualizado.save();
     }
 
-    // Poblar referencias y responder con el contrato actualizado
-    await contratoActualizado.populate(populateOptions);
-    res.json(contratoActualizado);
+    // Sincronizar la cuenta asociada al contratoBK
+    await CuentaBK.syncFromContrato(contratoBKActualizado);
+
+    // Poblar referencias y responder con el contratoBK actualizado
+    await contratoBKActualizado.populate(populateOptions);
+    res.json(contratoBKActualizado);
   } catch (err) {
-    console.error("Error en contratoPut:", err);
+    console.error("Error en contratoBKPut:", err);
     res.status(400).json({ error: err.message });
   }
 };
 
-// Eliminar (marcar como eliminado) un contrato
-const contratoDelete = async (req = request, res = response) => {
+// Eliminar (marcar como eliminado) un contratoBK
+const contratoBKDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const antes = await ContratoBK.findById(id);
-    const cambios = { eliminado: { from: antes.eliminado, to: true } };
-
-    const contratoEliminado = await ContratoBK.findOneAndUpdate(
+    const contratoBKEliminado = await ContratoBK.findOneAndUpdate(
       { _id: id, eliminado: false },
-      {
-        eliminado: true,
-        $push: {
-          historialModificaciones: { usuario: req.usuario._id, cambios },
-        },
-      },
+      { eliminado: true },
       { new: true }
     ).populate(populateOptions);
 
-    if (!contratoEliminado) {
+    if (!contratoBKEliminado) {
       return res.status(404).json({ msg: "Contrato no encontrado" });
     }
 
-    res.json(contratoEliminado);
+    res.json(contratoBKEliminado);
   } catch (err) {
-    console.error("Error en contratoDelete:", err);
+    console.error("Error en contratoBKDelete:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
+// Manejar solicitudes PATCH
+const contratoBKPatch = (req = request, res = response) => {
+  res.json({
+    msg: "PATCH API - contratoBKPatch",
+  });
+};
+
 module.exports = {
-  contratoPost,
-  contratoGet,
-  contratoGets,
-  contratoPut,
-  contratoDelete,
+  contratoBKPost,
+  contratoBKGet,
+  contratoBKGets,
+  contratoBKPut,
+  contratoBKDelete,
+  contratoBKPatch,
 };

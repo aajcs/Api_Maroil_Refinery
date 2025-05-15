@@ -1,33 +1,26 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
+const { existeContratoBKPorId } = require("../../helpers/db-validators");
 
 const {
   validarCampos,
   validarJWT,
   esAdminRole,
   tieneRole,
-} = require("../middlewares");
+} = require("../../middlewares");
 
 const {
-  //esRoleValido,
-  // emailExiste,
-  // existeUsuarioPorId,
-  // nitExiste,
-  existeContratoPorId,
-} = require("../helpers/db-validators");
-
-const {
-  contratoGet,
-  contratoPut,
-  contratoPost,
-  contratoDelete,
-  contratoPatch,
-  contratoGets,
-} = require("../controllers/contrato");
+  contratoBKGet,
+  contratoBKPut,
+  contratoBKPost,
+  contratoBKDelete,
+  contratoBKPatch,
+  contratoBKGets,
+} = require("../../controllers/bunkering/contratoBK");
 
 const router = Router();
 
-router.get("/", [validarJWT], contratoGets);
+router.get("/", [validarJWT], contratoBKGets);
 router.get(
   "/:id",
   [
@@ -36,18 +29,18 @@ router.get(
     // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
-  contratoGet
+  contratoBKGet
 );
 router.put(
   "/:id",
   [
     validarJWT,
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeContratoPorId),
+    check("id").custom(existeContratoBKPorId),
     //check("rol").custom(esRoleValido),
     validarCampos,
   ],
-  contratoPut
+  contratoBKPut
 );
 
 router.post(
@@ -63,7 +56,7 @@ router.post(
     // check("material", "El material del contrato es obligatoria").not().isEmpty(),
     // validarCampos,
   ],
-  contratoPost
+  contratoBKPost
 );
 
 router.delete(
@@ -73,12 +66,12 @@ router.delete(
     // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeContratoPorId),
+    check("id").custom(existeContratoBKPorId),
     validarCampos,
   ],
-  contratoDelete
+  contratoBKDelete
 );
 
-router.patch("/", contratoPatch);
+router.patch("/", contratoBKPatch);
 
 module.exports = router;
