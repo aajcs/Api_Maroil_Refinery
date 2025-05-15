@@ -59,10 +59,10 @@ const EmbarcacionSchema = new Schema(
 );
 
 // Definición del esquema para el modelo Recepción
-const RecepcionBKSchema = new Schema(
+const DespachoBKSchema = new Schema(
   {
     // Número de despacho
-    numeroRecepcionBK: {
+    numeroDespachoBK: {
       type: Number,
     },
     // Relación con el modelo Contrato
@@ -71,7 +71,7 @@ const RecepcionBKSchema = new Schema(
       ref: "ContratoBK",
       required: [
         true,
-        "El ID del Contrato asociado a la recepción es obligatorio",
+        "El ID del Contrato asociado al despacho es obligatorio",
       ],
     },
     idContratoItems: {
@@ -87,7 +87,7 @@ const RecepcionBKSchema = new Schema(
       ref: "Bunkering",
       required: [
         true,
-        "El ID del Bunkering asociada a la recepción es obligatorio",
+        "El ID del Bunkering asociada al despacho es obligatorio",
       ],
     },
     idMuelle: {
@@ -106,12 +106,12 @@ const RecepcionBKSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "TanqueBK",
     },
-    idChequeoCalidad: {
+    idChequeoCalidadBK: {
       type: Schema.Types.ObjectId,
       ref: "ChequeoCalidadBK",
       required: false,
     },
-    idChequeoCantidad: {
+    idChequeoCantidadBK: {
       type: Schema.Types.ObjectId,
       ref: "ChequeoCantidadBK",
       required: false,
@@ -125,7 +125,7 @@ const RecepcionBKSchema = new Schema(
       min: [0, "La cantidad enviada no puede ser negativa"],
       required: [true, "La cantidad enviada es obligatoria"],
     },
-    estadoRecepcionBK: {
+    estadoDespachoBK: {
       type: String,
     },
     estadoCarga: {
@@ -143,10 +143,10 @@ const RecepcionBKSchema = new Schema(
     fechaDespacho: {
       type: Date,
     },
-    fechaInicioRecepcionBK: {
+    fechaInicioDespachoBK: {
       type: Date,
     },
-    fechaFinRecepcionBK: {
+    fechaFinDespachoBK: {
       type: Date,
     },
     fechaSalida: {
@@ -156,10 +156,10 @@ const RecepcionBKSchema = new Schema(
       type: Date,
     },
 
-    // NUEVO CAMPO: Tipo de recepción y su estructura asociada
+    // NUEVO CAMPO: Tipo de despacho y su estructura asociada
     tipo: {
       type: String,
-      required: [true, "El tipo de recepción es obligatorio"],
+      required: [true, "El tipo de despacho es obligatorio"],
       enum: ["Tractomula", "Muelle", "Bunkering"],
     },
     tractomula: {
@@ -196,9 +196,9 @@ const RecepcionBKSchema = new Schema(
   }
 );
 
-RecepcionBKSchema.plugin(auditPlugin);
+DespachoBKSchema.plugin(auditPlugin);
 
-RecepcionBKSchema.set("toJSON", {
+DespachoBKSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;
@@ -207,10 +207,10 @@ RecepcionBKSchema.set("toJSON", {
 });
 
 // Middleware para generar un número único de refinación
-RecepcionBKSchema.pre("save", async function (next) {
+DespachoBKSchema.pre("save", async function (next) {
   if (this.isNew && this.idBunkering) {
     try {
-      const counterKey = `recepcionBK_${this.idBunkering.toString()}`;
+      const counterKey = `despachoBK_${this.idBunkering.toString()}`;
       let bunkeringCounter = await Counter.findOne({ _id: counterKey });
 
       if (!bunkeringCounter) {
@@ -221,7 +221,7 @@ RecepcionBKSchema.pre("save", async function (next) {
       bunkeringCounter.seq += 1;
       await bunkeringCounter.save();
 
-      this.numeroRecepcionBK = bunkeringCounter.seq;
+      this.numeroDespachoBK = bunkeringCounter.seq;
       next();
     } catch (error) {
       next(error);
@@ -231,4 +231,4 @@ RecepcionBKSchema.pre("save", async function (next) {
   }
 });
 
-module.exports = model("RecepcionBK", RecepcionBKSchema);
+module.exports = model("DespachoBK", DespachoBKSchema);

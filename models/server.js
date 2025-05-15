@@ -6,6 +6,7 @@ const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
+const despachoBK = require("./bunkering/despachoBK");
 // const tipoProductoBK = require("./bunkering/tipoProductoBK");
 // const productoBK = require("./bunkering/productoBK");
 
@@ -65,6 +66,7 @@ class Server {
       bunkering: "/api/bunkering/bunkering",
       muelle: "/api/bunkering/muelle",
       recepcionBK: "/api/bunkering/recepcionBK",
+      despachoBK: "/api/bunkering/despachoBK",
       lineaCargaBK: "/api/bunkering/lineaCargaBK",
       embarcacion: "/api/bunkering/embarcacion",
       tanqueBK: "/api/bunkering/tanqueBK",
@@ -215,6 +217,7 @@ class Server {
       this.paths.recepcionBK,
       require("../routes/bunkering/recepcionBK")
     );
+    this.app.use(this.paths.despachoBK, require("../routes/bunkering/despachoBK"));
     this.app.use(
       this.paths.productoBK,
       require("../routes/bunkering/productoBK")

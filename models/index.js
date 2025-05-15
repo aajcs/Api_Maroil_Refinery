@@ -46,6 +46,7 @@ const Muelle = require("./bunkering/muelle");
 const Embarcacion = require("./bunkering/embarcacion");
 const TanqueBK = require("./bunkering/tanqueBK");
 const RecepcionBK = require("./bunkering/recepcionBK");
+const DespachoBK = require("./bunkering/despachoBK");
 const lineaCargaBK = require("./bunkering/lineaCargaBK");
 const lineaDespachoBK = require("./bunkering/lineaDespachoBK");
 const OperadorBK = require("./bunkering/operadorBK");
@@ -72,6 +73,7 @@ module.exports = {
   Cuenta,
   // CostoBunker,
   Despacho,
+  DespachoBK,
   Historial,
   LineaCarga,
   lineaCargaBK,
