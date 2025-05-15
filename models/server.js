@@ -76,6 +76,7 @@ class Server {
       productoBK: "/api/bunkering/productoBK",
       tipoProductoBK: "/api/bunkering/tipoProductoBK",
       cuentaBK: "/api/bunkering/cuentaBK",
+      contratoBK: "/api/bunkering/contratoBK",
     };
 
     // Conectar a base de datos
@@ -217,7 +218,10 @@ class Server {
       this.paths.recepcionBK,
       require("../routes/bunkering/recepcionBK")
     );
-    this.app.use(this.paths.despachoBK, require("../routes/bunkering/despachoBK"));
+    this.app.use(
+      this.paths.despachoBK,
+      require("../routes/bunkering/despachoBK")
+    );
     this.app.use(
       this.paths.productoBK,
       require("../routes/bunkering/productoBK")
@@ -231,6 +235,11 @@ class Server {
       require("../routes/bunkering/contactoBK")
     );
     this.app.use(this.paths.cuentaBK, require("../routes/bunkering/cuentaBK"));
+
+    this.app.use(
+      this.paths.contratoBK,
+      require("../routes/bunkering/contratoBK")
+    );
 
     // Rutas específicas del módulo Bunker
     // const bunkerRoutes = "../routes/bunker";
