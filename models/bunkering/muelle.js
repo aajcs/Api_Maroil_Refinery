@@ -65,8 +65,6 @@ const MuelleSchema = Schema(
     // Estado del muelle (activo o inactivo)
     estado: {
       type: String,
-      enum: ["activo", "inactivo"], // Valores permitidos
-      default: "activo", // Valor por defecto
     },
 
     idBunkering: {
