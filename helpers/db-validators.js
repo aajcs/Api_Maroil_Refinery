@@ -318,6 +318,13 @@ const existeContactoBKPorId = async (id) => {
     throw new Error(`El id no existe ${id}`);
   }
 };
+const existeContratoBKPorId = async (id) => {
+  // Verificar si contacto existe
+  const existeContratoBK = await ContratoBK.findById(id);
+  if (!existeContratoBK) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
 
 const existeBunkeringPorId = async (id) => {
   //Verificar si el bunkering existe
@@ -386,6 +393,7 @@ module.exports = {
   existeTanqueBKPorId,
   existeOperadorBKPorId,
   existeContactoBKPorId,
+  existeContratoBKPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

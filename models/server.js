@@ -49,17 +49,17 @@ class Server {
       factura: "/api/factura",
       corteRefinacion: "/api/corteRefinacion",
       cuenta: "/api/cuenta",
-      bunker: "/api/bunker/bunker",
-      balanceBunker: "/api/bunker/balanceBunker",
-      barcaza: "/api/bunker/barcaza",
-      chequeoCalidadBunker: "/api/bunker/ChequeoCalidadBunker",
-      chequeoCantidadBunker: "/api/bunker/chequeoCantidadBunker",
-      productoBunker: "/api/bunker/productoBunker",
-      contratoBunker: "/api/bunker/contratoBunker",
-      contactoBunker: "/api/bunker/contactoBunker",
-      recepcionBunker: "/api/bunker/recepcionBunker",
-      costoBunker: "/api/bunker/costoBunker",
-      lineaCargaBunker: "/api/bunker/lineaCargaBunker",
+      // bunker: "/api/bunker/bunker",
+      // balanceBunker: "/api/bunker/balanceBunker",
+      // barcaza: "/api/bunker/barcaza",
+      // chequeoCalidadBunker: "/api/bunker/ChequeoCalidadBunker",
+      // chequeoCantidadBunker: "/api/bunker/chequeoCantidadBunker",
+      // productoBunker: "/api/bunker/productoBunker",
+      // contratoBunker: "/api/bunker/contratoBunker",
+      // contactoBunker: "/api/bunker/contactoBunker",
+      // recepcionBunker: "/api/bunker/recepcionBunker",
+      // costoBunker: "/api/bunker/costoBunker",
+      // lineaCargaBunker: "/api/bunker/lineaCargaBunker",
 
       // Agregar más rutas según sea necesario
       bunkering: "/api/bunkering/bunkering",
@@ -73,7 +73,7 @@ class Server {
       contactoBK: "/api/bunkering/contactoBK",
       productoBK: "/api/bunkering/productoBK",
       tipoProductoBK: "/api/bunkering/tipoProductoBK",
-      
+      cuentaBK: "/api/bunkering/cuentaBK",
     };
 
     // Conectar a base de datos
@@ -193,58 +193,83 @@ class Server {
     this.app.use(this.paths.uploads, require("../routes/uploads"));
 
     // Rutas de bunkering
-    this.app.use(this.paths.bunkering, require("../routes/bunkering/bunkering"));
+    this.app.use(
+      this.paths.bunkering,
+      require("../routes/bunkering/bunkering")
+    );
     this.app.use(this.paths.muelle, require("../routes/bunkering/muelle"));
-    this.app.use(this.paths.embarcacion, require("../routes/bunkering/embarcacion"));
+    this.app.use(
+      this.paths.embarcacion,
+      require("../routes/bunkering/embarcacion")
+    );
     this.app.use(this.paths.tanqueBK, require("../routes/bunkering/tanqueBK"));
-    this.app.use(this.paths.lineaCargaBK, require("../routes/bunkering/lineaCargaBK"));
-    this.app.use(this.paths.lineaDespachoBK, require("../routes/bunkering/lineaDespachoBK"));
-    this.app.use(this.paths.recepcionBK, require("../routes/bunkering/recepcionBK"));
-    this.app.use(this.paths.productoBK, require("../routes/bunkering/productoBK"));
-    this.app.use(this.paths.tipoProductoBK, require("../routes/bunkering/tipoProductoBK"));
-    this.app.use(this.paths.contactoBK, require("../routes/bunkering/contactoBK"));
+    this.app.use(
+      this.paths.lineaCargaBK,
+      require("../routes/bunkering/lineaCargaBK")
+    );
+    this.app.use(
+      this.paths.lineaDespachoBK,
+      require("../routes/bunkering/lineaDespachoBK")
+    );
+    this.app.use(
+      this.paths.recepcionBK,
+      require("../routes/bunkering/recepcionBK")
+    );
+    this.app.use(
+      this.paths.productoBK,
+      require("../routes/bunkering/productoBK")
+    );
+    this.app.use(
+      this.paths.tipoProductoBK,
+      require("../routes/bunkering/tipoProductoBK")
+    );
+    this.app.use(
+      this.paths.contactoBK,
+      require("../routes/bunkering/contactoBK")
+    );
+    this.app.use(this.paths.cuentaBK, require("../routes/bunkering/cuentaBK"));
 
     // Rutas específicas del módulo Bunker
-    const bunkerRoutes = "../routes/bunker";
-    this.app.use(this.paths.bunker, require(`${bunkerRoutes}/bunker`));
-    this.app.use(
-      this.paths.balanceBunker,
-      require(`${bunkerRoutes}/balanceBunker`)
-    );
-    this.app.use(this.paths.barcaza, require(`${bunkerRoutes}/barcaza`));
-    this.app.use(
-      this.paths.chequeoCalidadBunker,
-      require(`${bunkerRoutes}/chequeoCalidadBunker`)
-    );
-    this.app.use(
-      this.paths.chequeoCantidadBunker,
-      require(`${bunkerRoutes}/chequeoCantidadBunker`)
-    );
-    this.app.use(
-      this.paths.contactoBunker,
-      require(`${bunkerRoutes}/contactoBunker`)
-    );
-    this.app.use(
-      this.paths.contratoBunker,
-      require(`${bunkerRoutes}/contratoBunker`)
-    );
-    this.app.use(
-      this.paths.costoBunker,
-      require(`${bunkerRoutes}/costoBunker`)
-    );
+    // const bunkerRoutes = "../routes/bunker";
+    // this.app.use(this.paths.bunker, require(`${bunkerRoutes}/bunker`));
+    // this.app.use(
+    //   this.paths.balanceBunker,
+    //   require(`${bunkerRoutes}/balanceBunker`)
+    // );
+    // this.app.use(this.paths.barcaza, require(`${bunkerRoutes}/barcaza`));
+    // this.app.use(
+    //   this.paths.chequeoCalidadBunker,
+    //   require(`${bunkerRoutes}/chequeoCalidadBunker`)
+    // );
+    // this.app.use(
+    //   this.paths.chequeoCantidadBunker,
+    //   require(`${bunkerRoutes}/chequeoCantidadBunker`)
+    // );
+    // this.app.use(
+    //   this.paths.contactoBunker,
+    //   require(`${bunkerRoutes}/contactoBunker`)
+    // );
+    // this.app.use(
+    //   this.paths.contratoBunker,
+    //   require(`${bunkerRoutes}/contratoBunker`)
+    // );
+    // this.app.use(
+    //   this.paths.costoBunker,
+    //   require(`${bunkerRoutes}/costoBunker`)
+    // );
 
-    this.app.use(
-      this.paths.lineaCargaBunker,
-      require(`${bunkerRoutes}/lineaCargaBunker`)
-    );
-    this.app.use(
-      this.paths.productoBunker,
-      require(`${bunkerRoutes}/productoBunker`)
-    );
-    this.app.use(
-      this.paths.recepcionBunker,
-      require(`${bunkerRoutes}/recepcionBunker`)
-    );
+    // this.app.use(
+    //   this.paths.lineaCargaBunker,
+    //   require(`${bunkerRoutes}/lineaCargaBunker`)
+    // );
+    // this.app.use(
+    //   this.paths.productoBunker,
+    //   require(`${bunkerRoutes}/productoBunker`)
+    // );
+    // this.app.use(
+    //   this.paths.recepcionBunker,
+    //   require(`${bunkerRoutes}/recepcionBunker`)
+    // );
   }
 
   configurarSockets() {

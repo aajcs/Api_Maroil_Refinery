@@ -1,28 +1,28 @@
 const Ventana = require("./ventana");
-const BalanceBunker = require("./bunker/balanceBunker");
-const Barcaza = require("./bunker/barcaza");
+// const BalanceBunker = require("./bunker/balanceBunker");
+// const Barcaza = require("./bunker/barcaza");
 const Bomba = require("./bomba");
-const Bunker = require("./bunker/bunker");
+// const Bunker = require("./bunker/bunker");
 const Categoria = require("./categoria");
 const ChequeoCalidad = require("./chequeoCalidad");
-const ChequeoCalidadBunker = require("./bunker/chequeoCalidadBunker");
+// const ChequeoCalidadBunker = require("./bunker/chequeoCalidadBunker");
 const ChequeoCantidad = require("./chequeoCantidad");
-const ChequeoCantidadBunker = require("./bunker/chequeoCantidadBunker");
+// const ChequeoCantidadBunker = require("./bunker/chequeoCantidadBunker");
 const Contacto = require("./contacto");
-const ContactoBunker = require("./bunker/contactoBunker");
+// const ContactoBunker = require("./bunker/contactoBunker");
 const Contrato = require("./contrato");
-const ContratoBunker = require("./bunker/contratoBunker");
+// const ContratoBunker = require("./bunker/contratoBunker");
 const Costo = require("./costo");
-const CostoBunker = require("./bunker/costoBunker");
+// const CostoBunker = require("./bunker/costoBunker");
 const Despacho = require("./despacho");
 const Historial = require("./historial");
 const LineaCarga = require("./lineaCarga");
 const LineaDespacho = require("./lineaDespacho");
-const LineaCargaBunker = require("./bunker/lineaCargaBunker");
+// const LineaCargaBunker = require("./bunker/lineaCargaBunker");
 const Producto = require("./producto");
-const ProductoBunker = require("./bunker/productoBunker");
+// const ProductoBunker = require("./bunker/productoBunker");
 const Recepcion = require("./recepcion");
-const RecepcionBunker = require("./bunker/recepcionBunker");
+// const RecepcionBunker = require("./bunker/recepcionBunker");
 const Refineria = require("./refineria");
 const Refinacion = require("./refinacion");
 const RefinacionSalida = require("./refinacionSalida");
@@ -52,38 +52,38 @@ const OperadorBK = require("./bunkering/operadorBK");
 const ContactoBK = require("./bunkering/contactoBK");
 const ProductoBK = require("./bunkering/productoBK");
 const TipoProductoBK = require("./bunkering/tipoProductoBK");
-
+const CuentaBK = require("./bunkering/cuentaBK");
 
 module.exports = {
   Ventana,
-  BalanceBunker,
-  Barcaza,
+  // BalanceBunker,
+  // Barcaza,
   Bomba,
   Categoria,
   ChequeoCalidad,
-  ChequeoCalidadBunker,
+  // ChequeoCalidadBunker,
   ChequeoCantidad,
-  ChequeoCantidadBunker,
+  // ChequeoCantidadBunker,
   Contacto,
-  ContactoBunker,
+  // ContactoBunker,
   Contrato,
-  ContratoBunker,
+  // ContratoBunker,
   Costo,
   Cuenta,
-  CostoBunker,
+  // CostoBunker,
   Despacho,
   Historial,
   LineaCarga,
   lineaCargaBK,
   LineaDespacho,
   lineaDespachoBK,
-  LineaCargaBunker,
+  // LineaCargaBunker,
   Producto,
   ProductoBK,
-  ProductoBunker,
+  // ProductoBunker,
   Recepcion,
   RecepcionBK,
-  RecepcionBunker,
+  // RecepcionBunker,
   Refinacion,
   RefinacionSalida,
   Role,
@@ -107,4 +107,5 @@ module.exports = {
   TanqueBK,
   OperadorBK,
   ContactoBK,
+  CuentaBK,
 };
