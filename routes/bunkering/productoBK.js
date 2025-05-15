@@ -1,85 +1,90 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
 
+const { validarCampos, validarJWT, tieneRole } = require("../../middlewares");
 const {
-  validarCampos,
-  validarJWT,
-  esAdminRole,
-  tieneRole,
-} = require("../middlewares");
+  existeBunkeringPorId,
+  existeProductoBKPorId,
+} = require("../../helpers/db-validators");
 
 const {
-  //esRoleValido,
-  // emailExiste,
-  // existeUsuarioPorId,
-  // nitExiste,
-  existeContratoPorId,
-  existeProductoPorId,
-} = require("../helpers/db-validators");
-
-const {
-  productoGet,
-  productoPut,
-  productoPost,
-  productoDelete,
-  productoPatch,
-  productoGets,
-} = require("../controllers/producto");
+  productoBKGets,
+  productoBKGet,
+  productoBKPost,
+  productoBKPut,
+  productoBKDelete,
+  // productoBKPatch, // Si tienes PATCH, descomenta esta línea
+} = require("../../controllers/bunkering/productoBK");
 
 const router = Router();
 
-router.get("/", [validarJWT], productoGets);
+// Obtener todos los productos
+router.get("/", [validarJWT], productoBKGets);
+
+// Obtener un producto por ID
 router.get(
   "/:id",
   [
     validarJWT,
-    check("id", "No es un id de Mongo válido").isMongoId(),
-    // check('id').custom( existeProductoPorId ),
+    check("id", "No es un ID válido").isMongoId(),
+    check("id").custom(existeProductoBKPorId),
     validarCampos,
   ],
-  productoGet
+  productoBKGet
 );
+
+// Crear un nuevo producto
+router.post(
+  "/",
+  [
+    validarJWT,
+    check("idBunkering", "El ID del bunkering es obligatorio").not().isEmpty(),
+    check("idBunkering", "No es un ID válido").isMongoId(),
+    check("idBunkering").custom(existeBunkeringPorId),
+    check("nombre", "El nombre del producto es obligatorio").not().isEmpty(),
+    check("posicion", "La posición del producto es obligatoria").not().isEmpty(),
+    check("color", "El color del producto es obligatorio").not().isEmpty(),
+    check("tipoMaterial", "El tipo de material es obligatorio").not().isEmpty(),
+    validarCampos,
+  ],
+  productoBKPost
+);
+
+// Actualizar un producto por ID
 router.put(
   "/:id",
   [
     validarJWT,
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeProductoPorId),
-    //check("rol").custom(esRoleValido),
+    check("id").custom(existeProductoBKPorId),
     validarCampos,
   ],
-  productoPut
+  productoBKPut
 );
 
-router.post(
-  "/",
-  [
-    validarJWT,
-    //Validación de campos.
-    //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    //check("nombre", "El nombre del producto es obligatorio").not().isEmpty(),
-    //check("capacidad", "La capacidad del producto es obligatoria")
-    //  .not()
-    //.isEmpty(),
-    // check("material", "El material del producto es obligatoria").not().isEmpty(),
-    // validarCampos,
-  ],
-  productoPost
-);
-
+// Eliminar (marcar como eliminado) un producto por ID
 router.delete(
   "/:id",
   [
     validarJWT,
-    // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeProductoPorId),
+    check("id").custom(existeProductoBKPorId),
     validarCampos,
   ],
-  productoDelete
+  productoBKDelete
 );
 
-router.patch("/", productoPatch);
+// // Actualizar parcialmente un producto (descomenta si tienes PATCH)
+// // router.patch(
+// //   "/:id",
+// //   [
+// //     validarJWT,
+// //     check("id", "No es un ID válido").isMongoId(),
+// //     check("id").custom(existeProductoBKPorId),
+// //     validarCampos,
+// //   ],
+// //   productoBKPatch
+// // );
 
 module.exports = router;
