@@ -1,42 +1,36 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
+const { validarCampos, validarJWT, tieneRole } = require("../../middlewares");
 
 const {
-  validarCampos,
-  validarJWT,
-  esAdminRole,
-  tieneRole,
-} = require("../middlewares");
+  existeOperadorBKPorId,
+  existeBunkeringPorId,
+} = require("../../helpers/db-validators");
 
 const {
-  existeOperadorPorId,
-  existeRefineriaPorId,
-} = require("../helpers/db-validators");
-
-const {
-  operadorGet,
-  operadorPut,
-  operadorPost,
-  operadorDelete,
-  operadorPatch,
-  operadorGets,
-} = require("../controllers/operador");
+  operadorBKGet,
+  operadorBKPut,
+  operadorBKPost,
+  operadorBKDelete,
+  operadorBKPatch,
+  operadorBKGets,
+} = require("../../controllers/bunkering/operadorBK");
 
 const router = Router();
 
 // Obtener todos los operadores
-router.get("/", operadorGets);
+router.get("/", [validarJWT], operadorBKGets);
 
 // Obtener un operador específico por ID
 router.get(
   "/:id",
   [
     validarJWT,
-    check("id", "No es un id de Mongo válido").isMongoId(),
-    check("id").custom(existeOperadorPorId),
+    check("id", "No es un ID válido").isMongoId(),
+    check("id").custom(existeOperadorBKPorId),
     validarCampos,
   ],
-  operadorGet
+  operadorBKGet
 );
 
 // Actualizar un operador por ID
@@ -45,14 +39,14 @@ router.put(
   [
     validarJWT,
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeOperadorPorId),
-    check("idRefineria", "No es un ID válido de refinería")
+    check("id").custom(existeOperadorBKPorId),
+    check("idBunkering", "No es un ID válido de refinería")
       .optional()
       .isMongoId()
-      .custom(existeRefineriaPorId),
+      .custom(existeBunkeringPorId),
     validarCampos,
   ],
-  operadorPut
+  operadorBKPut
 );
 
 // Crear un nuevo operador
@@ -68,11 +62,11 @@ router.post(
     check("cargo", "El cargo debe tener al menos 3 caracteres").isLength({
       min: 3,
     }),
-    check("idRefineria", "No es un ID válido de refinería").isMongoId(),
-    check("idRefineria").custom(existeRefineriaPorId),
+    check("idBunkering", "No es un ID válido de refinería").isMongoId(),
+    check("idBunkering").custom(existeBunkeringPorId),
     validarCampos,
   ],
-  operadorPost
+  operadorBKPost
 );
 
 // Eliminar (marcar como eliminado) un operador por ID
@@ -82,13 +76,22 @@ router.delete(
     validarJWT,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeOperadorPorId),
+    check("id").custom(existeOperadorBKPorId),
     validarCampos,
   ],
-  operadorDelete
+  operadorBKDelete
 );
 
-// Manejar solicitudes PATCH (ejemplo básico)
-router.patch("/", [validarJWT], operadorPatch);
+// Manejar solicitudes PATCH
+router.patch(
+  "/:id",
+  [
+    validarJWT,
+    check("id", "No es un ID válido").isMongoId(),
+    check("id").custom(existeOperadorBKPorId),
+    validarCampos,
+  ],
+  operadorBKPatch
+);
 
 module.exports = router;

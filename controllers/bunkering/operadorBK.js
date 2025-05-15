@@ -1,20 +1,23 @@
 const { response, request } = require("express");
-const Operador = require("../models/operador");
+const OperadorBK = require("../../models/bunkering/operadorBK"); // Importa el modelo correcto
 
 // Opciones de población reutilizables para consultas
-const populateOptions = [{ path: "idRefineria", select: "nombre" }];
+const populateOptions = [
+  { path: "idBunkering", select: "nombre" }, // Popula el nombre del bunkering
+  { path: "createdBy", select: "nombre correo" }, // Popula el nombre y correo del usuario que creó el operador
+];
 
 // Controlador para obtener todos los operadores
-const operadorGets = async (req = request, res = response) => {
+const operadorBKGets = async (req = request, res = response) => {
   const query = { eliminado: false }; // Filtro para operadores no eliminados
 
   try {
-    const [total, operadors] = await Promise.all([
-      Operador.countDocuments(query), // Cuenta el total de operadores
-      Operador.find(query).populate(populateOptions), // Obtiene los operadores con referencias pobladas
+    const [total, operadores] = await Promise.all([
+      OperadorBK.countDocuments(query), // Cuenta el total de operadores
+      OperadorBK.find(query).populate(populateOptions), // Obtiene los operadores con referencias pobladas
     ]);
 
-    res.json({ total, operadors }); // Responde con el total y la lista de operadores
+    res.json({ total, operadores }); // Responde con el total y la lista de operadores
   } catch (err) {
     console.error("Error en operadorGets:", err);
     res.status(500).json({
@@ -24,11 +27,11 @@ const operadorGets = async (req = request, res = response) => {
 };
 
 // Controlador para obtener un operador específico por ID
-const operadorGet = async (req = request, res = response) => {
+const operadorBKGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const operador = await Operador.findOne({
+    const operador = await OperadorBK.findOne({
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
@@ -47,15 +50,16 @@ const operadorGet = async (req = request, res = response) => {
 };
 
 // Controlador para crear un nuevo operador
-const operadorPost = async (req = request, res = response) => {
-  const { nombre, cargo, turno, idRefineria } = req.body;
+const operadorBKPost = async (req = request, res = response) => {
+  const { nombre, cargo, turno, idBunkering } = req.body;
 
   try {
-    const nuevoOperador = new Operador({
+    const nuevoOperador = new OperadorBK({
       nombre,
       cargo,
       turno,
-      idRefineria,
+      idBunkering,
+      createdBy: req.usuario._id, // Auditoría: quién crea
     });
 
     await nuevoOperador.save();
@@ -71,14 +75,14 @@ const operadorPost = async (req = request, res = response) => {
 };
 
 // Controlador para actualizar un operador existente
-const operadorPut = async (req = request, res = response) => {
+const operadorBKPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
   try {
-    const operadorActualizado = await Operador.findOneAndUpdate(
+    const operadorActualizado = await OperadorBK.findOneAndUpdate(
       { _id: id, eliminado: false },
-      resto,
+      { ...resto, modificadoPor: req.usuario._id }, // Auditoría: quién modifica
       { new: true }
     ).populate(populateOptions);
 
@@ -96,21 +100,26 @@ const operadorPut = async (req = request, res = response) => {
 };
 
 // Controlador para eliminar (marcar como eliminado) un operador
-const operadorDelete = async (req = request, res = response) => {
+const operadorBKDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const operador = await Operador.findOneAndUpdate(
+    const cambios = { eliminado: { from: false, to: true } };
+
+    const operadorEliminado = await OperadorBK.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { eliminado: true },
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } }, // Auditoría: registrar cambios
+      },
       { new: true }
     ).populate(populateOptions);
 
-    if (!operador) {
+    if (!operadorEliminado) {
       return res.status(404).json({ msg: "Operador no encontrado" });
     }
 
-    res.json(operador);
+    res.json(operadorEliminado);
   } catch (err) {
     console.error("Error en operadorDelete:", err);
     res.status(500).json({
@@ -119,18 +128,37 @@ const operadorDelete = async (req = request, res = response) => {
   }
 };
 
-// Controlador para manejar solicitudes PATCH (ejemplo básico)
-const operadorPatch = (req = request, res = response) => {
-  res.json({
-    msg: "patch API - operadorPatch",
-  });
+// Controlador para manejar solicitudes PATCH
+const operadorBKPatch = async (req = request, res = response) => {
+  const { id } = req.params;
+  const { ...resto } = req.body;
+
+  try {
+    const operadorActualizado = await OperadorBK.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { $set: resto },
+      { new: true }
+    ).populate(populateOptions);
+
+    if (!operadorActualizado) {
+      return res.status(404).json({ msg: "Operador no encontrado" });
+    }
+
+    res.json(operadorActualizado);
+  } catch (err) {
+    console.error("Error en operadorPatch:", err);
+    res.status(500).json({
+      error:
+        "Error interno del servidor al actualizar parcialmente el operador.",
+    });
+  }
 };
 
 module.exports = {
-  operadorGets, // Obtener todos los operadores
-  operadorGet, // Obtener un operador específico por ID
-  operadorPost, // Crear un nuevo operador
-  operadorPut, // Actualizar un operador existente
-  operadorDelete, // Eliminar (marcar como eliminado) un operador
-  operadorPatch, // Manejar solicitudes PATCH
+  operadorBKGets, // Obtener todos los operadores
+  operadorBKGet, // Obtener un operador específico por ID
+  operadorBKPost, // Crear un nuevo operador
+  operadorBKPut, // Actualizar un operador existente
+  operadorBKDelete, // Eliminar (marcar como eliminado) un operador
+  operadorBKPatch, // Manejar solicitudes PATCH
 };
