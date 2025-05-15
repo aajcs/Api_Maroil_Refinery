@@ -1,92 +1,61 @@
-// Importaciones necesarias
-const { response, request } = require("express"); // Objetos de Express para manejar solicitudes y respuestas
-const TipoProducto = require("../models/tipoProducto"); // Modelo TipoProducto para interactuar con la base de datos
-const { Producto } = require("../models"); // Modelo Producto para manejar relaciones
+const { response, request } = require("express");
+const TipoProductoBK = require("../../models/bunkering/tipoProductoBK");
+const ProductoBK = require("../../models/bunkering/productoBK");
 
-// Opciones de población reutilizables para consultas
+// Opciones de población reutilizables
 const populateOptions = [
-  {
-    path: "idRefineria", // Relación con el modelo Refineria
-    select: "nombre procesamientoDia", // Selecciona solo el campo nombre
-  },
-  {
-    path: "idProducto",
-    select: "nombre color", // Relación con el modelo Producto
-  },
-  {
-    path: "rendimientos", // Relación con el modelo Rendimiento
-    populate: {
-      path: "idProducto",
-      // select: "nombre color", // Relación con el modelo Producto dentro de Rendimiento
-    },
-  },
-  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
-
-  {
-    path: "historial",
-    populate: { path: "modificadoPor", select: "nombre correo" },
-  }, // Popula historial.modificadoPor en el array
+  { path: "idBunkering", select: "nombre" },
+  { path: "idProducto", select: "nombre" },
+  { path: "rendimientos.idProducto", select: "nombre" },
 ];
 
-// Controlador para obtener todos los tipos de producto con paginación y población de referencias
-const tipoProductoGets = async (req = request, res = response) => {
-  const query = { eliminado: false }; // Filtro para obtener solo tipos de producto activos y no eliminados
+// Obtener todos los tipos de producto con historial ordenado
+const tipoProductoBKGets = async (req = request, res = response) => {
+  const query = { eliminado: false };
 
   try {
-    // Ejecuta ambas consultas en paralelo para optimizar el tiempo de respuesta
     const [total, tipoProductos] = await Promise.all([
-      TipoProducto.countDocuments(query), // Cuenta el total de tipos de producto que cumplen el filtro
-      TipoProducto.find(query).populate(populateOptions), // Obtiene los tipos de producto con las referencias pobladas
+      TipoProductoBK.countDocuments(query),
+      TipoProductoBK.find(query).populate(populateOptions).sort({ nombre: 1 }),
     ]);
-    // Ordenar historial por fecha ascendente en cada torre
     tipoProductos.forEach((t) => {
       if (Array.isArray(t.historial)) {
         t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
-    // Responde con el total de tipos de producto y la lista obtenida
-    res.json({
-      total,
-      tipoProductos,
-    });
+    res.json({ total, tipoProductos });
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
 
-// Controlador para obtener un tipo de producto específico por ID
-const tipoProductoGet = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID del tipo de producto desde los parámetros de la URL
-
+// Obtener un tipo de producto específico por ID
+const tipoProductoBKGet = async (req = request, res = response) => {
+  const { id } = req.params;
   try {
-    // Busca el tipo de producto por ID y verifica que esté activo y no eliminado
-    const tipoProducto = await TipoProducto.findOne({
+    const tipoProducto = await TipoProductoBK.findOne({
       _id: id,
       eliminado: false,
-    }).populate(populateOptions); // Población de referencias
-    // Ordenar historial por fecha ascendente en cada torre
-    tipoProducto.forEach((t) => {
-      if (Array.isArray(t.historial)) {
-        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      }
-    });
-    if (!tipoProducto) {
-      return res.status(404).json({ msg: "Tipo de Producto no encontrado" }); // Responde con un error 404 si no se encuentra el tipo de producto
-    }
+    }).populate(populateOptions);
 
-    res.json(tipoProducto); // Responde con los datos del tipo de producto
+    if (!tipoProducto) {
+      return res.status(404).json({ msg: "Tipo de producto no encontrado" });
+    }
+    if (Array.isArray(tipoProducto.historial)) {
+      tipoProducto.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    }
+    res.json(tipoProducto);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
 
-// Controlador para crear un nuevo tipo de producto
-const tipoProductoPost = async (req = request, res = response) => {
-  // Extrae los datos del cuerpo de la solicitud
+// Crear un nuevo tipo de producto
+const tipoProductoBKPost = async (req = request, res = response) => {
   const {
-    idRefineria,
+    idBunkering,
     idProducto,
     nombre,
     clasificacion,
@@ -103,9 +72,8 @@ const tipoProductoPost = async (req = request, res = response) => {
   } = req.body;
 
   try {
-    // Crea una nueva instancia del modelo TipoProducto con los datos proporcionados
-    const nuevoTipoProducto = new TipoProducto({
-      idRefineria,
+    const nuevoTipoProducto = new TipoProductoBK({
+      idBunkering,
       idProducto,
       nombre,
       clasificacion,
@@ -119,118 +87,131 @@ const tipoProductoPost = async (req = request, res = response) => {
       convenio,
       procedencia,
       indiceCetano,
-      createdBy: req.usuario._id, // ID del usuario que creó el tipo de producto
+      createdBy: req.usuario?._id,
     });
 
-    await nuevoTipoProducto.save(); // Guarda el nuevo tipo de producto en la base de datos
+    await nuevoTipoProducto.save();
 
-    // Actualiza el modelo Producto para agregar la referencia al nuevo tipo de producto
-    await Producto.findByIdAndUpdate(
-      idProducto,
-      { $push: { idTipoProducto: nuevoTipoProducto._id } }, // Agrega el ID del nuevo tipo de producto al campo idTipoProducto
-      { new: true }
-    );
+    // Actualiza el modelo ProductoBK para agregar la referencia al nuevo tipo de producto
+    if (idProducto) {
+      await ProductoBK.findByIdAndUpdate(
+        idProducto,
+        { $push: { idTipoProducto: nuevoTipoProducto._id } },
+        { new: true }
+      );
+    }
 
-    await nuevoTipoProducto.populate(populateOptions); // Población de referencias para la respuesta
-    res.status(201).json(nuevoTipoProducto); // Responde con un código 201 (creado) y los datos del tipo de producto
+    await nuevoTipoProducto.populate(populateOptions);
+    res.status(201).json(nuevoTipoProducto);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    console.error(err);
+    let errorMsg = "Error interno del servidor al crear el tipo de producto.";
+    if (err.code === 11000) {
+      errorMsg = "Ya existe un tipo de producto con ese nombre en el bunkering.";
+    }
+    res.status(400).json({ error: errorMsg });
   }
 };
 
-// Controlador para actualizar un tipo de producto existente
-const tipoProductoPut = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID del tipo de producto desde los parámetros de la URL
-  const { idProducto, datosProducto, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, incluyendo datos para actualizar en idProducto
+// Actualizar un tipo de producto existente
+const tipoProductoBKPut = async (req = request, res = response) => {
+  const { id } = req.params;
+  const { idProducto, datosProducto, ...resto } = req.body;
 
   try {
-    const antes = await TipoProducto.findById(id);
+    const antes = await TipoProductoBK.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Tipo de producto no encontrado" });
+    }
     const cambios = {};
     for (let key in resto) {
       if (String(antes[key]) !== String(resto[key])) {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
-    } // Actualiza el tipo de producto en la base de datos y devuelve el tipo de producto actualizado
-    const tipoProductoActualizado = await TipoProducto.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar el tipo de producto no eliminado
+    }
+    const tipoProductoActualizado = await TipoProductoBK.findOneAndUpdate(
+      { _id: id, eliminado: false },
       {
         ...resto,
         idProducto,
-        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
-      }, // Datos a actualizar
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Población de referencias
+        $push: { historial: { modificadoPor: req.usuario?._id, cambios } },
+      },
+      { new: true }
+    ).populate(populateOptions);
 
     if (!tipoProductoActualizado) {
-      return res.status(404).json({ msg: "Tipo de Producto no encontrado" }); // Responde con un error 404 si no se encuentra el tipo de producto
+      return res.status(404).json({ msg: "Tipo de producto no encontrado" });
     }
 
     // Si se proporciona un nuevo idProducto o datos para actualizar en idProducto
     if (idProducto || datosProducto) {
-      // Actualiza los datos del producto referenciado en idProducto
-      await Producto.findByIdAndUpdate(
+      await ProductoBK.findByIdAndUpdate(
         idProducto,
-        { ...datosProducto }, // Actualiza los datos proporcionados en datosProducto
-        { new: true } // Devuelve el documento actualizado
+        { ...datosProducto },
+        { new: true }
       );
     }
 
-    res.json(tipoProductoActualizado); // Responde con los datos del tipo de producto actualizado
+    res.json(tipoProductoActualizado);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    console.error(err);
+    let errorMsg = "Error interno del servidor al actualizar el tipo de producto.";
+    if (err.code === 11000) {
+      errorMsg = "Ya existe un tipo de producto con ese nombre en el bunkering.";
+    }
+    res.status(400).json({ error: errorMsg });
   }
 };
 
-// Controlador para eliminar (marcar como eliminado) un tipo de producto
-const tipoProductoDelete = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID del tipo de producto desde los parámetros de la URL
+// Eliminar (marcar como eliminado) un tipo de producto
+const tipoProductoBKDelete = async (req = request, res = response) => {
+  const { id } = req.params;
 
   try {
-    // Auditoría: captura estado antes de eliminar
-    const antes = await Producto.findById(id);
+    const antes = await TipoProductoBK.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Tipo de producto no encontrado" });
+    }
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
-    // Marca el tipo de producto como eliminado (eliminación lógica)
-    const tipoProducto = await TipoProducto.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar el tipo de producto no eliminado
+
+    const tipoProducto = await TipoProductoBK.findOneAndUpdate(
+      { _id: id, eliminado: false },
       {
         eliminado: true,
-        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+        $push: { historial: { modificadoPor: req.usuario?._id, cambios } },
       },
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Población de referencias
+      { new: true }
+    ).populate(populateOptions);
 
     if (!tipoProducto) {
-      return res.status(404).json({ msg: "Tipo de Producto no encontrado" }); // Responde con un error 404 si no se encuentra el tipo de producto
+      return res.status(404).json({ msg: "Tipo de producto no encontrado" });
     }
 
-    // Elimina la referencia al tipo de producto en la colección Producto
-    await Producto.updateMany(
-      { idTipoProducto: id }, // Encuentra todos los productos que referencian el tipo de producto
-      { $pull: { idTipoProducto: id } } // Elimina la referencia al tipo de producto
+    // Elimina la referencia al tipo de producto en la colección ProductoBK
+    await ProductoBK.updateMany(
+      { idTipoProducto: id },
+      { $pull: { idTipoProducto: id } }
     );
 
-    res.json(tipoProducto); // Responde con los datos del tipo de producto eliminado
+    res.json(tipoProducto);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
 
 // Controlador para manejar solicitudes PATCH (ejemplo básico)
-const tipoProductoPatch = (req = request, res = response) => {
+const tipoProductoBKPatch = (req = request, res = response) => {
   res.json({
-    msg: "patch API - tipoProductoPatch", // Mensaje de prueba
+    msg: "patch API - tipoProductoBKPatch",
   });
 };
 
-// Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
-  tipoProductoGets, // Obtener todos los tipos de producto
-  tipoProductoGet, // Obtener un tipo de producto específico por ID
-  tipoProductoPost, // Crear un nuevo tipo de producto
-  tipoProductoPut, // Actualizar un tipo de producto existente
-  tipoProductoDelete, // Eliminar (marcar como eliminado) un tipo de producto
-  tipoProductoPatch, // Manejar solicitudes PATCH
+  tipoProductoBKGets,
+  tipoProductoBKGet,
+  tipoProductoBKPost,
+  tipoProductoBKPut,
+  tipoProductoBKDelete,
+  tipoProductoBKPatch,
 };

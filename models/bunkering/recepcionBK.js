@@ -1,9 +1,10 @@
 const { Schema, model } = require("mongoose");
-const auditPlugin = require("./plugins/audit");
-const Counter = require("./counter");
+const auditPlugin = require("../plugins/audit");
+const Counter = require("../counter");
 
-// Subesquema para Tractomula
-const TractomulaSchema = new Schema(
+
+// Subesquema para los datos de la tractomula
+const DatosTractomulaSchema = new Schema(
   {
     idGuia: {
       type: Number,
@@ -14,23 +15,32 @@ const TractomulaSchema = new Schema(
       maxlength: [10, "La placa no puede exceder los 10 caracteres"],
       required: [true, "La placa es obligatoria"],
     },
-    nombreChofer: {
-      type: String,
-      maxlength: [
-        20,
-        "El nombre del chofer no puede exceder los 50 caracteres",
-      ],
+    // Puedes agregar más campos aquí si lo necesitas
+  },
+  { _id: false }
+);
+
+// Subesquema para Tractomula
+const TractomulaSchema = new Schema(
+  {
+    datosTractomula: {
+      type: DatosTractomulaSchema,
+      required: true,
+    },
+    datosChofer: {
+      type: Object, 
+      required: true,
     },
   },
   { _id: false }
 );
 
-// Subesquema para Refinería
-const RefineriaSchema = new Schema(
+// Subesquema para Muelle
+const MuelleSchema = new Schema(
   {
-    idRefineria: {
+    idMuelle: {
       type: Schema.Types.ObjectId,
-      ref: "Refineria",
+      ref: "Muelle",
       required: true,
     },
   },
@@ -38,10 +48,10 @@ const RefineriaSchema = new Schema(
 );
 
 // Subesquema para Bunkering
-const BuqueSchema = new Schema(
+const EmbarcacionSchema = new Schema(
   {
     datosBuque: {
-      type: Object, // Puedes definir aquí los campos específicos si lo deseas
+      type: Object, 
       required: true,
     },
   },
@@ -79,6 +89,18 @@ const RecepcionBKSchema = new Schema(
         true,
         "El ID del Bunkering asociada a la recepción es obligatorio",
       ],
+    },
+    idMuelle: {
+      type: Schema.Types.ObjectId,
+      ref: "Muelle",
+    },
+    idEmbarcacion: {
+      type: Schema.Types.ObjectId,
+      ref: "Embarcacion",
+    },
+    idProductoBK: {
+      type: Schema.Types.ObjectId,
+      ref: "ProductoBK",
     },
     idTanque: {
       type: Schema.Types.ObjectId,
@@ -133,13 +155,12 @@ const RecepcionBKSchema = new Schema(
     fechaLlegada: {
       type: Date,
     },
-    
 
     // NUEVO CAMPO: Tipo de recepción y su estructura asociada
     tipo: {
       type: String,
       required: [true, "El tipo de recepción es obligatorio"],
-      enum: ["Tractomula", "Refineria", "Bunkering"],
+      enum: ["Tractomula", "Muelle", "Bunkering"],
     },
     tractomula: {
       type: TractomulaSchema,
@@ -148,15 +169,15 @@ const RecepcionBKSchema = new Schema(
       },
       default: undefined,
     },
-    refineria: {
-      type: RefineriaSchema,
+    muelle: {
+      type: MuelleSchema,
       required: function () {
-        return this.tipo === "Refineria";
+        return this.tipo === "Muelle";
       },
       default: undefined,
     },
     bunkering: {
-      type: BuqueSchema,
+      type: EmbarcacionSchema,
       required: function () {
         return this.tipo === "Bunkering";
       },

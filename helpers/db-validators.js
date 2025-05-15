@@ -29,6 +29,9 @@ const {
   CorteRefinacion,
   Muelle,
   Bunkering,
+  Embarcacion,
+  TanqueBK,
+  ContactoBK,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -107,6 +110,14 @@ const existeTanquePorId = async (id) => {
   // Verificar si el Tanque existe
   const existeTanque = await Tanque.findById(id);
   if (!existeTanque) {
+    throw new Error(`El id de Tanque no existe ${id}`);
+  }
+};
+
+const existeTanqueBKPorId = async (id) => {
+  // Verificar si el Tanque existe
+  const existeTanqueBK = await TanqueBK.findById(id);
+  if (!existeTanqueBK) {
     throw new Error(`El id de Tanque no existe ${id}`);
   }
 };
@@ -292,10 +303,34 @@ const existeMuellePorId = async (id) => {
   }
 };
 
+const existeOperadorBKPorId = async (id) => {
+  // Verificar si la corte existe
+  const existeOperadorBK = await OperadorBK.findById(id);
+  if (!existeOperadorBK) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+
+const existeContactoBKPorId = async (id) => {
+  // Verificar si contacto existe
+  const existeContactoBK = await ContactoBK.findById(id);
+  if (!existeContactoBK) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+
 const existeBunkeringPorId = async (id) => {
   //Verificar si el bunkering existe
   const existeBunkering = await Bunkering.findById(id);
   if (!existeBunkering) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+
+const existeEmbarcacionPorId = async (id) => {
+  //Verificar si la embarcacion existe
+  const existeEmbarcacion = await Embarcacion.findById(id);
+  if (!existeEmbarcacion) {
     throw new Error(`El id no existe ${id}`);
   }
 };
@@ -347,6 +382,10 @@ module.exports = {
   existeBalancePorId,
   existeMuellePorId,
   existeBunkeringPorId,
+  existeEmbarcacionPorId,
+  existeTanqueBKPorId,
+  existeOperadorBKPorId,
+  existeContactoBKPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

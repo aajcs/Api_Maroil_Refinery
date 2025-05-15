@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-const auditPlugin = require("./plugins/audit");
+const auditPlugin = require("../plugins/audit");
 
 // Definición del esquema para el modelo Embarcacion
 const EmbarcacionSchema = Schema(
@@ -46,7 +46,7 @@ const EmbarcacionSchema = Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "TanqueBK", // Relación con el modelo Tanque
-        required: true, // Cada tanque debe ser obligatorio
+        required: false, // Cada tanque debe ser obligatorio
       },
     ],
 

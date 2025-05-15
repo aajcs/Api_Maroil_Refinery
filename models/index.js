@@ -43,6 +43,16 @@ const Cuenta = require("./cuenta");
 const Balance = require("./balance");
 const Bunkering = require("./bunkering/bunkering");
 const Muelle = require("./bunkering/muelle");
+const Embarcacion = require("./bunkering/embarcacion");
+const TanqueBK = require("./bunkering/tanqueBK");
+const RecepcionBK = require("./bunkering/recepcionBK");
+const lineaCargaBK = require("./bunkering/lineaCargaBK");
+const lineaDespachoBK = require("./bunkering/lineaDespachoBK");
+const OperadorBK = require("./bunkering/operadorBK");
+const ContactoBK = require("./bunkering/contactoBK");
+const ProductoBK = require("./bunkering/productoBK");
+const TipoProductoBK = require("./bunkering/tipoProductoBK");
+
 
 module.exports = {
   Ventana,
@@ -64,11 +74,15 @@ module.exports = {
   Despacho,
   Historial,
   LineaCarga,
+  lineaCargaBK,
   LineaDespacho,
+  lineaDespachoBK,
   LineaCargaBunker,
   Producto,
+  ProductoBK,
   ProductoBunker,
   Recepcion,
+  RecepcionBK,
   RecepcionBunker,
   Refinacion,
   RefinacionSalida,
@@ -77,6 +91,7 @@ module.exports = {
   Simulacion,
   Tanque,
   TipoProducto,
+  TipoProductoBK,
   Torre,
   Usuario,
   Inventario,
@@ -88,4 +103,8 @@ module.exports = {
   CorteRefinacion,
   Bunkering,
   Muelle,
+  Embarcacion,
+  TanqueBK,
+  OperadorBK,
+  ContactoBK,
 };

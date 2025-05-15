@@ -1,84 +1,68 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
 
-const {
-  validarCampos,
-  validarJWT,
-  esAdminRole,
-  tieneRole,
-} = require("../middlewares");
+const { validarCampos, validarJWT, tieneRole } = require("../../middlewares");
+const { existeMuellePorId } = require("../../helpers/db-validators");
 
 const {
-  //esRoleValido,
-  // emailExiste,
-  // existeUsuarioPorId,
-  // nitExiste,
-  existeLineaDespachoPorId,
-} = require("../helpers/db-validators");
-
-const {
-  lineaDespachoGet,
-  lineaDespachoPut,
-  lineaDespachoPost,
-  lineaDespachoDelete,
-  lineaDespachoPatch,
-  lineaDespachoGets,
-} = require("../controllers/lineaDespacho");
+  lineaDespachoBKGets,
+  lineaDespachoBKGet,
+  lineaDespachoBKPost,
+  lineaDespachoBKPut,
+  lineaDespachoBKDelete,
+} = require("../../controllers/bunkering/lineaDespachoBK");
 
 const router = Router();
 
-router.get("/", [validarJWT], lineaDespachoGets);
+// Obtener todas las líneas de despacho
+router.get("/", [validarJWT], lineaDespachoBKGets);
+
+// Obtener una línea de despacho por ID
 router.get(
   "/:id",
   [
     validarJWT,
-    check("id", "No es un id de Mongo válido").isMongoId(),
-    // check('id').custom( existeProductoPorId ),
+    check("id", "No es un ID válido").isMongoId(),
     validarCampos,
   ],
-  lineaDespachoGet
+  lineaDespachoBKGet
 );
+
+// Crear una nueva línea de despacho
+router.post(
+  "/",
+  [
+    validarJWT,
+    check("idMuelle", "El ID del muelle es obligatorio").not().isEmpty(),
+    check("idMuelle", "No es un ID válido").isMongoId(),
+    check("idMuelle").custom(existeMuellePorId),
+    check("nombre", "El nombre de la línea es obligatorio").not().isEmpty(),
+    validarCampos,
+  ],
+  lineaDespachoBKPost
+);
+
+// Actualizar una línea de despacho por ID
 router.put(
   "/:id",
   [
     validarJWT,
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeLineaDespachoPorId),
-    //check("rol").custom(esRoleValido),
     validarCampos,
   ],
-  lineaDespachoPut
+  lineaDespachoBKPut
 );
 
-router.post(
-  "/",
-  [
-    validarJWT,
-    // check("numero", "El numero es obligatorio").not().isEmpty(),
-    //check("nit").custom(nitExiste),
-    //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    // check("refineria").custom(existeLineaDespachoPorId),
-
-    // check('rol', 'No es un rol válido').isIn(['ADMIN_ROLE','USER_ROLE']),
-    // check('rol').custom( esRoleValido ),
-    validarCampos,
-  ],
-  lineaDespachoPost
-);
-
+// Eliminar (marcar como eliminada) una línea de despacho por ID
 router.delete(
   "/:id",
   [
     validarJWT,
-    // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeLineaDespachoPorId),
     validarCampos,
   ],
-  lineaDespachoDelete
+  lineaDespachoBKDelete
 );
-
-router.patch("/", lineaDespachoPatch);
 
 module.exports = router;

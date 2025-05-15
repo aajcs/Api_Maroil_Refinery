@@ -1,8 +1,8 @@
 const { Schema, model } = require("mongoose");
-const auditPlugin = require("./plugins/audit");
+const auditPlugin = require("../plugins/audit");
 
 // Definición del esquema para el modelo idTipoProductoBK
-const idTipoProductoBKSchema = Schema(
+const tipoProductoBKSchema = Schema(
   {
     // Relación con el modelo Refinería
     idBunkering: {
@@ -132,7 +132,7 @@ const idTipoProductoBKSchema = Schema(
 );
 
 // Validación personalizada para garantizar que `idProducto` sea único en `rendimientos`
-idTipoProductoBKSchema.path("rendimientos").validate(function (rendimientos) {
+tipoProductoBKSchema.path("rendimientos").validate(function (rendimientos) {
   const ids = rendimientos.map((rendimiento) =>
     rendimiento.idProducto.toString()
   );
@@ -141,11 +141,11 @@ idTipoProductoBKSchema.path("rendimientos").validate(function (rendimientos) {
 }, "El campo idProducto debe ser único dentro de rendimientos.");
 
 // Agrega índice compuesto único para nombre por refinería
-idTipoProductoBKSchema.index({ idBunkering: 1, nombre: 1 }, { unique: true });
-idTipoProductoBKSchema.plugin(auditPlugin);
+tipoProductoBKSchema.index({ idBunkering: 1, nombre: 1 }, { unique: true });
+tipoProductoBKSchema.plugin(auditPlugin);
 
 // Configuración para transformar el objeto JSON al devolverlo
-idTipoProductoBKSchema.set("toJSON", {
+tipoProductoBKSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     // delete returnedObject._id;
@@ -153,4 +153,4 @@ idTipoProductoBKSchema.set("toJSON", {
   },
 });
 
-module.exports = model("idTipoProductoBK", idTipoProductoBKSchema);
+module.exports = model("TipoProductoBK", tipoProductoBKSchema);

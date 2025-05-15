@@ -1,84 +1,68 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
 
-const {
-  validarCampos,
-  validarJWT,
-  esAdminRole,
-  tieneRole,
-} = require("../middlewares");
+const { validarCampos, validarJWT, tieneRole } = require("../../middlewares");
+const { existeMuellePorId } = require("../../helpers/db-validators");
 
 const {
-  //esRoleValido,
-  // emailExiste,
-  // existeUsuarioPorId,
-  // nitExiste,
-  existeLineaPorId,
-} = require("../helpers/db-validators");
-
-const {
-  lineaCargaGet,
-  lineaCargaPut,
-  lineaCargaPost,
-  lineaCargaDelete,
-  lineaCargaPatch,
-  lineaCargaGets,
-} = require("../controllers/lineaCarga");
+  lineaCargaBKGets,
+  lineaCargaBKGet,
+  lineaCargaBKPost,
+  lineaCargaBKPut,
+  lineaCargaBKDelete,
+} = require("../../controllers/bunkering/lineaCargaBK");
 
 const router = Router();
 
-router.get("/", [validarJWT], lineaCargaGets);
+// Obtener todas las líneas de carga
+router.get("/", [validarJWT], lineaCargaBKGets);
+
+// Obtener una línea de carga por ID
 router.get(
   "/:id",
   [
     validarJWT,
-    check("id", "No es un id de Mongo válido").isMongoId(),
-    // check('id').custom( existeProductoPorId ),
+    check("id", "No es un ID válido").isMongoId(),
     validarCampos,
   ],
-  lineaCargaGet
+  lineaCargaBKGet
 );
+
+// Crear una nueva línea de carga
+router.post(
+  "/",
+  [
+    validarJWT,
+    check("idMuelle", "El ID del muelle es obligatorio").not().isEmpty(),
+    check("idMuelle", "No es un ID válido").isMongoId(),
+    check("idMuelle").custom(existeMuellePorId),
+    check("nombre", "El nombre de la línea es obligatorio").not().isEmpty(),
+    validarCampos,
+  ],
+  lineaCargaBKPost
+);
+
+// Actualizar una línea de carga por ID
 router.put(
   "/:id",
   [
     validarJWT,
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeLineaPorId),
-    //check("rol").custom(esRoleValido),
     validarCampos,
   ],
-  lineaCargaPut
+  lineaCargaBKPut
 );
 
-router.post(
-  "/",
-  [
-    validarJWT,
-    // check("numero", "El numero es obligatorio").not().isEmpty(),
-    //check("nit").custom(nitExiste),
-    //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    // check("refineria").custom(existeLineaPorId),
-
-    // check('rol', 'No es un rol válido').isIn(['ADMIN_ROLE','USER_ROLE']),
-    // check('rol').custom( esRoleValido ),
-    validarCampos,
-  ],
-  lineaCargaPost
-);
-
+// Eliminar (marcar como eliminada) una línea de carga por ID
 router.delete(
   "/:id",
   [
     validarJWT,
-    // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeLineaPorId),
     validarCampos,
   ],
-  lineaCargaDelete
+  lineaCargaBKDelete
 );
-
-router.patch("/", lineaCargaPatch);
 
 module.exports = router;

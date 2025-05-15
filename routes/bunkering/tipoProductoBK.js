@@ -1,85 +1,96 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
 
+const { validarCampos, validarJWT, tieneRole } = require("../../middlewares");
 const {
-  validarCampos,
-  validarJWT,
-  esAdminRole,
-  tieneRole,
-} = require("../middlewares");
+  existeBunkeringPorId,
+  existeProductoBKPorId,
+  existeTipoProductoBKPorId,
+} = require("../../helpers/db-validators");
 
 const {
-  //esRoleValido,
-  // emailExiste,
-  // existeUsuarioPorId,
-  // nitExiste,
-  existeContratoPorId,
-  existeTipoProductoPorId,
-} = require("../helpers/db-validators");
-
-const {
-  tipoProductoGet,
-  tipoProductoPut,
-  tipoProductoPost,
-  tipoProductoDelete,
-  tipoProductoPatch,
-  tipoProductoGets,
-} = require("../controllers/tipoProducto");
+  tipoProductoBKGets,
+  tipoProductoBKGet,
+  tipoProductoBKPost,
+  tipoProductoBKPut,
+  tipoProductoBKDelete,
+  tipoProductoBKPatch,
+} = require("../../controllers/bunkering/tipoProductoBK");
 
 const router = Router();
 
-router.get("/", [validarJWT], tipoProductoGets);
+// Obtener todos los tipos de producto
+router.get("/", [validarJWT], tipoProductoBKGets);
+
+// Obtener un tipo de producto por ID
 router.get(
   "/:id",
   [
     validarJWT,
-    check("id", "No es un id de Mongo válido").isMongoId(),
-    // check('id').custom( existeTipoProductoPorId ),
+    check("id", "No es un ID válido").isMongoId(),
+    check("id").custom(existeTipoProductoBKPorId),
     validarCampos,
   ],
-  tipoProductoGet
+  tipoProductoBKGet
 );
+
+// Crear un nuevo tipo de producto
+router.post(
+  "/",
+  [
+    validarJWT,
+    check("idBunkering", "El ID del bunkering es obligatorio").not().isEmpty(),
+    check("idBunkering", "No es un ID válido").isMongoId(),
+    check("idBunkering").custom(existeBunkeringPorId),
+    check("idProducto", "El ID del producto es obligatorio").not().isEmpty(),
+    check("idProducto", "No es un ID válido").isMongoId(),
+    check("idProducto").custom(existeProductoBKPorId),
+    check("nombre", "El nombre es obligatorio").not().isEmpty(),
+    check("clasificacion", "La clasificación es obligatoria").not().isEmpty(),
+    check("gravedadAPI", "La gravedad API es obligatoria").not().isEmpty(),
+    check("azufre", "El azufre es obligatorio").not().isEmpty(),
+    check("contenidoAgua", "El contenido de agua es obligatorio").not().isEmpty(),
+    check("procedencia", "La procedencia es obligatoria").not().isEmpty(),
+    validarCampos,
+  ],
+  tipoProductoBKPost
+);
+
+// Actualizar un tipo de producto por ID
 router.put(
   "/:id",
   [
     validarJWT,
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeTipoProductoPorId),
-    //check("rol").custom(esRoleValido),
+    check("id").custom(existeTipoProductoBKPorId),
     validarCampos,
   ],
-  tipoProductoPut
+  tipoProductoBKPut
 );
 
-router.post(
-  "/",
-  [
-    validarJWT,
-    //Validación de campos.
-    //check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
-    //check("nombre", "El nombre del tipoProducto es obligatorio").not().isEmpty(),
-    //check("capacidad", "La capacidad del tipoProducto es obligatoria")
-    //  .not()
-    //.isEmpty(),
-    // check("material", "El material del tipoProducto es obligatoria").not().isEmpty(),
-    // validarCampos,
-  ],
-  tipoProductoPost
-);
-
+// Eliminar (marcar como eliminado) un tipo de producto por ID
 router.delete(
   "/:id",
   [
     validarJWT,
-    // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
-    check("id").custom(existeTipoProductoPorId),
+    check("id").custom(existeTipoProductoBKPorId),
     validarCampos,
   ],
-  tipoProductoDelete
+  tipoProductoBKDelete
 );
 
-router.patch("/", tipoProductoPatch);
+// Actualizar parcialmente un tipo de producto (opcional)
+router.patch(
+  "/:id",
+  [
+    validarJWT,
+    check("id", "No es un ID válido").isMongoId(),
+    check("id").custom(existeTipoProductoBKPorId),
+    validarCampos,
+  ],
+  tipoProductoBKPatch
+);
 
 module.exports = router;

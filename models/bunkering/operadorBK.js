@@ -1,13 +1,13 @@
 const { Schema, model } = require("mongoose");
-const auditPlugin = require("./plugins/audit");
+const auditPlugin = require("../plugins/audit");
 
-const OperadorBKSchema = new Schema(
+const OperadorBKSchema = Schema(
   {
     // Relación con el modelo Bunkering
     idBunkering: {
       type: Schema.Types.ObjectId,
       ref: "Bunkering",
-      required: true, // El operador debe estar asociado a una refinería
+      required: true, // El operador debe estar asociado a un bunkering
       index: true, // Agrega un índice para mejorar el rendimiento de las consultas
     },
 
@@ -54,6 +54,8 @@ const OperadorBKSchema = new Schema(
     versionKey: false, // Elimina el campo __v
   }
 );
+
+// Plugin de auditoría
 OperadorBKSchema.plugin(auditPlugin);
 
 // Método para transformar el objeto devuelto por Mongoose
@@ -65,4 +67,5 @@ OperadorBKSchema.set("toJSON", {
   },
 });
 
-module.exports = model("Operador", OperadorBKSchema);
+// Verifica si el modelo ya está registrado antes de definirlo
+module.exports = model("OperadorBK", OperadorBKSchema);

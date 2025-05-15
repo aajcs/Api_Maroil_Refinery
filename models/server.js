@@ -6,6 +6,8 @@ const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
+// const tipoProductoBK = require("./bunkering/tipoProductoBK");
+// const productoBK = require("./bunkering/productoBK");
 
 class Server {
   constructor() {
@@ -62,6 +64,16 @@ class Server {
       // Agregar más rutas según sea necesario
       bunkering: "/api/bunkering/bunkering",
       muelle: "/api/bunkering/muelle",
+      recepcionBK: "/api/bunkering/recepcionBK",
+      lineaCargaBK: "/api/bunkering/lineaCargaBK",
+      embarcacion: "/api/bunkering/embarcacion",
+      tanqueBK: "/api/bunkering/tanqueBK",
+      lineaDespachoBK: "/api/bunkering/lineaDespachoBK",
+      operadorBK: "/api/bunkering/operadorBK",
+      contactoBK: "/api/bunkering/contactoBK",
+      productoBK: "/api/bunkering/productoBK",
+      tipoProductoBK: "/api/bunkering/tipoProductoBK",
+      
     };
 
     // Conectar a base de datos
@@ -179,13 +191,18 @@ class Server {
 
     // Rutas de archivos y cargas
     this.app.use(this.paths.uploads, require("../routes/uploads"));
-    // Rutas de bunkering
-    this.app.use(
-      this.paths.bunkering,
-      require("../routes/bunkering/bunkering")
-    );
 
+    // Rutas de bunkering
+    this.app.use(this.paths.bunkering, require("../routes/bunkering/bunkering"));
     this.app.use(this.paths.muelle, require("../routes/bunkering/muelle"));
+    this.app.use(this.paths.embarcacion, require("../routes/bunkering/embarcacion"));
+    this.app.use(this.paths.tanqueBK, require("../routes/bunkering/tanqueBK"));
+    this.app.use(this.paths.lineaCargaBK, require("../routes/bunkering/lineaCargaBK"));
+    this.app.use(this.paths.lineaDespachoBK, require("../routes/bunkering/lineaDespachoBK"));
+    this.app.use(this.paths.recepcionBK, require("../routes/bunkering/recepcionBK"));
+    this.app.use(this.paths.productoBK, require("../routes/bunkering/productoBK"));
+    this.app.use(this.paths.tipoProductoBK, require("../routes/bunkering/tipoProductoBK"));
+    this.app.use(this.paths.contactoBK, require("../routes/bunkering/contactoBK"));
 
     // Rutas específicas del módulo Bunker
     const bunkerRoutes = "../routes/bunker";
