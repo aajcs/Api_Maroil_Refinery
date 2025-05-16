@@ -4,6 +4,11 @@ const LineaCargaBK = require("../../models/bunkering/lineaCargaBK");
 // Opciones de población reutilizables
 const populateOptions = [
   { path: "idMuelle", select: "nombre" },
+  { path: "createdBy", select: "nombre correo" },
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  },
 ];
 
 // Obtener todas las líneas de carga
@@ -11,11 +16,11 @@ const lineaCargaBKGets = async (req = request, res = response) => {
   const query = { eliminado: false };
 
   try {
-    const [total, lineas] = await Promise.all([
+    const [total, lineaCargas] = await Promise.all([
       LineaCargaBK.countDocuments(query),
       LineaCargaBK.find(query).populate(populateOptions).sort({ nombre: 1 }),
     ]);
-    res.json({ total, lineas });
+    res.json({ total, lineaCargas });
   } catch (err) {
     console.error("Error en lineaCargaBKGets:", err);
     res.status(500).json({
@@ -28,16 +33,16 @@ const lineaCargaBKGets = async (req = request, res = response) => {
 const lineaCargaBKGet = async (req = request, res = response) => {
   const { id } = req.params;
   try {
-    const linea = await LineaCargaBK.findOne({
+    const lineaCarga = await LineaCargaBK.findOne({
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
 
-    if (!linea) {
+    if (!lineaCarga) {
       return res.status(404).json({ msg: "Línea de carga no encontrada" });
     }
 
-    res.json(linea);
+    res.json(lineaCarga);
   } catch (err) {
     console.error("Error en lineaCargaBKGet:", err);
     res.status(500).json({
@@ -100,7 +105,8 @@ const lineaCargaBKPut = async (req = request, res = response) => {
     res.json(lineaActualizada);
   } catch (err) {
     console.error("Error en lineaCargaBKPut:", err);
-    let errorMsg = "Error interno del servidor al actualizar la línea de carga.";
+    let errorMsg =
+      "Error interno del servidor al actualizar la línea de carga.";
     if (err.code === 11000) {
       errorMsg = "Ya existe una línea de carga con ese nombre en el muelle.";
     }
