@@ -2,8 +2,7 @@ const { response, request } = require("express");
 const CuentaBK = require("../../models/bunkering/cuentaBK");
 const ContratoBK = require("../../models/bunkering/contratoBK");
 
-// Opciones de población reutilizables
-const cuentaBKPopulateOptions = [
+const populateOptions = [
   {
     path: "idContrato",
     select: "numeroContrato tipoContrato montoTotal descripcion estadoContrato",
@@ -12,17 +11,29 @@ const cuentaBKPopulateOptions = [
     path: "idContacto",
     select: "nombre telefono email direccion",
   },
+  { path: "createdBy", select: "nombre correo" },
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  },
 ];
 
-// Controlador para obtener todas las cuentasBK
+// Obtener todas las cuentasBK
 const cuentasBKGets = async (req = request, res = response) => {
-  const filtro = { eliminado: false }; // Filtro para obtener solo cuentas no eliminadas
+  const filtro = { eliminado: false };
 
   try {
     const [total, cuentasBK] = await Promise.all([
       CuentaBK.countDocuments(filtro),
-      CuentaBK.find(filtro).populate(cuentaBKPopulateOptions),
+      CuentaBK.find(filtro).populate(populateOptions),
     ]);
+
+    // Ordenar historial por fecha descendente en cada cuenta
+    cuentasBK.forEach((c) => {
+      if (Array.isArray(c.historial)) {
+        c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
 
     res.json({ total, cuentasBK });
   } catch (err) {
@@ -33,7 +44,7 @@ const cuentasBKGets = async (req = request, res = response) => {
   }
 };
 
-// Controlador para obtener una cuentaBK específica por ID
+// Obtener una cuentaBK específica por ID
 const cuentaBKGet = async (req = request, res = response) => {
   const { id } = req.params;
 
@@ -41,10 +52,15 @@ const cuentaBKGet = async (req = request, res = response) => {
     const cuentaBK = await CuentaBK.findOne({
       _id: id,
       eliminado: false,
-    }).populate(cuentaBKPopulateOptions);
+    }).populate(populateOptions);
 
     if (!cuentaBK) {
       return res.status(404).json({ msg: "CuentaBK no encontrada" });
+    }
+
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(cuentaBK.historial)) {
+      cuentaBK.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     }
 
     res.json(cuentaBK);
@@ -56,7 +72,7 @@ const cuentaBKGet = async (req = request, res = response) => {
   }
 };
 
-// Controlador para crear una nueva cuentaBK desde un contrato
+// Crear una nueva cuentaBK desde un contrato
 const cuentaBKPostFromContrato = async (req = request, res = response) => {
   const { idContrato } = req.body;
 
@@ -89,10 +105,11 @@ const cuentaBKPostFromContrato = async (req = request, res = response) => {
       idContacto: contrato.idContacto,
       abonos: contrato.abono || [],
       montoTotalContrato: contrato.montoTotal || 0,
-      createdBy: req.usuario._id, // ID del usuario que creó la cuentaBK
+      createdBy: req.usuario._id,
     });
 
     await nuevaCuentaBK.save();
+    await nuevaCuentaBK.populate(populateOptions);
 
     res.status(201).json({
       msg: "CuentaBK creada correctamente desde el contrato.",
@@ -107,13 +124,17 @@ const cuentaBKPostFromContrato = async (req = request, res = response) => {
   }
 };
 
-// Controlador para actualizar una cuentaBK existente
+// Actualizar una cuentaBK existente con historial de modificaciones
 const cuentaBKPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, ...datosActualizados } = req.body;
 
   try {
     const cuentaBKAnterior = await CuentaBK.findById(id);
+    if (!cuentaBKAnterior) {
+      return res.status(404).json({ msg: "CuentaBK no encontrada" });
+    }
+
     const cambios = {};
     for (let key in datosActualizados) {
       if (String(cuentaBKAnterior[key]) !== String(datosActualizados[key])) {
@@ -131,7 +152,7 @@ const cuentaBKPut = async (req = request, res = response) => {
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
       },
       { new: true }
-    ).populate(cuentaBKPopulateOptions);
+    ).populate(populateOptions);
 
     if (!cuentaBKActualizada) {
       return res.status(404).json({ msg: "CuentaBK no encontrada" });
@@ -146,16 +167,26 @@ const cuentaBKPut = async (req = request, res = response) => {
   }
 };
 
-// Controlador para eliminar (marcar como eliminado) una cuentaBK
+// Eliminar (marcar como eliminado) una cuentaBK con historial de auditoría
 const cuentaBKDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
+    const antes = await CuentaBK.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "CuentaBK no encontrada" });
+    }
+
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
+
     const cuentaBKEliminada = await CuentaBK.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { eliminado: true },
+      {
+        eliminado: true,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true }
-    ).populate(cuentaBKPopulateOptions);
+    ).populate(populateOptions);
 
     if (!cuentaBKEliminada) {
       return res.status(404).json({ msg: "CuentaBK no encontrada" });
@@ -173,7 +204,7 @@ const cuentaBKDelete = async (req = request, res = response) => {
   }
 };
 
-// Controlador para sincronizar una cuentaBK desde un contrato
+// Sincronizar una cuentaBK desde un contrato
 const cuentaBKSycnFromContrato = async (req = request, res = response) => {
   const { contratoId } = req.params;
 

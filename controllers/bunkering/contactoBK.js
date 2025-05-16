@@ -1,26 +1,34 @@
-// Importaciones necesarias
 const { response, request } = require("express");
-const ContactoBK = require("../../models/bunkering/contactoBK"); // Modelo ContactoBK para interactuar con la base de datos
+const ContactoBK = require("../../models/bunkering/contactoBK");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
-  { path: "idBunkering", select: "nombre" }, // Popula el nombre del bunkering
-  { path: "compras.contrato", select: "nombre fecha" }, // Popula las compras realizadas
-  { path: "ventas.contrato", select: "nombre fecha" }, // Popula las ventas realizadas
-  { path: "createdBy", select: "nombre correo" }, // Popula el usuario que creó el contacto
+  { path: "idBunkering", select: "nombre" },
+  { path: "createdBy", select: "nombre correo" },
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  },
 ];
 
-// Controlador para obtener todos los contactos
+// Obtener todos los contactos
 const contactoGets = async (req = request, res = response) => {
-  const query = { eliminado: false }; // Filtro para obtener solo contactos no eliminados
+  const query = { eliminado: false };
 
   try {
     const [total, contactos] = await Promise.all([
-      ContactoBK.countDocuments(query), // Cuenta el total de contactos
-      ContactoBK.find(query).populate(populateOptions), // Obtiene los contactos con referencias pobladas
+      ContactoBK.countDocuments(query),
+      ContactoBK.find(query).populate(populateOptions),
     ]);
 
-    res.json({ total, contactos }); // Responde con el total y la lista de contactos
+    // Ordenar historial por fecha descendente en cada contacto
+    contactos.forEach((c) => {
+      if (Array.isArray(c.historial)) {
+        c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+
+    res.json({ total, contactos });
   } catch (err) {
     console.error("Error en contactoGets:", err);
     res.status(500).json({
@@ -29,21 +37,26 @@ const contactoGets = async (req = request, res = response) => {
   }
 };
 
-// Controlador para obtener un contacto específico por ID
+// Obtener un contacto específico por ID
 const contactoGet = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID del contacto desde los parámetros de la URL
+  const { id } = req.params;
 
   try {
     const contacto = await ContactoBK.findOne({
       _id: id,
       eliminado: false,
-    }).populate(populateOptions); // Busca el contacto por ID y popula las referencias
+    }).populate(populateOptions);
 
     if (!contacto) {
-      return res.status(404).json({ msg: "Contacto no encontrado" }); // Responde con un error 404 si no se encuentra el contacto
+      return res.status(404).json({ msg: "Contacto no encontrado" });
     }
 
-    res.json(contacto); // Responde con los datos del contacto
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(contacto.historial)) {
+      contacto.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    }
+
+    res.json(contacto);
   } catch (err) {
     console.error("Error en contactoGet:", err);
     res.status(500).json({
@@ -52,7 +65,7 @@ const contactoGet = async (req = request, res = response) => {
   }
 };
 
-// Controlador para crear un nuevo contacto
+// Crear un nuevo contacto
 const contactoPost = async (req = request, res = response) => {
   const {
     idBunkering,
@@ -70,7 +83,7 @@ const contactoPost = async (req = request, res = response) => {
     cuentasPorCobrar,
     compras,
     ventas,
-  } = req.body; // Extrae los datos del cuerpo de la solicitud
+  } = req.body;
 
   try {
     const nuevoContacto = new ContactoBK({
@@ -89,28 +102,32 @@ const contactoPost = async (req = request, res = response) => {
       cuentasPorCobrar,
       compras,
       ventas,
-      createdBy: req.usuario._id, // ID del usuario que creó el contacto
+      createdBy: req.usuario._id,
     });
 
-    await nuevoContacto.save(); // Guarda el nuevo contacto en la base de datos
-    await nuevoContacto.populate(populateOptions); // Poblar referencias después de guardar
+    await nuevoContacto.save();
+    await nuevoContacto.populate(populateOptions);
 
-    res.status(201).json(nuevoContacto); // Responde con un código 201 (creado) y los datos del contacto
+    res.status(201).json(nuevoContacto);
   } catch (err) {
     console.error("Error en contactoPost:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al crear el contacto.",
+    res.status(400).json({
+      error: "Error al crear el contacto. Verifica los datos proporcionados.",
     });
   }
 };
 
-// Controlador para actualizar un contacto existente
+// Actualizar un contacto existente con historial de modificaciones
 const contactoPut = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID del contacto desde los parámetros de la URL
-  const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo ciertos campos
+  const { id } = req.params;
+  const { _id, ...resto } = req.body;
 
   try {
     const antes = await ContactoBK.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Contacto no encontrado" });
+    }
+
     const cambios = {};
     for (let key in resto) {
       if (String(antes[key]) !== String(resto[key])) {
@@ -119,53 +136,54 @@ const contactoPut = async (req = request, res = response) => {
     }
 
     const contactoActualizado = await ContactoBK.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar el contacto no eliminado
+      { _id: id, eliminado: false },
       {
         ...resto,
-        $push: {
-          historialModificaciones: { modificadoPor: req.usuario._id, cambios },
-        },
-      }, // Datos a actualizar
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Poblar referencias después de actualizar
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
+      { new: true }
+    ).populate(populateOptions);
 
     if (!contactoActualizado) {
-      return res.status(404).json({ msg: "Contacto no encontrado" }); // Responde con un error 404 si no se encuentra el contacto
+      return res.status(404).json({ msg: "Contacto no encontrado" });
     }
 
-    res.json(contactoActualizado); // Responde con los datos del contacto actualizado
+    res.json(contactoActualizado);
   } catch (err) {
     console.error("Error en contactoPut:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar el contacto.",
+    res.status(400).json({
+      error:
+        "Error al actualizar el contacto. Verifica los datos proporcionados.",
     });
   }
 };
 
-// Controlador para eliminar (marcar como eliminado) un contacto
+// Eliminar (marcar como eliminado) un contacto con historial de auditoría
 const contactoDelete = async (req = request, res = response) => {
-  const { id } = req.params; // Obtiene el ID del contacto desde los parámetros de la URL
+  const { id } = req.params;
 
   try {
     const antes = await ContactoBK.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Contacto no encontrado" });
+    }
+
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
 
     const contactoEliminado = await ContactoBK.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar el contacto no eliminado
+      { _id: id, eliminado: false },
       {
         eliminado: true,
-        $push: {
-          historialModificaciones: { modificadoPor: req.usuario._id, cambios },
-        },
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
       },
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Poblar referencias después de actualizar
+      { new: true }
+    ).populate(populateOptions);
 
     if (!contactoEliminado) {
-      return res.status(404).json({ msg: "Contacto no encontrado" }); // Responde con un error 404 si no se encuentra el contacto
+      return res.status(404).json({ msg: "Contacto no encontrado" });
     }
 
-    res.json(contactoEliminado); // Responde con los datos del contacto eliminado
+    res.json(contactoEliminado);
   } catch (err) {
     console.error("Error en contactoDelete:", err);
     res.status(500).json({
@@ -174,11 +192,10 @@ const contactoDelete = async (req = request, res = response) => {
   }
 };
 
-// Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
-  contactoGets, // Obtener todos los contactos
-  contactoGet, // Obtener un contacto específico por ID
-  contactoPost, // Crear un nuevo contacto
-  contactoPut, // Actualizar un contacto existente
-  contactoDelete, // Eliminar (marcar como eliminado) un contacto
+  contactoGets,
+  contactoGet,
+  contactoPost,
+  contactoPut,
+  contactoDelete,
 };

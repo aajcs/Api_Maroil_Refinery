@@ -20,7 +20,7 @@ const populateOptions = [
   },
 ];
 
-// Obtener todas las recepciones con población de referencias
+// Obtener todas las recepciones con historial ordenado
 const recepcionBKGets = async (req = request, res = response) => {
   const query = { eliminado: false };
 
@@ -29,18 +29,20 @@ const recepcionBKGets = async (req = request, res = response) => {
       RecepcionBK.countDocuments(query),
       RecepcionBK.find(query).populate(populateOptions),
     ]);
-    recepciones.forEach((t) => {
-      if (Array.isArray(t.historial)) {
-        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+    // Ordenar historial por fecha descendente en cada recepción
+    recepciones.forEach((r) => {
+      if (Array.isArray(r.historial)) {
+        r.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
-    res.json({
-      total,
-      recepciones,
-    });
+
+    res.json({ total, recepciones });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: err.message });
+    console.error("Error en recepcionBKGets:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al obtener las recepciones.",
+    });
   }
 };
 
@@ -49,26 +51,62 @@ const recepcionBKGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const recepcion = await RecepcionBK.findById(id).populate(populateOptions);
-    if (recepcion && Array.isArray(recepcion.historial)) {
+    const recepcion = await RecepcionBK.findOne({
+      _id: id,
+      eliminado: false,
+    }).populate(populateOptions);
+
+    if (!recepcion) {
+      return res.status(404).json({ msg: "Recepción no encontrada" });
+    }
+
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(recepcion.historial)) {
       recepcion.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     }
-    if (recepcion) {
-      res.json(recepcion);
-    } else {
-      res.status(404).json({
-        msg: "Recepción no encontrada",
-      });
-    }
+
+    res.json(recepcion);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error en recepcionBKGet:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al obtener la recepción.",
+    });
   }
 };
 
 // Crear una nueva recepción
-const recepcionBKPost = async (req, res = response) => {
+const recepcionBKPost = async (req = request, res = response) => {
+  const {
+    idContrato,
+    idContratoItems,
+    idLinea,
+    idBunkering,
+    idMuelle,
+    idEmbarcacion,
+    idProductoBK,
+    idTanque,
+    idChequeoCalidad,
+    idChequeoCantidad,
+    cantidadRecibida,
+    cantidadEnviada,
+    estadoRecepcionBK,
+    estadoCarga,
+    estado,
+    fechaInicio,
+    fechaFin,
+    fechaInicioRecepcionBK,
+    fechaFinRecepcionBK,
+    fechaSalida,
+    fechaLlegada,
+    fechaDespacho,
+    tipo,
+    tractomula,
+    muelle,
+    bunkering,
+  } = req.body;
+
   try {
-    const {
+    const nuevaRecepcion = new RecepcionBK({
       idContrato,
       idContratoItems,
       idLinea,
@@ -95,69 +133,41 @@ const recepcionBKPost = async (req, res = response) => {
       tractomula,
       muelle,
       bunkering,
-    } = req.body;
-
-    // Construir el objeto según el tipo de recepción
-    const recepcionData = {
-      idContrato,
-      idContratoItems,
-      idLinea,
-      idBunkering,
-      idMuelle,
-      idEmbarcacion,
-      idProductoBK,
-      idTanque,
-      idChequeoCalidad,
-      idChequeoCantidad,
-      cantidadRecibida,
-      cantidadEnviada,
-      estadoRecepcionBK,
-      estadoCarga,
-      estado,
-      fechaInicio,
-      fechaFin,
-      fechaInicioRecepcionBK,
-      fechaFinRecepcionBK,
-      fechaSalida,
-      fechaLlegada,
-      fechaDespacho,
-      tipo,
       createdBy: req.usuario._id,
-    };
-
-    if (tipo === "Tractomula") {
-      recepcionData.tractomula = tractomula;
-    } else if (tipo === "Muelle") {
-      recepcionData.muelle = muelle;
-    } else if (tipo === "Bunkering") {
-      recepcionData.bunkering = bunkering;
-    }
-
-    const nuevaRecepcion = new RecepcionBK(recepcionData);
+    });
 
     await nuevaRecepcion.save();
     await nuevaRecepcion.populate(populateOptions);
-    res.status(201).json({ recepcion: nuevaRecepcion });
+
+    res.status(201).json(nuevaRecepcion);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("Error en recepcionBKPost:", err);
+    res.status(400).json({
+      error: "Error al crear la recepción. Verifica los datos proporcionados.",
+    });
   }
 };
 
-// Actualizar una recepción existente
-const recepcionBKPut = async (req, res = response) => {
+// Actualizar una recepción existente con historial de modificaciones
+const recepcionBKPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
   try {
     const antes = await RecepcionBK.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Recepción no encontrada" });
+    }
+
     const cambios = {};
     for (let key in resto) {
       if (String(antes[key]) !== String(resto[key])) {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
     }
-    const recepcionActualizada = await RecepcionBK.findByIdAndUpdate(
-      id,
+
+    const recepcionActualizada = await RecepcionBK.findOneAndUpdate(
+      { _id: id, eliminado: false },
       {
         ...resto,
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
@@ -166,25 +176,33 @@ const recepcionBKPut = async (req, res = response) => {
     ).populate(populateOptions);
 
     if (!recepcionActualizada) {
-      return res.status(404).json({
-        msg: "Recepción no encontrada",
-      });
+      return res.status(404).json({ msg: "Recepción no encontrada" });
     }
-    req.io?.emit("recepcion-modificada", recepcionActualizada);
+
     res.json(recepcionActualizada);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("Error en recepcionBKPut:", err);
+    res.status(400).json({
+      error:
+        "Error al actualizar la recepción. Verifica los datos proporcionados.",
+    });
   }
 };
 
-// Eliminar (marcar como eliminado) una recepción
-const recepcionBKDelete = async (req, res = response) => {
+// Eliminar (marcar como eliminado) una recepción con historial de auditoría
+const recepcionBKDelete = async (req = request, res = response) => {
   const { id } = req.params;
+
   try {
     const antes = await RecepcionBK.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Recepción no encontrada" });
+    }
+
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
-    const recepcion = await RecepcionBK.findByIdAndUpdate(
-      id,
+
+    const recepcionEliminada = await RecepcionBK.findOneAndUpdate(
+      { _id: id, eliminado: false },
       {
         eliminado: true,
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
@@ -192,23 +210,43 @@ const recepcionBKDelete = async (req, res = response) => {
       { new: true }
     ).populate(populateOptions);
 
-    if (!recepcion) {
-      return res.status(404).json({
-        msg: "Recepción no encontrada",
-      });
+    if (!recepcionEliminada) {
+      return res.status(404).json({ msg: "Recepción no encontrada" });
     }
 
-    res.json(recepcion);
+    res.json(recepcionEliminada);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error en recepcionBKDelete:", err);
+    res.status(500).json({
+      error: "Error interno del servidor al eliminar la recepción.",
+    });
   }
 };
 
-// Controlador para manejar solicitudes PATCH (ejemplo básico)
-const recepcionBKPatch = (req, res = response) => {
-  res.json({
-    msg: "patch API - recepcionBKPatch",
-  });
+// Controlador para manejar actualizaciones parciales (PATCH)
+const recepcionBKPatch = async (req = request, res = response) => {
+  const { id } = req.params;
+  const { ...resto } = req.body;
+
+  try {
+    const recepcionActualizada = await RecepcionBK.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { $set: resto },
+      { new: true }
+    ).populate(populateOptions);
+
+    if (!recepcionActualizada) {
+      return res.status(404).json({ msg: "Recepción no encontrada" });
+    }
+
+    res.json(recepcionActualizada);
+  } catch (err) {
+    console.error("Error en recepcionBKPatch:", err);
+    res.status(500).json({
+      error:
+        "Error interno del servidor al actualizar parcialmente la recepción.",
+    });
+  }
 };
 
 module.exports = {
