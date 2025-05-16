@@ -62,9 +62,13 @@ const recepcionBKGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const recepcionActualizada = await RecepcionBK.findById(id).populate(populateOptions);
+    const recepcionActualizada = await RecepcionBK.findById(id).populate(
+      populateOptions
+    );
     if (recepcionActualizada && Array.isArray(recepcionActualizada.historial)) {
-      recepcionActualizada.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      recepcionActualizada.historial.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
     }
     if (recepcionActualizada) {
       res.json(recepcionActualizada);
