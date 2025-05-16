@@ -1,47 +1,50 @@
-// Importaciones necesarias
 const { response, request } = require("express");
-const TanqueBK = require("../../models/bunkering/tanqueBK"); // Importa el modelo TanqueBK
+const TanqueBK = require("../../models/bunkering/tanqueBK");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
   {
-    path: "idProducto", // Relación con el modelo ProductoBK
-    select: "nombre color posicion", // Selecciona solo los campos necesarios
+    path: "idProducto",
+    select: "nombre color posicion",
   },
   {
-    path: "idEmbarcacion", // Relación con el modelo Embarcacion
-    select: "nombre imo tipo", // Selecciona solo los campos necesarios
+    path: "idEmbarcacion",
+    select: "nombre imo tipo",
   },
-  { path: "createdBy", select: "nombre correo" }, // Popula quién creó el tanque
+  { path: "createdBy", select: "nombre correo" },
   {
     path: "historial",
-    populate: { path: "modificadoPor", select: "nombre correo" }, // Popula historial.modificadoPor
+    populate: { path: "modificadoPor", select: "nombre correo" },
   },
 ];
 
-// Controlador para obtener todos los tanques con población de referencias
+// Obtener todos los tanques con historial ordenado
 const tanqueGets = async (req = request, res = response) => {
-  const query = { eliminado: false }; // Filtro para obtener solo tanques no eliminados
+  const query = { eliminado: false };
 
   try {
     const [total, tanques] = await Promise.all([
-      TanqueBK.countDocuments(query), // Cuenta el total de tanques
-      TanqueBK.find(query).populate(populateOptions), // Obtiene los tanques con referencias pobladas
+      TanqueBK.countDocuments(query),
+      TanqueBK.find(query).populate(populateOptions),
     ]);
 
-    res.json({
-      total,
-      tanques,
+    // Ordenar historial por fecha descendente en cada tanque
+    tanques.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
     });
+
+    res.json({ total, tanques });
   } catch (err) {
     console.error("Error en tanqueGets:", err);
-    res
-      .status(500)
-      .json({ error: "Error interno del servidor al obtener los tanques." });
+    res.status(500).json({
+      error: "Error interno del servidor al obtener los tanques.",
+    });
   }
 };
 
-// Controlador para obtener un tanque específico por ID
+// Obtener un tanque específico por ID
 const tanqueGet = async (req = request, res = response) => {
   const { id } = req.params;
 
@@ -55,16 +58,21 @@ const tanqueGet = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Tanque no encontrado." });
     }
 
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(tanque.historial)) {
+      tanque.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    }
+
     res.json(tanque);
   } catch (err) {
     console.error("Error en tanqueGet:", err);
-    res
-      .status(500)
-      .json({ error: "Error interno del servidor al obtener el tanque." });
+    res.status(500).json({
+      error: "Error interno del servidor al obtener el tanque.",
+    });
   }
 };
 
-// Controlador para crear un nuevo tanque
+// Crear un nuevo tanque
 const tanquePost = async (req = request, res = response) => {
   const {
     nombre,
@@ -79,7 +87,6 @@ const tanquePost = async (req = request, res = response) => {
   } = req.body;
 
   try {
-    // Crear el nuevo tanque
     const nuevoTanque = new TanqueBK({
       nombre,
       capacidad,
@@ -90,23 +97,21 @@ const tanquePost = async (req = request, res = response) => {
       idEmbarcacion,
       idChequeoCalidad,
       idChequeoCantidad,
-      createdBy: req.usuario._id, // Auditoría: quién crea
+      createdBy: req.usuario._id,
     });
 
-    // Guardar el tanque en la base de datos
     await nuevoTanque.save();
 
     // Agregar el ID del tanque al arreglo `tanques` de la embarcación
     if (idEmbarcacion) {
-      const Embarcacion = require("../../models/bunkering/embarcacion"); // Importar el modelo Embarcacion
+      const Embarcacion = require("../../models/bunkering/embarcacion");
       await Embarcacion.findByIdAndUpdate(
         idEmbarcacion,
-        { $push: { tanques: nuevoTanque._id } }, // Agregar el ID del tanque al arreglo `tanques`
+        { $push: { tanques: nuevoTanque._id } },
         { new: true }
       );
     }
 
-    // Población de referencias para la respuesta
     await nuevoTanque.populate(populateOptions);
 
     res.status(201).json(nuevoTanque);
@@ -118,7 +123,7 @@ const tanquePost = async (req = request, res = response) => {
   }
 };
 
-// Controlador para actualizar un tanque existente
+// Actualizar un tanque existente con historial de modificaciones
 const tanquePut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, idEmbarcacion, ...resto } = req.body;
@@ -147,12 +152,28 @@ const tanquePut = async (req = request, res = response) => {
       });
     }
 
-    // Actualizar el tanque con los nuevos datos
-    const tanqueActualizado = await TanqueBK.findByIdAndUpdate(
-      id,
-      { ...resto, idEmbarcacion },
+    // Auditoría: detectar cambios
+    const cambios = {};
+    for (let key in resto) {
+      if (String(tanqueAnterior[key]) !== String(resto[key])) {
+        cambios[key] = { from: tanqueAnterior[key], to: resto[key] };
+      }
+    }
+
+    // Actualizar el tanque y registrar el historial
+    const tanqueActualizado = await TanqueBK.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      {
+        ...resto,
+        idEmbarcacion,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true }
     ).populate(populateOptions);
+
+    if (!tanqueActualizado) {
+      return res.status(404).json({ msg: "Tanque no encontrado." });
+    }
 
     res.json(tanqueActualizado);
   } catch (err) {
@@ -164,7 +185,7 @@ const tanquePut = async (req = request, res = response) => {
   }
 };
 
-// Controlador para eliminar (marcar como eliminado) un tanque
+// Eliminar (marcar como eliminado) un tanque con historial de auditoría
 const tanqueDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
@@ -176,7 +197,6 @@ const tanqueDelete = async (req = request, res = response) => {
 
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
 
-    // Marcar el tanque como eliminado y registrar el cambio en el historial
     const tanqueEliminado = await TanqueBK.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
@@ -224,7 +244,6 @@ const tanquePatch = async (req = request, res = response) => {
   }
 };
 
-// Exporta los controladores
 module.exports = {
   tanquePost,
   tanqueGet,
