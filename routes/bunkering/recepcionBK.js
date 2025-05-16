@@ -6,22 +6,23 @@ const {
   recepcionBKPut,
   recepcionBKDelete,
 } = require("../../controllers/bunkering/recepcionBK");
+const { validarJWT } = require("../../middlewares");
 
 const router = Router();
 
 // Obtener todas las recepciones
-router.get("/", recepcionBKGets);
+router.get("/", validarJWT, recepcionBKGets);
 
 // Obtener una recepción por ID
-router.get("/:id", recepcionBKGet);
+router.get("/:id", validarJWT, recepcionBKGet);
 
 // Crear una nueva recepción
-router.post("/", recepcionBKPost);
+router.post("/", validarJWT, recepcionBKPost);
 
 // Actualizar una recepción existente
-router.put("/:id", recepcionBKPut);
+router.put("/:id", validarJWT, recepcionBKPut);
 
 // Eliminar (marcar como eliminada) una recepción
-router.delete("/:id", recepcionBKDelete);
+router.delete("/:id", validarJWT, recepcionBKDelete);
 
 module.exports = router;

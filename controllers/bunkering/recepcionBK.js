@@ -3,29 +3,16 @@ const RecepcionBK = require("../../models/bunkering/recepcionBK");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
-  {
-    path: "idContrato",
-    select: "idItems numeroContrato",
-    populate: {
-      path: "idItems",
-      populate: [
-        { path: "producto", select: "nombre" },
-        { path: "idTipoProducto", select: "nombre" },
-      ],
-    },
-  },
+  { path: "idContrato", select: "idItems numeroContrato" },
+  { path: "idContratoItems", populate: { path: "producto", select: "nombre" } },
+  { path: "idLinea", select: "nombre" },
+  { path: "idBunkering", select: "nombre" },
+  { path: "idMuelle", select: "nombre" },
+  { path: "idEmbarcacion", select: "nombre" },
+  { path: "idProductoBK", select: "nombre" },
+  { path: "idTanque", select: "nombre" },
   { path: "idChequeoCalidad" },
   { path: "idChequeoCantidad" },
-  { path: "idRefineria", select: "nombre" },
-  { path: "idTanque", select: "nombre" },
-  { path: "idLinea", select: "nombre" },
-  {
-    path: "idContratoItems",
-    populate: {
-      path: "producto",
-      select: "nombre",
-    },
-  },
   { path: "createdBy", select: "nombre correo" },
   {
     path: "historial",
@@ -38,18 +25,18 @@ const recepcionBKGets = async (req = request, res = response) => {
   const query = { eliminado: false };
 
   try {
-    const [total, recepcions] = await Promise.all([
+    const [total, recepciones] = await Promise.all([
       RecepcionBK.countDocuments(query),
       RecepcionBK.find(query).populate(populateOptions),
     ]);
-    recepcions.forEach((t) => {
+    recepciones.forEach((t) => {
       if (Array.isArray(t.historial)) {
         t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
     res.json({
       total,
-      recepcions,
+      recepciones,
     });
   } catch (err) {
     console.log(err);
@@ -62,12 +49,12 @@ const recepcionBKGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const recepcionActualizada = await RecepcionBK.findById(id).populate(populateOptions);
-    if (recepcionActualizada && Array.isArray(recepcionActualizada.historial)) {
-      recepcionActualizada.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    const recepcion = await RecepcionBK.findById(id).populate(populateOptions);
+    if (recepcion && Array.isArray(recepcion.historial)) {
+      recepcion.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     }
-    if (recepcionActualizada) {
-      res.json(recepcionActualizada);
+    if (recepcion) {
+      res.json(recepcion);
     } else {
       res.status(404).json({
         msg: "Recepción no encontrada",
@@ -80,63 +67,77 @@ const recepcionBKGet = async (req = request, res = response) => {
 
 // Crear una nueva recepción
 const recepcionBKPost = async (req, res = response) => {
-  const {
-    idContrato,
-    idContratoItems,
-    idLinea,
-    idRefineria,
-    idTanque,
-    idChequeoCalidad,
-    idChequeoCantidad,
-    cantidadRecibida,
-    cantidadEnviada,
-    estadoRecepcion,
-    estadoCarga,
-    estado,
-    fechaInicio,
-    fechaFin,
-    fechaInicioRecepcion,
-    fechaFinRecepcion,
-    fechaSalida,
-    fechaLlegada,
-    fechaDespacho,
-    idGuia,
-    placa,
-    tipo,
-    nombreChofer,
-  } = req.body;
-
-  const nuevaRecepcion = new RecepcionBK({
-    idContrato,
-    idContratoItems,
-    idLinea,
-    idRefineria,
-    idTanque,
-    idChequeoCalidad,
-    idChequeoCantidad,
-    cantidadRecibida,
-    cantidadEnviada,
-    estadoRecepcion,
-    estadoCarga,
-    estado,
-    fechaInicio,
-    fechaFin,
-    fechaInicioRecepcion,
-    fechaFinRecepcion,
-    fechaSalida,
-    fechaLlegada,
-    fechaDespacho,
-    idGuia,
-    placa,
-    tipo,
-    nombreChofer,
-    createdBy: req.usuario._id,
-  });
-
   try {
+    const {
+      idContrato,
+      idContratoItems,
+      idLinea,
+      idBunkering,
+      idMuelle,
+      idEmbarcacion,
+      idProductoBK,
+      idTanque,
+      idChequeoCalidad,
+      idChequeoCantidad,
+      cantidadRecibida,
+      cantidadEnviada,
+      estadoRecepcionBK,
+      estadoCarga,
+      estado,
+      fechaInicio,
+      fechaFin,
+      fechaInicioRecepcionBK,
+      fechaFinRecepcionBK,
+      fechaSalida,
+      fechaLlegada,
+      fechaDespacho,
+      tipo,
+      tractomula,
+      muelle,
+      bunkering,
+    } = req.body;
+
+    // Construir el objeto según el tipo de recepción
+    const recepcionData = {
+      idContrato,
+      idContratoItems,
+      idLinea,
+      idBunkering,
+      idMuelle,
+      idEmbarcacion,
+      idProductoBK,
+      idTanque,
+      idChequeoCalidad,
+      idChequeoCantidad,
+      cantidadRecibida,
+      cantidadEnviada,
+      estadoRecepcionBK,
+      estadoCarga,
+      estado,
+      fechaInicio,
+      fechaFin,
+      fechaInicioRecepcionBK,
+      fechaFinRecepcionBK,
+      fechaSalida,
+      fechaLlegada,
+      fechaDespacho,
+      tipo,
+      createdBy: req.usuario._id,
+    };
+
+    if (tipo === "Tractomula") {
+      recepcionData.tractomula = tractomula;
+    } else if (tipo === "Muelle") {
+      recepcionData.muelle = muelle;
+    } else if (tipo === "Bunkering") {
+      recepcionData.bunkering = bunkering;
+    }
+
+    const nuevaRecepcion = new RecepcionBK(recepcionData);
+
     await nuevaRecepcion.save();
     await nuevaRecepcion.populate(populateOptions);
-    res.json({ recepcion: nuevaRecepcion });
+    res.status(201).json({ recepcion: nuevaRecepcion });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
