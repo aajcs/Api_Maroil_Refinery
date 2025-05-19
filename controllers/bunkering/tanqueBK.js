@@ -86,6 +86,29 @@ const tanquePost = async (req = request, res = response) => {
   } = req.body;
 
   try {
+    // Validar duplicidad de nombre de tanque en la misma embarcación y bunkering
+    if (idEmbarcacion && nombre) {
+      const Embarcacion = require("../../models/bunkering/embarcacion");
+      const embarcacion = await Embarcacion.findById(idEmbarcacion).populate(
+        "idBunkering"
+      );
+      if (!embarcacion) {
+        return res.status(400).json({ error: "Embarcación no encontrada." });
+      }
+      const tanqueDuplicado = await TanqueBK.findOne({
+        nombre: nombre.trim(),
+        idEmbarcacion: idEmbarcacion,
+        eliminado: false,
+      });
+      if (tanqueDuplicado) {
+        return res.status(400).json({
+          error: `Ya existe un tanque con el nombre "${nombre}" en la embarcación "${
+            embarcacion.nombre
+          }" asociada al bunkering "${embarcacion.idBunkering?.nombre || ""}".`,
+        });
+      }
+    }
+
     const nuevoTanque = new TanqueBK({
       nombre,
       capacidad,
@@ -124,12 +147,42 @@ const tanquePost = async (req = request, res = response) => {
 // Actualizar un tanque existente con historial de modificaciones
 const tanquePut = async (req = request, res = response) => {
   const { id } = req.params;
-  const { _id, idEmbarcacion, ...resto } = req.body;
+  const { _id, idEmbarcacion, nombre, ...resto } = req.body;
 
   try {
     const tanqueAnterior = await TanqueBK.findById(id);
     if (!tanqueAnterior) {
       return res.status(404).json({ msg: "Tanque no encontrado." });
+    }
+
+    // Validar duplicidad de nombre de tanque en la misma embarcación y bunkering (si cambia el nombre o embarcación)
+    if (
+      (nombre && nombre.trim() !== tanqueAnterior.nombre) ||
+      (idEmbarcacion && String(tanqueAnterior.idEmbarcacion) !== idEmbarcacion)
+    ) {
+      const Embarcacion = require("../../models/bunkering/embarcacion");
+      const embarcacionId = idEmbarcacion || tanqueAnterior.idEmbarcacion;
+      const embarcacion = await Embarcacion.findById(embarcacionId).populate(
+        "idBunkering"
+      );
+      if (!embarcacion) {
+        return res.status(400).json({ error: "Embarcación no encontrada." });
+      }
+      const tanqueDuplicado = await TanqueBK.findOne({
+        nombre: (nombre || tanqueAnterior.nombre).trim(),
+        idEmbarcacion: embarcacionId,
+        eliminado: false,
+        _id: { $ne: id },
+      });
+      if (tanqueDuplicado) {
+        return res.status(400).json({
+          error: `Ya existe un tanque con el nombre "${
+            nombre || tanqueAnterior.nombre
+          }" en la embarcación "${embarcacion.nombre}" asociada al bunkering "${
+            embarcacion.idBunkering?.nombre || ""
+          }".`,
+        });
+      }
     }
 
     // Si el idEmbarcacion cambia, actualiza el arreglo `tanques` en las embarcaciones
@@ -157,13 +210,26 @@ const tanquePut = async (req = request, res = response) => {
         cambios[key] = { from: tanqueAnterior[key], to: resto[key] };
       }
     }
+    if (nombre && nombre.trim() !== tanqueAnterior.nombre) {
+      cambios.nombre = { from: tanqueAnterior.nombre, to: nombre.trim() };
+    }
+    if (
+      idEmbarcacion &&
+      String(tanqueAnterior.idEmbarcacion) !== idEmbarcacion
+    ) {
+      cambios.idEmbarcacion = {
+        from: tanqueAnterior.idEmbarcacion,
+        to: idEmbarcacion,
+      };
+    }
 
     // Actualizar el tanque y registrar el historial
     const tanqueActualizado = await TanqueBK.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
         ...resto,
-        idEmbarcacion,
+        nombre: nombre || tanqueAnterior.nombre,
+        idEmbarcacion: idEmbarcacion || tanqueAnterior.idEmbarcacion,
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
       },
       { new: true }

@@ -19,8 +19,8 @@ const embarcacionesGets = async (req = request, res = response) => {
 
   try {
     const [total, embarcacions] = await Promise.all([
-      Embarcacion.countDocuments(query), // Cuenta el total de embarcacions
-      Embarcacion.find(query).sort({ nombre: 1 }).populate(populateOptions), // Obtiene las embarcacions con referencias pobladas
+      Embarcacion.countDocuments(query),
+      Embarcacion.find(query).sort({ nombre: 1 }).populate(populateOptions),
     ]);
     embarcacions.forEach((t) => {
       if (Array.isArray(t.historial)) {
@@ -45,11 +45,6 @@ const embarcacionGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-    embarcacion.forEach((t) => {
-      if (Array.isArray(t.historial)) {
-        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      }
-    });
     if (!embarcacion) {
       return res.status(404).json({ msg: "Embarcación no encontrada." });
     }
@@ -70,9 +65,13 @@ const embarcacionGet = async (req = request, res = response) => {
   }
 };
 
-// Crear una nueva embarcación y sus tanques asociados
+// Crear una nueva embarcación y sus tanques asociados (con rollback si hay error en tanques)
 const embarcacionPost = async (req = request, res = response) => {
   const { idBunkering, capacidad, nombre, imo, tipo, tanques } = req.body;
+
+  // Usar una sesión de mongoose para transacción
+  const session = await Embarcacion.startSession();
+  session.startTransaction();
 
   try {
     // 1. Crear la embarcación sin tanques aún
@@ -85,7 +84,7 @@ const embarcacionPost = async (req = request, res = response) => {
       createdBy: req.usuario._id,
     });
 
-    await nuevaEmbarcacion.save();
+    await nuevaEmbarcacion.save({ session });
 
     // 2. Si se envía un array de tanques, crearlos y asociarlos
     let tanquesIds = [];
@@ -96,18 +95,31 @@ const embarcacionPost = async (req = request, res = response) => {
           idEmbarcacion: nuevaEmbarcacion._id,
           createdBy: req.usuario._id,
         });
-        await nuevoTanque.save();
-        tanquesIds.push(nuevoTanque._id);
+        try {
+          await nuevoTanque.save({ session });
+          tanquesIds.push(nuevoTanque._id);
+        } catch (tanqueErr) {
+          await session.abortTransaction();
+          session.endSession();
+          return res.status(400).json({
+            error: `Error al crear el tanque "${tanqueData.nombre}": ${tanqueErr.message}`,
+          });
+        }
       }
       // Asociar los tanques creados a la embarcación
       nuevaEmbarcacion.tanques = tanquesIds;
-      await nuevaEmbarcacion.save();
+      await nuevaEmbarcacion.save({ session });
     }
+
+    await session.commitTransaction();
+    session.endSession();
 
     await nuevaEmbarcacion.populate(populateOptions);
 
     res.status(201).json(nuevaEmbarcacion);
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     console.error("Error en embarcacionPost:", err);
     res.status(400).json({
       error:
@@ -116,14 +128,20 @@ const embarcacionPost = async (req = request, res = response) => {
   }
 };
 
-// Actualizar una embarcación existente y permitir crear tanques nuevos
+// Actualizar una embarcación existente y permitir crear tanques nuevos (con rollback si hay error en tanques)
 const embarcacionPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, tanques, ...resto } = req.body;
 
+  // Usar una sesión de mongoose para transacción
+  const session = await Embarcacion.startSession();
+  session.startTransaction();
+
   try {
-    const antes = await Embarcacion.findById(id);
+    const antes = await Embarcacion.findById(id).session(session);
     if (!antes) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(404).json({ msg: "Embarcación no encontrada." });
     }
 
@@ -138,8 +156,16 @@ const embarcacionPut = async (req = request, res = response) => {
             idEmbarcacion: id,
             createdBy: req.usuario._id,
           });
-          await nuevoTanque.save();
-          tanquesIds.push(nuevoTanque._id);
+          try {
+            await nuevoTanque.save({ session });
+            tanquesIds.push(nuevoTanque._id);
+          } catch (tanqueErr) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({
+              error: `Error al crear el tanque "${tanqueData.nombre}": ${tanqueErr.message}`,
+            });
+          }
         } else if (!tanquesIds.includes(tanqueData._id)) {
           tanquesIds.push(tanqueData._id);
         }
@@ -164,15 +190,22 @@ const embarcacionPut = async (req = request, res = response) => {
         tanques: tanquesIds,
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
       },
-      { new: true }
+      { new: true, session }
     ).populate(populateOptions);
 
     if (!embarcacionActualizada) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(404).json({ msg: "Embarcación no encontrada." });
     }
 
+    await session.commitTransaction();
+    session.endSession();
+
     res.json(embarcacionActualizada);
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     console.error("Error en embarcacionPut:", err);
     res.status(400).json({
       error:
