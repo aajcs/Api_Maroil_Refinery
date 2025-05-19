@@ -113,6 +113,7 @@ const embarcacionPost = async (req = request, res = response) => {
         const nuevoTanque = new TanqueBK({
           ...tanqueData,
           idEmbarcacion: nuevaEmbarcacion._id,
+          idBunkering: idBunkering,
           createdBy: req.usuario._id,
         });
         try {

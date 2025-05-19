@@ -3,6 +3,7 @@ const TanqueBK = require("../../models/bunkering/tanqueBK");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
+  { path: "idBunkering", select: "nombre" },
   {
     path: "idProducto",
     select: "nombre color posicion",
