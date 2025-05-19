@@ -5,7 +5,7 @@ const TanqueBK = require("../../models/bunkering/tanqueBK");
 // Opciones de población para referencias en las consultas
 const populateOptions = [
   { path: "idBunkering", select: "nombre" },
-  { path: "tanques", select: "nombre capacidad" },
+  { path: "tanques", select: "nombre capacidad eliminado" },
   { path: "createdBy", select: "nombre correo" },
   {
     path: "historial",
@@ -56,6 +56,11 @@ const embarcacionGet = async (req = request, res = response) => {
       );
     }
 
+    // Filtrar tanques eliminados lógicamente
+    if (Array.isArray(embarcacion.tanques)) {
+      embarcacion.tanques = embarcacion.tanques.filter((t) => !t.eliminado);
+    }
+
     res.json(embarcacion);
   } catch (err) {
     console.error("Error en embarcacionGet:", err);
@@ -69,12 +74,10 @@ const embarcacionGet = async (req = request, res = response) => {
 const embarcacionPost = async (req = request, res = response) => {
   const { idBunkering, capacidad, nombre, imo, tipo, tanques } = req.body;
 
-  // Usar una sesión de mongoose para transacción
   const session = await Embarcacion.startSession();
   session.startTransaction();
 
   try {
-    // 1. Crear la embarcación sin tanques aún
     const nuevaEmbarcacion = new Embarcacion({
       idBunkering,
       capacidad,
@@ -86,10 +89,22 @@ const embarcacionPost = async (req = request, res = response) => {
 
     await nuevaEmbarcacion.save({ session });
 
-    // 2. Si se envía un array de tanques, crearlos y asociarlos
     let tanquesIds = [];
     if (Array.isArray(tanques) && tanques.length > 0) {
       for (const tanqueData of tanques) {
+        // Validar duplicidad de nombre de tanque en la misma embarcación y bunkering
+        const existe = await TanqueBK.findOne({
+          nombre: tanqueData.nombre.trim(),
+          idEmbarcacion: nuevaEmbarcacion._id,
+          eliminado: false,
+        }).session(session);
+        if (existe) {
+          await session.abortTransaction();
+          session.endSession();
+          return res.status(400).json({
+            error: `Ya existe un tanque con el nombre "${tanqueData.nombre}" en esta embarcación.`,
+          });
+        }
         const nuevoTanque = new TanqueBK({
           ...tanqueData,
           idEmbarcacion: nuevaEmbarcacion._id,
@@ -106,7 +121,6 @@ const embarcacionPost = async (req = request, res = response) => {
           });
         }
       }
-      // Asociar los tanques creados a la embarcación
       nuevaEmbarcacion.tanques = tanquesIds;
       await nuevaEmbarcacion.save({ session });
     }
@@ -115,6 +129,13 @@ const embarcacionPost = async (req = request, res = response) => {
     session.endSession();
 
     await nuevaEmbarcacion.populate(populateOptions);
+
+    // Filtrar tanques eliminados lógicamente
+    if (Array.isArray(nuevaEmbarcacion.tanques)) {
+      nuevaEmbarcacion.tanques = nuevaEmbarcacion.tanques.filter(
+        (t) => !t.eliminado
+      );
+    }
 
     res.status(201).json(nuevaEmbarcacion);
   } catch (err) {
@@ -128,12 +149,11 @@ const embarcacionPost = async (req = request, res = response) => {
   }
 };
 
-// Actualizar una embarcación existente y permitir crear tanques nuevos (con rollback si hay error en tanques)
+// Actualizar una embarcación y sus tanques (PUT) - SOLO ACTUALIZA, NO DUPLICA
 const embarcacionPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, tanques, ...resto } = req.body;
 
-  // Usar una sesión de mongoose para transacción
   const session = await Embarcacion.startSession();
   session.startTransaction();
 
@@ -145,12 +165,62 @@ const embarcacionPut = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Embarcación no encontrada." });
     }
 
-    // Si se envía un array de tanques, crear los nuevos tanques y asociarlos
-    let tanquesIds = antes.tanques ? [...antes.tanques] : [];
-    if (Array.isArray(tanques) && tanques.length > 0) {
+    // Usar un nuevo array para los ids finales, solo de tanques activos
+    let nuevosTanquesIds = [];
+    if (Array.isArray(tanques)) {
       for (const tanqueData of tanques) {
-        // Si el tanque ya tiene _id, no lo crees de nuevo
+        // ELIMINAR TANQUE LÓGICAMENTE
+        if (tanqueData._id && tanqueData.eliminar === true) {
+          await TanqueBK.findOneAndUpdate(
+            { _id: tanqueData._id, idEmbarcacion: id, eliminado: false },
+            { eliminado: true },
+            { session }
+          );
+          continue; // No lo agregues al array final
+        }
+
+        // ACTUALIZAR TANQUE EXISTENTE
+        if (tanqueData._id && !tanqueData.eliminar) {
+          // Validar duplicidad de nombre (excepto el mismo tanque)
+          if (tanqueData.nombre) {
+            const existe = await TanqueBK.findOne({
+              nombre: tanqueData.nombre.trim(),
+              idEmbarcacion: id,
+              eliminado: false,
+              _id: { $ne: tanqueData._id },
+            }).session(session);
+            if (existe) {
+              await session.abortTransaction();
+              session.endSession();
+              return res.status(400).json({
+                error: `Ya existe un tanque con el nombre "${tanqueData.nombre}" en esta embarcación.`,
+              });
+            }
+          }
+          await TanqueBK.findOneAndUpdate(
+            { _id: tanqueData._id, idEmbarcacion: id, eliminado: false },
+            { ...tanqueData, nombre: tanqueData.nombre?.trim() },
+            { session }
+          );
+          nuevosTanquesIds.push(tanqueData._id);
+          continue;
+        }
+
+        // CREAR NUEVO TANQUE SOLO SI NO TIENE _id
         if (!tanqueData._id) {
+          // Validar duplicidad de nombre
+          const existe = await TanqueBK.findOne({
+            nombre: tanqueData.nombre.trim(),
+            idEmbarcacion: id,
+            eliminado: false,
+          }).session(session);
+          if (existe) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({
+              error: `Ya existe un tanque con el nombre "${tanqueData.nombre}" en esta embarcación.`,
+            });
+          }
           const nuevoTanque = new TanqueBK({
             ...tanqueData,
             idEmbarcacion: id,
@@ -158,7 +228,7 @@ const embarcacionPut = async (req = request, res = response) => {
           });
           try {
             await nuevoTanque.save({ session });
-            tanquesIds.push(nuevoTanque._id);
+            nuevosTanquesIds.push(nuevoTanque._id);
           } catch (tanqueErr) {
             await session.abortTransaction();
             session.endSession();
@@ -166,10 +236,18 @@ const embarcacionPut = async (req = request, res = response) => {
               error: `Error al crear el tanque "${tanqueData.nombre}": ${tanqueErr.message}`,
             });
           }
-        } else if (!tanquesIds.includes(tanqueData._id)) {
-          tanquesIds.push(tanqueData._id);
         }
       }
+    }
+
+    // Solo ids de tanques activos (no eliminados)
+    if (Array.isArray(tanques)) {
+      // Buscar todos los tanques activos de la embarcación
+      const tanquesActivos = await TanqueBK.find({
+        idEmbarcacion: id,
+        eliminado: false,
+      }).session(session);
+      nuevosTanquesIds = tanquesActivos.map((t) => t._id);
     }
 
     const cambios = {};
@@ -178,16 +256,15 @@ const embarcacionPut = async (req = request, res = response) => {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
     }
-    // Detectar cambios en tanques (solo si hay nuevos tanques)
-    if (Array.isArray(tanques) && tanques.length > 0) {
-      cambios.tanques = { from: antes.tanques, to: tanquesIds };
+    if (Array.isArray(tanques)) {
+      cambios.tanques = { from: antes.tanques, to: nuevosTanquesIds };
     }
 
     const embarcacionActualizada = await Embarcacion.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
         ...resto,
-        tanques: tanquesIds,
+        tanques: nuevosTanquesIds,
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
       },
       { new: true, session }
@@ -201,6 +278,13 @@ const embarcacionPut = async (req = request, res = response) => {
 
     await session.commitTransaction();
     session.endSession();
+
+    // Filtrar tanques eliminados lógicamente
+    if (Array.isArray(embarcacionActualizada.tanques)) {
+      embarcacionActualizada.tanques = embarcacionActualizada.tanques.filter(
+        (t) => !t.eliminado
+      );
+    }
 
     res.json(embarcacionActualizada);
   } catch (err) {
@@ -262,6 +346,13 @@ const embarcacionPatch = async (req = request, res = response) => {
 
     if (!embarcacionActualizada) {
       return res.status(404).json({ msg: "Embarcación no encontrada." });
+    }
+
+    // Filtrar tanques eliminados lógicamente
+    if (Array.isArray(embarcacionActualizada.tanques)) {
+      embarcacionActualizada.tanques = embarcacionActualizada.tanques.filter(
+        (t) => !t.eliminado
+      );
     }
 
     res.json(embarcacionActualizada);
