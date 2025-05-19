@@ -83,6 +83,7 @@ const tanquePost = async (req = request, res = response) => {
     idEmbarcacion,
     idChequeoCalidad,
     idChequeoCantidad,
+    idBunkering,
   } = req.body;
 
   try {
@@ -118,6 +119,7 @@ const tanquePost = async (req = request, res = response) => {
       idEmbarcacion,
       idChequeoCalidad,
       idChequeoCantidad,
+      idBunkering,
       createdBy: req.usuario._id,
     });
 
