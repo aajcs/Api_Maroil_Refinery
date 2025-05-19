@@ -10,7 +10,11 @@ const TanqueBKSchema = Schema(
       ref: "Embarcacion", // Relación con el modelo Embarcacion
       required: true, // Campo obligatorio
     },
-
+    idBunkering: {
+      type: Schema.Types.ObjectId,
+      ref: "Bunkering", // Referencia al modelo Bunkering
+      required: [true, "El id del bunkering es necesario"], // Campo obligatorio
+    },
     // Capacidad máxima del tanque en unidades específicas (por ejemplo, litros o barriles)
     capacidad: {
       type: Number,
