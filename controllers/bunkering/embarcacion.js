@@ -1,27 +1,34 @@
-// Importaciones necesarias
 const { response, request } = require("express");
 const Embarcacion = require("../../models/bunkering/embarcacion");
+const TanqueBK = require("../../models/bunkering/tanqueBK");
 
 // Opciones de población para referencias en las consultas
 const populateOptions = [
-  { path: "idBunkering", select: "nombre" }, // Popula el nombre del bunkering
-  { path: "tanques", select: "nombre capacidad" }, // Popula los tanques asociados
-  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la embarcación
+  { path: "idBunkering", select: "nombre" },
+  { path: "tanques", select: "nombre capacidad" },
+  { path: "createdBy", select: "nombre correo" },
   {
     path: "historial",
-    populate: { path: "modificadoPor", select: "nombre correo" }, // Popula historial.modificadoPor
+    populate: { path: "modificadoPor", select: "nombre correo" },
   },
 ];
 
-// Controlador para obtener todas las embarcaciones
+// Obtener todas las embarcaciones
 const embarcacionesGets = async (req = request, res = response) => {
-  const query = { eliminado: false }; // Filtro para obtener solo embarcaciones no eliminadas
+  const query = { eliminado: false };
 
   try {
     const [total, embarcaciones] = await Promise.all([
-      Embarcacion.countDocuments(query), // Cuenta el total de embarcaciones
-      Embarcacion.find(query).sort({ nombre: 1 }).populate(populateOptions), // Obtiene las embarcaciones con referencias pobladas
+      Embarcacion.countDocuments(query),
+      Embarcacion.find(query).sort({ nombre: 1 }).populate(populateOptions),
     ]);
+
+    // Ordenar historial por fecha descendente en cada embarcación
+    embarcaciones.forEach((e) => {
+      if (Array.isArray(e.historial)) {
+        e.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
 
     res.json({ total, embarcaciones });
   } catch (err) {
@@ -32,7 +39,7 @@ const embarcacionesGets = async (req = request, res = response) => {
   }
 };
 
-// Controlador para obtener una embarcación específica por ID
+// Obtener una embarcación específica por ID
 const embarcacionGet = async (req = request, res = response) => {
   const { id } = req.params;
 
@@ -46,6 +53,13 @@ const embarcacionGet = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Embarcación no encontrada." });
     }
 
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(embarcacion.historial)) {
+      embarcacion.historial.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
+    }
+
     res.json(embarcacion);
   } catch (err) {
     console.error("Error en embarcacionGet:", err);
@@ -55,22 +69,40 @@ const embarcacionGet = async (req = request, res = response) => {
   }
 };
 
-// Controlador para crear una nueva embarcación
+// Crear una nueva embarcación y sus tanques asociados
 const embarcacionPost = async (req = request, res = response) => {
   const { idBunkering, capacidad, nombre, imo, tipo, tanques } = req.body;
 
   try {
+    // 1. Crear la embarcación sin tanques aún
     const nuevaEmbarcacion = new Embarcacion({
       idBunkering,
       capacidad,
       nombre,
       imo,
       tipo,
-      tanques,
-      createdBy: req.usuario._id, // Auditoría: quién crea
+      createdBy: req.usuario._id,
     });
 
     await nuevaEmbarcacion.save();
+
+    // 2. Si se envía un array de tanques, crearlos y asociarlos
+    let tanquesIds = [];
+    if (Array.isArray(tanques) && tanques.length > 0) {
+      for (const tanqueData of tanques) {
+        const nuevoTanque = new TanqueBK({
+          ...tanqueData,
+          idEmbarcacion: nuevaEmbarcacion._id,
+          createdBy: req.usuario._id,
+        });
+        await nuevoTanque.save();
+        tanquesIds.push(nuevoTanque._id);
+      }
+      // Asociar los tanques creados a la embarcación
+      nuevaEmbarcacion.tanques = tanquesIds;
+      await nuevaEmbarcacion.save();
+    }
+
     await nuevaEmbarcacion.populate(populateOptions);
 
     res.status(201).json(nuevaEmbarcacion);
@@ -78,20 +110,39 @@ const embarcacionPost = async (req = request, res = response) => {
     console.error("Error en embarcacionPost:", err);
     res.status(400).json({
       error:
-        "Error al crear la embarcación. Verifica los datos proporcionados.",
+        "Error al crear la embarcación y sus tanques. Verifica los datos proporcionados.",
     });
   }
 };
 
-// Controlador para actualizar una embarcación existente
+// Actualizar una embarcación existente y permitir crear tanques nuevos
 const embarcacionPut = async (req = request, res = response) => {
   const { id } = req.params;
-  const { _id, ...resto } = req.body;
+  const { _id, tanques, ...resto } = req.body;
 
   try {
     const antes = await Embarcacion.findById(id);
     if (!antes) {
       return res.status(404).json({ msg: "Embarcación no encontrada." });
+    }
+
+    // Si se envía un array de tanques, crear los nuevos tanques y asociarlos
+    let tanquesIds = antes.tanques ? [...antes.tanques] : [];
+    if (Array.isArray(tanques) && tanques.length > 0) {
+      for (const tanqueData of tanques) {
+        // Si el tanque ya tiene _id, no lo crees de nuevo
+        if (!tanqueData._id) {
+          const nuevoTanque = new TanqueBK({
+            ...tanqueData,
+            idEmbarcacion: id,
+            createdBy: req.usuario._id,
+          });
+          await nuevoTanque.save();
+          tanquesIds.push(nuevoTanque._id);
+        } else if (!tanquesIds.includes(tanqueData._id)) {
+          tanquesIds.push(tanqueData._id);
+        }
+      }
     }
 
     const cambios = {};
@@ -100,11 +151,16 @@ const embarcacionPut = async (req = request, res = response) => {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
     }
+    // Detectar cambios en tanques (solo si hay nuevos tanques)
+    if (Array.isArray(tanques) && tanques.length > 0) {
+      cambios.tanques = { from: antes.tanques, to: tanquesIds };
+    }
 
     const embarcacionActualizada = await Embarcacion.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
         ...resto,
+        tanques: tanquesIds,
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
       },
       { new: true }
@@ -119,12 +175,12 @@ const embarcacionPut = async (req = request, res = response) => {
     console.error("Error en embarcacionPut:", err);
     res.status(400).json({
       error:
-        "Error al actualizar la embarcación. Verifica los datos proporcionados.",
+        "Error al actualizar la embarcación y sus tanques. Verifica los datos proporcionados.",
     });
   }
 };
 
-// Controlador para eliminar (marcar como eliminado) una embarcación
+// Eliminar (marcar como eliminado) una embarcación con historial de auditoría
 const embarcacionDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
@@ -184,7 +240,6 @@ const embarcacionPatch = async (req = request, res = response) => {
   }
 };
 
-// Exporta los controladores
 module.exports = {
   embarcacionesGets,
   embarcacionGet,
