@@ -9,20 +9,10 @@ const lineaDespachoBKSchema = Schema(
       ref: "Muelle", // Relación con el modelo Muelle
       required: true, // Campo obligatorio
     },
-
-    // Tipo de línea (Despacho o Despacho)
-    tipoLinea: {
-      type: String,
-      enum: ["Carga", "Despacho"], // Valores permitidos
-      default: "Despacho", // Valor por defecto
-    },
-
-    // Ubicación de la línea de carga
-    ubicacion: {
-      type: String,
-
-      minlength: [3, "La ubicación debe tener al menos 3 caracteres"], // Validación de longitud mínima
-      maxlength: [100, "La ubicación no puede exceder los 100 caracteres"], // Validación de longitud máxima
+    idBunkering: {
+      type: Schema.Types.ObjectId,
+      ref: "Bunkering", // Referencia al modelo Bunkering
+      required: [true, "El id del bunkering es necesario"], // Campo obligatorio
     },
 
     // Nombre de la línea de carga

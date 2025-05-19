@@ -70,9 +70,12 @@ const tipoProductoBKSchema = Schema(
     // Porcentaje de azufre en el producto
     indiceCetano: {
       type: Number,
-      min: [0, "El porcentaje de azufre no puede ser negativo"], // Validación para evitar valores negativos
-      max: [100, "El porcentaje de azufre no puede exceder el 100%"], // Validación de rango máximo
-      required: [true, "El porcentaje de azufre en el producto es obligatorio"], // Campo obligatorio
+      min: [0, "El porcentaje de indiceCetano no puede ser negativo"], // Validación para evitar valores negativos
+      max: [100, "El porcentaje de indiceCetano no puede exceder el 100%"], // Validación de rango máximo
+      required: [
+        false,
+        "El porcentaje de indiceCetano en el producto es obligatorio",
+      ], // Campo obligatorio
     },
 
     // Rendimiento del productos

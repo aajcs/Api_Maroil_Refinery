@@ -1,7 +1,7 @@
 // Importaciones necesarias
 const { response, request } = require("express"); // Objetos de Express para manejar solicitudes y respuestas
 const TipoProducto = require("../models/tipoProducto"); // Modelo TipoProducto para interactuar con la base de datos
-const { Producto } = require("../models"); // Modelo Producto para manejar relaciones
+const { Producto, ProductoBK } = require("../models"); // Modelo Producto para manejar relaciones
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
@@ -85,6 +85,8 @@ const tipoProductoGet = async (req = request, res = response) => {
 // Controlador para crear un nuevo tipo de producto
 const tipoProductoPost = async (req = request, res = response) => {
   // Extrae los datos del cuerpo de la solicitud
+  console.log("aqui?");
+
   const {
     idRefineria,
     idProducto,
@@ -121,11 +123,10 @@ const tipoProductoPost = async (req = request, res = response) => {
       indiceCetano,
       createdBy: req.usuario._id, // ID del usuario que creó el tipo de producto
     });
-
     await nuevoTipoProducto.save(); // Guarda el nuevo tipo de producto en la base de datos
 
     // Actualiza el modelo Producto para agregar la referencia al nuevo tipo de producto
-    await Producto.findByIdAndUpdate(
+    await ProductoBK.findByIdAndUpdate(
       idProducto,
       { $push: { idTipoProducto: nuevoTipoProducto._id } }, // Agrega el ID del nuevo tipo de producto al campo idTipoProducto
       { new: true }

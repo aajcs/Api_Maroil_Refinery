@@ -49,7 +49,9 @@ router.post(
     check("clasificacion", "La clasificación es obligatoria").not().isEmpty(),
     check("gravedadAPI", "La gravedad API es obligatoria").not().isEmpty(),
     check("azufre", "El azufre es obligatorio").not().isEmpty(),
-    check("contenidoAgua", "El contenido de agua es obligatorio").not().isEmpty(),
+    check("contenidoAgua", "El contenido de agua es obligatorio")
+      .not()
+      .isEmpty(),
     check("procedencia", "La procedencia es obligatoria").not().isEmpty(),
     validarCampos,
   ],

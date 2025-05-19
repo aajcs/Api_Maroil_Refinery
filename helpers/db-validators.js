@@ -32,6 +32,8 @@ const {
   Embarcacion,
   TanqueBK,
   ContactoBK,
+  TipoProductoBK,
+  ProductoBK,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -181,6 +183,13 @@ const existeProductoPorId = async (id) => {
     throw new Error(`El id no existe ${id}`);
   }
 };
+const existeProductoBKPorId = async (id) => {
+  // Verificar si el correo existe
+  const existeProducto = await ProductoBK.findById(id);
+  if (!existeProducto) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
 
 const existeCostoPorId = async (id) => {
   // Verificar si el correo existe
@@ -246,6 +255,14 @@ const existeTipoProductoPorId = async (id) => {
   // Verificar si la refineria existe
 
   const existeTipoProducto = await TipoProducto.findById(id);
+  if (!existeTipoProducto) {
+    throw new Error(`Tipo de Producto no existe ${id}`);
+  }
+};
+const existeTipoProductoBKPorId = async (id) => {
+  // Verificar si la refineria existe
+  console.log("id", id);
+  const existeTipoProducto = await TipoProductoBK.findById(id);
   if (!existeTipoProducto) {
     throw new Error(`Tipo de Producto no existe ${id}`);
   }
@@ -394,6 +411,8 @@ module.exports = {
   existeOperadorBKPorId,
   existeContactoBKPorId,
   existeContratoBKPorId,
+  existeTipoProductoBKPorId,
+  existeProductoBKPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

@@ -64,11 +64,11 @@ class Server {
 
       // Agregar más rutas según sea necesario
       bunkering: "/api/bunkering/bunkering",
-      muelle: "/api/bunkering/muelle",
+      muelle: "/api/bunkering/muelleBK",
       recepcionBK: "/api/bunkering/recepcionBK",
       despachoBK: "/api/bunkering/despachoBK",
       lineaCargaBK: "/api/bunkering/lineaCargaBK",
-      embarcacion: "/api/bunkering/embarcacion",
+      embarcacion: "/api/bunkering/embarcacionBK",
       tanqueBK: "/api/bunkering/tanqueBK",
       lineaDespachoBK: "/api/bunkering/lineaDespachoBK",
       operadorBK: "/api/bunkering/operadorBK",

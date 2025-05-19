@@ -6,6 +6,11 @@ const TipoProductoBK = require("../../models/bunkering/tipoProductoBK");
 const populateOptions = [
   { path: "idBunkering", select: "nombre" },
   { path: "idTipoProducto", select: "nombre" },
+  { path: "createdBy", select: "nombre correo" },
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  },
 ];
 
 // Obtener todos los productos
@@ -17,6 +22,13 @@ const productoBKGets = async (req = request, res = response) => {
       ProductoBK.countDocuments(query),
       ProductoBK.find(query).populate(populateOptions).sort({ nombre: 1 }),
     ]);
+
+    // Ordenar historial por fecha ascendente en cada torre
+    productos.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     res.json({ total, productos });
   } catch (err) {
     console.error("Error en productoBKGets:", err);
@@ -34,7 +46,12 @@ const productoBKGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-
+    // Ordenar historial por fecha ascendente en cada torre
+    producto.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (!producto) {
       return res.status(404).json({ msg: "Producto no encontrado" });
     }
@@ -63,7 +80,8 @@ const productoBKPost = async (req = request, res = response) => {
     console.error("Error en productoBKPost:", err);
     let errorMsg = "Error interno del servidor al crear el producto.";
     if (err.code === 11000) {
-      errorMsg = "Ya existe un producto con ese nombre o posición en el bunkering.";
+      errorMsg =
+        "Ya existe un producto con ese nombre o posición en el bunkering.";
     }
     res.status(500).json({ error: errorMsg });
   }
@@ -104,7 +122,8 @@ const productoBKPut = async (req = request, res = response) => {
     console.error("Error en productoBKPut:", err);
     let errorMsg = "Error interno del servidor al actualizar el producto.";
     if (err.code === 11000) {
-      errorMsg = "Ya existe un producto con ese nombre o posición en el bunkering.";
+      errorMsg =
+        "Ya existe un producto con ese nombre o posición en el bunkering.";
     }
     res.status(500).json({ error: errorMsg });
   }

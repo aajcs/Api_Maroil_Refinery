@@ -3,8 +3,14 @@ const LineaDespachoBK = require("../../models/bunkering/lineaDespachoBK");
 
 // Opciones de población reutilizables
 const populateOptions = [
-  { path: "idMuelle", select: "nombre" },
   { path: "idProducto", select: "nombre" },
+  { path: "idBunkering", select: "nombre" },
+  { path: "idMuelle", select: "nombre" },
+  { path: "createdBy", select: "nombre correo" },
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  },
 ];
 
 // Obtener todas las líneas de despacho
@@ -12,11 +18,16 @@ const lineaDespachoBKGets = async (req = request, res = response) => {
   const query = { eliminado: false };
 
   try {
-    const [total, lineas] = await Promise.all([
+    const [total, lineaDespachos] = await Promise.all([
       LineaDespachoBK.countDocuments(query),
       LineaDespachoBK.find(query).populate(populateOptions).sort({ nombre: 1 }),
     ]);
-    res.json({ total, lineas });
+    lineaDespachos.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total, lineaDespachos });
   } catch (err) {
     console.error("Error en lineaDespachoBKGets:", err);
     res.status(500).json({
@@ -29,16 +40,20 @@ const lineaDespachoBKGets = async (req = request, res = response) => {
 const lineaDespachoBKGet = async (req = request, res = response) => {
   const { id } = req.params;
   try {
-    const linea = await LineaDespachoBK.findOne({
+    const lineaDespacho = await LineaDespachoBK.findOne({
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-
-    if (!linea) {
+    lineaDespacho.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    if (!lineaDespacho) {
       return res.status(404).json({ msg: "Línea de despacho no encontrada" });
     }
 
-    res.json(linea);
+    res.json(lineaDespacho);
   } catch (err) {
     console.error("Error en lineaDespachoBKGet:", err);
     res.status(500).json({
@@ -101,7 +116,8 @@ const lineaDespachoBKPut = async (req = request, res = response) => {
     res.json(lineaActualizada);
   } catch (err) {
     console.error("Error en lineaDespachoBKPut:", err);
-    let errorMsg = "Error interno del servidor al actualizar la línea de despacho.";
+    let errorMsg =
+      "Error interno del servidor al actualizar la línea de despacho.";
     if (err.code === 11000) {
       errorMsg = "Ya existe una línea de despacho con ese nombre en el muelle.";
     }

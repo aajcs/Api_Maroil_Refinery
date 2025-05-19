@@ -3,6 +3,7 @@ const LineaCargaBK = require("../../models/bunkering/lineaCargaBK");
 
 // Opciones de población reutilizables
 const populateOptions = [
+  { path: "idBunkering", select: "nombre" },
   { path: "idMuelle", select: "nombre" },
   { path: "createdBy", select: "nombre correo" },
   {
@@ -20,6 +21,11 @@ const lineaCargaBKGets = async (req = request, res = response) => {
       LineaCargaBK.countDocuments(query),
       LineaCargaBK.find(query).populate(populateOptions).sort({ nombre: 1 }),
     ]);
+    lineaCargas.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     res.json({ total, lineaCargas });
   } catch (err) {
     console.error("Error en lineaCargaBKGets:", err);
@@ -37,7 +43,11 @@ const lineaCargaBKGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-
+    lineaCarga.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (!lineaCarga) {
       return res.status(404).json({ msg: "Línea de carga no encontrada" });
     }

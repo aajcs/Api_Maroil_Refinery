@@ -18,19 +18,16 @@ const embarcacionesGets = async (req = request, res = response) => {
   const query = { eliminado: false };
 
   try {
-    const [total, embarcaciones] = await Promise.all([
-      Embarcacion.countDocuments(query),
-      Embarcacion.find(query).sort({ nombre: 1 }).populate(populateOptions),
+    const [total, embarcacions] = await Promise.all([
+      Embarcacion.countDocuments(query), // Cuenta el total de embarcacions
+      Embarcacion.find(query).sort({ nombre: 1 }).populate(populateOptions), // Obtiene las embarcacions con referencias pobladas
     ]);
-
-    // Ordenar historial por fecha descendente en cada embarcación
-    embarcaciones.forEach((e) => {
-      if (Array.isArray(e.historial)) {
-        e.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    embarcacions.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
-
-    res.json({ total, embarcaciones });
+    res.json({ total, embarcacions });
   } catch (err) {
     console.error("Error en embarcacionesGets:", err);
     res.status(500).json({
@@ -48,7 +45,11 @@ const embarcacionGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-
+    embarcacion.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (!embarcacion) {
       return res.status(404).json({ msg: "Embarcación no encontrada." });
     }
