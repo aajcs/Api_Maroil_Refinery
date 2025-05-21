@@ -144,9 +144,9 @@ const ContratoBkSchema = Schema(
     // Historial de modificaciones
     historialModificaciones: [
       {
+        usuario: { type: Schema.Types.ObjectId, ref: "Usuario" },
+        cambios: { type: Object },
         fecha: { type: Date, default: Date.now },
-        usuario: { type: String, required: true },
-        cambios: { type: String, required: true },
       },
     ],
 

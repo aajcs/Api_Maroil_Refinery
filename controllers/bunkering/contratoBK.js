@@ -171,7 +171,7 @@ const contratoBKPost = async (req = request, res = response) => {
   }
 };
 
-// Actualizar un contratoBK existente
+// Actualizar un contratoBK existente (con auditoría)
 const contratoBKPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { items, abono, ...resto } = req.body;
@@ -186,6 +186,7 @@ const contratoBKPut = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Contrato no encontrado" });
     }
 
+    // Auditoría: comparar cambios
     const cambios = {};
     for (let key in resto) {
       if (String(contratoBKExistente[key]) !== String(resto[key])) {
@@ -240,14 +241,26 @@ const contratoBKPut = async (req = request, res = response) => {
   }
 };
 
-// Eliminar (marcar como eliminado) un contratoBK
+// Eliminar (marcar como eliminado) un contratoBK (con auditoría)
 const contratoBKDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
+    const antes = await ContratoBK.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Contrato no encontrado" });
+    }
+
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
+
     const contratoBKEliminado = await ContratoBK.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { eliminado: true },
+      {
+        eliminado: true,
+        $push: {
+          historialModificaciones: { usuario: req.usuario._id, cambios },
+        },
+      },
       { new: true }
     ).populate(populateOptions);
 
