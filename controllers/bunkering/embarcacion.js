@@ -5,7 +5,18 @@ const TanqueBK = require("../../models/bunkering/tanqueBK");
 // Opciones de población para referencias en las consultas
 const populateOptions = [
   { path: "idBunkering", select: "nombre" },
-  { path: "tanques", select: "nombre capacidad eliminado" },
+  {
+    path: "tanques",
+    select:
+      "nombre capacidad almacenamiento ubicacion idProducto idEmbarcacion idChequeoCalidad idChequeoCantidad idBunkering eliminado",
+    populate: [
+      { path: "idProducto", select: "nombre" },
+      { path: "idEmbarcacion", select: "nombre" },
+      { path: "idChequeoCalidad", select: "nombre" },
+      { path: "idChequeoCantidad", select: "nombre" },
+      { path: "idBunkering", select: "nombre" },
+    ],
+  },
   { path: "createdBy", select: "nombre correo" },
   {
     path: "historial",
@@ -19,8 +30,8 @@ const embarcacionesGets = async (req = request, res = response) => {
 
   try {
     const [total, embarcacions] = await Promise.all([
-      Embarcacion.countDocuments(query), // Cuenta el total de embarcacions
-      Embarcacion.find(query).sort({ nombre: 1 }).populate(populateOptions), // Obtiene las embarcacions con referencias pobladas
+      Embarcacion.countDocuments(query),
+      Embarcacion.find(query).sort({ nombre: 1 }).populate(populateOptions),
     ]);
     embarcacions.forEach((t) => {
       if (Array.isArray(t.historial)) {
@@ -45,11 +56,6 @@ const embarcacionGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-    embarcacion.forEach((t) => {
-      if (Array.isArray(t.historial)) {
-        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      }
-    });
     if (!embarcacion) {
       return res.status(404).json({ msg: "Embarcación no encontrada." });
     }
@@ -111,8 +117,14 @@ const embarcacionPost = async (req = request, res = response) => {
           });
         }
         const nuevoTanque = new TanqueBK({
-          ...tanqueData,
+          nombre: tanqueData.nombre,
+          capacidad: tanqueData.capacidad,
+          almacenamiento: tanqueData.almacenamiento,
+          ubicacion: tanqueData.ubicacion,
+          idProducto: tanqueData.idProducto,
           idEmbarcacion: nuevaEmbarcacion._id,
+          idChequeoCalidad: tanqueData.idChequeoCalidad,
+          idChequeoCantidad: tanqueData.idChequeoCantidad,
           idBunkering: idBunkering,
           createdBy: req.usuario._id,
         });
@@ -205,7 +217,17 @@ const embarcacionPut = async (req = request, res = response) => {
           }
           await TanqueBK.findOneAndUpdate(
             { _id: tanqueData._id, idEmbarcacion: id, eliminado: false },
-            { ...tanqueData, nombre: tanqueData.nombre?.trim() },
+            {
+              nombre: tanqueData.nombre,
+              capacidad: tanqueData.capacidad,
+              almacenamiento: tanqueData.almacenamiento,
+              ubicacion: tanqueData.ubicacion,
+              idProducto: tanqueData.idProducto,
+              idEmbarcacion: id,
+              idChequeoCalidad: tanqueData.idChequeoCalidad,
+              idChequeoCantidad: tanqueData.idChequeoCantidad,
+              idBunkering: tanqueData.idBunkering,
+            },
             { session }
           );
           nuevosTanquesIds.push(tanqueData._id);
@@ -228,9 +250,15 @@ const embarcacionPut = async (req = request, res = response) => {
             });
           }
           const nuevoTanque = new TanqueBK({
-            ...tanqueData,
+            nombre: tanqueData.nombre,
+            capacidad: tanqueData.capacidad,
+            almacenamiento: tanqueData.almacenamiento,
+            ubicacion: tanqueData.ubicacion,
+            idProducto: tanqueData.idProducto,
             idEmbarcacion: id,
-            idBunkering: antes.idBunkering,
+            idChequeoCalidad: tanqueData.idChequeoCalidad,
+            idChequeoCantidad: tanqueData.idChequeoCantidad,
+            idBunkering: tanqueData.idBunkering,
             createdBy: req.usuario._id,
           });
           try {
