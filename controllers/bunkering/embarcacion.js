@@ -180,11 +180,34 @@ const embarcacionPut = async (req = request, res = response) => {
   session.startTransaction();
 
   try {
-    const antes = await Embarcacion.findById(id).session(session);
+    const antes = await Embarcacion.findById(id)
+      .populate("tanques")
+      .session(session);
     if (!antes) {
       await session.abortTransaction();
       session.endSession();
       return res.status(404).json({ msg: "Embarcación no encontrada." });
+    }
+
+    // Obtener IDs de tanques actuales en la BD
+    const tanquesActualesIds = (antes.tanques || []).map((t) =>
+      t._id.toString()
+    );
+    // Obtener IDs de tanques enviados desde el front (los que deben quedar activos)
+    const tanquesEnviadosIds = Array.isArray(tanques)
+      ? tanques.filter((t) => t._id).map((t) => t._id.toString())
+      : [];
+
+    // Tanques que están en la BD pero no en el front => deben marcarse como eliminados
+    const tanquesParaEliminar = tanquesActualesIds.filter(
+      (idTanque) => !tanquesEnviadosIds.includes(idTanque)
+    );
+    for (const idTanque of tanquesParaEliminar) {
+      await TanqueBK.findOneAndUpdate(
+        { _id: idTanque, idEmbarcacion: id, eliminado: false },
+        { eliminado: true },
+        { session }
+      );
     }
 
     // Usar un nuevo array para los ids finales, solo de tanques activos
@@ -201,7 +224,7 @@ const embarcacionPut = async (req = request, res = response) => {
             { eliminado: true },
             { session }
           );
-          continue; // No lo agregues al array final
+          continue;
         }
 
         // ACTUALIZAR TANQUE EXISTENTE
@@ -287,14 +310,11 @@ const embarcacionPut = async (req = request, res = response) => {
     }
 
     // Solo ids de tanques activos (no eliminados)
-    if (Array.isArray(tanques)) {
-      // Buscar todos los tanques activos de la embarcación
-      const tanquesActivos = await TanqueBK.find({
-        idEmbarcacion: id,
-        eliminado: false,
-      }).session(session);
-      nuevosTanquesIds = tanquesActivos.map((t) => t._id);
-    }
+    const tanquesActivos = await TanqueBK.find({
+      idEmbarcacion: id,
+      eliminado: false,
+    }).session(session);
+    nuevosTanquesIds = tanquesActivos.map((t) => t._id);
 
     const cambios = {};
     for (let key in resto) {
