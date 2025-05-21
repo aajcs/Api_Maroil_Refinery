@@ -48,18 +48,20 @@ const contratoBKGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const contrato = await Contrato.findOne({
+    const contrato = await ContratoBK.findOne({
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-    // Ordenar historial por fecha descendente en cada contacto
-    contrato.forEach((c) => {
-      if (Array.isArray(c.historial)) {
-        c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      }
-    });
+
     if (!contrato) {
       return res.status(404).json({ msg: "Contrato no encontrado" });
+    }
+
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(contrato.historialModificaciones)) {
+      contrato.historialModificaciones.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
     }
 
     res.json(contrato);

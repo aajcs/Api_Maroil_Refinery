@@ -146,6 +146,14 @@ const ContratoBkSchema = Schema(
       type: String,
     },
 
+    historialModificaciones: [
+      {
+        usuario: { type: Schema.Types.ObjectId, ref: "Usuario" },
+        cambios: { type: Object },
+        fecha: { type: Date, default: Date.now },
+      },
+    ],
+
     // Eliminación lógica
     eliminado: {
       type: Boolean,
