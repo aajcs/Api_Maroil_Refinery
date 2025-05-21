@@ -191,8 +191,11 @@ const embarcacionPut = async (req = request, res = response) => {
     let nuevosTanquesIds = [];
     if (Array.isArray(tanques)) {
       for (const tanqueData of tanques) {
-        // ELIMINAR TANQUE LÓGICAMENTE
-        if (tanqueData._id && tanqueData.eliminar === true) {
+        // ELIMINAR TANQUE LÓGICAMENTE (por bandera eliminar o eliminado: true)
+        if (
+          (tanqueData._id && tanqueData.eliminar === true) ||
+          (tanqueData._id && tanqueData.eliminado === true)
+        ) {
           await TanqueBK.findOneAndUpdate(
             { _id: tanqueData._id, idEmbarcacion: id, eliminado: false },
             { eliminado: true },
@@ -202,7 +205,11 @@ const embarcacionPut = async (req = request, res = response) => {
         }
 
         // ACTUALIZAR TANQUE EXISTENTE
-        if (tanqueData._id && !tanqueData.eliminar) {
+        if (
+          tanqueData._id &&
+          !tanqueData.eliminar &&
+          tanqueData.eliminado !== true
+        ) {
           // Validar duplicidad de nombre (excepto el mismo tanque)
           if (tanqueData.nombre) {
             const existe = await TanqueBK.findOne({
