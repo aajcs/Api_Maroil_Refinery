@@ -141,15 +141,6 @@ const ContratoBkSchema = Schema(
       maxlength: [200, "La descripción no puede exceder los 200 caracteres"],
     },
 
-    // Historial de modificaciones
-    historialModificaciones: [
-      {
-        usuario: { type: Schema.Types.ObjectId, ref: "Usuario" },
-        cambios: { type: Object },
-        fecha: { type: Date, default: Date.now },
-      },
-    ],
-
     // Estado del contrato
     estado: {
       type: String,
