@@ -67,8 +67,17 @@ const muelleGet = async (req = request, res = response) => {
 
 // Controlador para crear un nuevo muelle
 const muellePost = async (req = request, res = response) => {
-  const { ubicacion, correo, telefono, nombre, nit, legal, img, idBunkering } =
-    req.body;
+  const {
+    ubicacion,
+    correo,
+    telefono,
+    nombre,
+    nit,
+    legal,
+    img,
+    estado,
+    idBunkering,
+  } = req.body;
 
   try {
     const nuevoMuelle = new Muelle({
@@ -80,6 +89,7 @@ const muellePost = async (req = request, res = response) => {
       legal,
       img,
       idBunkering,
+      estado,
       createdBy: req.usuario._id,
     });
 
