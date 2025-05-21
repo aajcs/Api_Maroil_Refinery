@@ -226,7 +226,7 @@ const embarcacionPut = async (req = request, res = response) => {
               idEmbarcacion: id,
               idChequeoCalidad: tanqueData.idChequeoCalidad,
               idChequeoCantidad: tanqueData.idChequeoCantidad,
-              idBunkering: tanqueData.idBunkering,
+              idBunkering: tanqueData.idBunkering || antes.idBunkering, // <-- TOMA EL idBunkering DE LA EMBARCACIÓN SI NO LO ENVIAN
             },
             { session }
           );
@@ -258,7 +258,7 @@ const embarcacionPut = async (req = request, res = response) => {
             idEmbarcacion: id,
             idChequeoCalidad: tanqueData.idChequeoCalidad,
             idChequeoCantidad: tanqueData.idChequeoCantidad,
-            idBunkering: tanqueData.idBunkering,
+            idBunkering: tanqueData.idBunkering || antes.idBunkering, // <-- TOMA EL idBunkering DE LA EMBARCACIÓN SI NO LO ENVIAN
             createdBy: req.usuario._id,
           });
           try {
