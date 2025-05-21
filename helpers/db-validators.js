@@ -34,6 +34,7 @@ const {
   ContactoBK,
   TipoProductoBK,
   ProductoBK,
+  ContratoBK,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {

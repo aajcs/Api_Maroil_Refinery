@@ -26,12 +26,17 @@ const contratoBKGets = async (req = request, res = response) => {
   const query = { eliminado: false };
 
   try {
-    const [total, contratoBKs] = await Promise.all([
+    const [total, contratos] = await Promise.all([
       ContratoBK.countDocuments(query),
       ContratoBK.find(query).populate(populateOptions),
     ]);
-
-    res.json({ total, contratoBKs });
+    // Ordenar historial por fecha descendente en cada contacto
+    contratos.forEach((c) => {
+      if (Array.isArray(c.historial)) {
+        c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total, contratos });
   } catch (err) {
     console.error("Error en contratoBKGets:", err);
     res.status(500).json({ error: "Error interno del servidor." });
@@ -43,16 +48,21 @@ const contratoBKGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const contratoBK = await ContratoBK.findOne({
+    const contrato = await Contrato.findOne({
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-
-    if (!contratoBK) {
+    // Ordenar historial por fecha descendente en cada contacto
+    contrato.forEach((c) => {
+      if (Array.isArray(c.historial)) {
+        c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    if (!contrato) {
       return res.status(404).json({ msg: "Contrato no encontrado" });
     }
 
-    res.json(contratoBK);
+    res.json(contrato);
   } catch (err) {
     console.error("Error en contratoBKGet:", err);
     res.status(500).json({ error: "Error interno del servidor." });
