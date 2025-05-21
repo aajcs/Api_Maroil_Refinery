@@ -82,7 +82,7 @@ const tipoProductoBKSchema = Schema(
 
     rendimientos: [
       {
-        idProducto: { type: Schema.Types.ObjectId, ref: "Producto" },
+        idProducto: { type: Schema.Types.ObjectId, ref: "ProductoBK" },
         transporte: { type: Number, min: 0, required: false },
         bunker: { type: Number, min: 0, required: false },
         costoVenta: { type: Number, min: 0, required: false },

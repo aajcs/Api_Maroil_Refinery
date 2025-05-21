@@ -5,8 +5,20 @@ const ProductoBK = require("../../models/bunkering/productoBK");
 // Opciones de población reutilizables
 const populateOptions = [
   { path: "idBunkering", select: "nombre" },
-  { path: "idProducto", select: "nombre" },
-  { path: "rendimientos.idProducto", select: "nombre" },
+  { path: "idProducto", select: "nombre color" },
+  {
+    path: "rendimientos", // Relación con el modelo Rendimiento
+    populate: {
+      path: "idProducto",
+      // select: "nombre color", // Relación con el modelo Producto dentro de Rendimiento
+    },
+  },
+  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  }, // Popula historial.modificadoPor en el array
 ];
 
 // Obtener todos los tipos de producto con historial ordenado
@@ -43,7 +55,9 @@ const tipoProductoBKGet = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Tipo de producto no encontrado" });
     }
     if (Array.isArray(tipoProducto.historial)) {
-      tipoProducto.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      tipoProducto.historial.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
     }
     res.json(tipoProducto);
   } catch (err) {
@@ -107,7 +121,8 @@ const tipoProductoBKPost = async (req = request, res = response) => {
     console.error(err);
     let errorMsg = "Error interno del servidor al crear el tipo de producto.";
     if (err.code === 11000) {
-      errorMsg = "Ya existe un tipo de producto con ese nombre en el bunkering.";
+      errorMsg =
+        "Ya existe un tipo de producto con ese nombre en el bunkering.";
     }
     res.status(400).json({ error: errorMsg });
   }
@@ -155,9 +170,11 @@ const tipoProductoBKPut = async (req = request, res = response) => {
     res.json(tipoProductoActualizado);
   } catch (err) {
     console.error(err);
-    let errorMsg = "Error interno del servidor al actualizar el tipo de producto.";
+    let errorMsg =
+      "Error interno del servidor al actualizar el tipo de producto.";
     if (err.code === 11000) {
-      errorMsg = "Ya existe un tipo de producto con ese nombre en el bunkering.";
+      errorMsg =
+        "Ya existe un tipo de producto con ese nombre en el bunkering.";
     }
     res.status(400).json({ error: errorMsg });
   }
