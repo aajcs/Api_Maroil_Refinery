@@ -34,6 +34,10 @@ const embarcacionesGets = async (req = request, res = response) => {
       Embarcacion.find(query).sort({ nombre: 1 }).populate(populateOptions),
     ]);
     embarcacions.forEach((t) => {
+      // Filtrar tanques eliminados lógicamente
+      if (Array.isArray(t.tanques)) {
+        t.tanques = t.tanques.filter((tanque) => !tanque.eliminado);
+      }
       if (Array.isArray(t.historial)) {
         t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
@@ -226,7 +230,7 @@ const embarcacionPut = async (req = request, res = response) => {
               idEmbarcacion: id,
               idChequeoCalidad: tanqueData.idChequeoCalidad,
               idChequeoCantidad: tanqueData.idChequeoCantidad,
-              idBunkering: tanqueData.idBunkering || antes.idBunkering, // <-- TOMA EL idBunkering DE LA EMBARCACIÓN SI NO LO ENVIAN
+              idBunkering: tanqueData.idBunkering || antes.idBunkering,
             },
             { session }
           );
@@ -258,7 +262,7 @@ const embarcacionPut = async (req = request, res = response) => {
             idEmbarcacion: id,
             idChequeoCalidad: tanqueData.idChequeoCalidad,
             idChequeoCantidad: tanqueData.idChequeoCantidad,
-            idBunkering: tanqueData.idBunkering || antes.idBunkering, // <-- TOMA EL idBunkering DE LA EMBARCACIÓN SI NO LO ENVIAN
+            idBunkering: tanqueData.idBunkering || antes.idBunkering,
             createdBy: req.usuario._id,
           });
           try {
@@ -353,6 +357,13 @@ const embarcacionDelete = async (req = request, res = response) => {
       },
       { new: true }
     ).populate(populateOptions);
+
+    // Filtrar tanques eliminados lógicamente
+    if (embarcacionEliminada && Array.isArray(embarcacionEliminada.tanques)) {
+      embarcacionEliminada.tanques = embarcacionEliminada.tanques.filter(
+        (t) => !t.eliminado
+      );
+    }
 
     if (!embarcacionEliminada) {
       return res.status(404).json({ msg: "Embarcación no encontrada." });
