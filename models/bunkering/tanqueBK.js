@@ -32,8 +32,6 @@ const TanqueBKSchema = Schema(
     nombre: {
       type: String,
       required: [true, "El Nombre es obligatorio"], // Campo obligatorio
-      minlength: [0, "El nombre debe tener al menos 1 caracteres"], // Validación de longitud mínima
-      maxlength: [50, "El nombre no puede exceder los 50 caracteres"], // Validación de longitud máxima
     },
 
     // Ubicación física del tanque dentro de la refinería
@@ -41,13 +39,6 @@ const TanqueBKSchema = Schema(
       type: String,
       required: [false, "La ubicación es obligatoria"], // Campo obligatorio
       maxlength: [100, "La ubicación no puede exceder los 100 caracteres"], // Validación de longitud máxima
-    },
-
-    // Indica si el tanque se utiliza para almacenar materia prima
-    almacenamientoMateriaPrimaria: {
-      type: Boolean,
-      required: [true, "El almacenamiento de materia prima es obligatorio"], // Campo obligatorio
-      default: false, // Valor por defecto
     },
 
     // Referencia al producto almacenado en el tanque (si aplica)
