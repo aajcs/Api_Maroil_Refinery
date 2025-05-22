@@ -3,7 +3,17 @@ const RecepcionBK = require("../../models/bunkering/recepcionBK");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
-  { path: "idContrato", select: "idItems numeroContrato" },
+  {
+    path: "idContrato", // Relación con el modelo Contrato
+    select: "idItems numeroContrato", // Selecciona los campos idItems y numeroContrato
+    populate: {
+      path: "idItems", // Relación con los ítems del contrato
+      populate: [
+        { path: "producto", select: "nombre" }, // Relación con el modelo Producto
+        { path: "idTipoProducto", select: "nombre" }, // Relación con el modelo TipoProducto
+      ],
+    },
+  },
   { path: "idContratoItems", populate: { path: "producto", select: "nombre" } },
   { path: "idLinea", select: "nombre" },
   { path: "idBunkering", select: "nombre" },
@@ -144,8 +154,7 @@ const recepcionBKPost = async (req = request, res = response) => {
 
     await nuevaRecepcion.save();
     await nuevaRecepcion.populate(populateOptions);
-
-    res.status(201).json(nuevaRecepcion);
+    res.status(201).json({ recepcion: nuevaRecepcion }); // Responde con la recepción creada
   } catch (err) {
     console.error("Error en recepcionBKPost:", err);
     res.status(400).json({
