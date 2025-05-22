@@ -7,12 +7,12 @@ const DatosTractomulaSchema = new Schema(
   {
     idGuia: {
       type: Number,
-      required: [true, "El ID de la Guía es obligatorio"],
+      required: [false, "El ID de la Guía es obligatorio"],
     },
     placa: {
       type: String,
       maxlength: [10, "La placa no puede exceder los 10 caracteres"],
-      required: [true, "La placa es obligatoria"],
+      required: [false, "La placa es obligatoria"],
     },
     // Puedes agregar más campos aquí si lo necesitas
   },
