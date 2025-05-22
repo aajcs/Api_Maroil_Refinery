@@ -56,17 +56,17 @@ router.post(
     check("idMuelle", "El ID del muelle es obligatorio").not().isEmpty(),
     check("idMuelle", "No es un ID válido").isMongoId(),
     check("idMuelle").custom(existeMuellePorId),
-    check("idEmbarcacion", "El ID de la embarcación es obligatorio")
-      .not()
-      .isEmpty(),
-    check("idEmbarcacion", "No es un ID válido").isMongoId(),
-    check("idEmbarcacion").custom(existeEmbarcacionPorId),
-    check("idProductoBK", "El ID del producto es obligatorio").not().isEmpty(),
-    check("idProductoBK", "No es un ID válido").isMongoId(),
-    check("idProductoBK").custom(existeProductoBKPorId),
-    check("idTanque", "El ID del tanque es obligatorio").not().isEmpty(),
-    check("idTanque", "No es un ID válido").isMongoId(),
-    check("idTanque").custom(existeTanqueBKPorId),
+    // check("idEmbarcacion", "El ID de la embarcación es obligatorio")
+    //   .not()
+    //   .isEmpty(),
+    // check("idEmbarcacion", "No es un ID válido").isMongoId(),
+    // check("idEmbarcacion").custom(existeEmbarcacionPorId),
+    // check("idProductoBK", "El ID del producto es obligatorio").not().isEmpty(),
+    // check("idProductoBK", "No es un ID válido").isMongoId(),
+    // check("idProductoBK").custom(existeProductoBKPorId),
+    // check("idTanque", "El ID del tanque es obligatorio").not().isEmpty(),
+    // check("idTanque", "No es un ID válido").isMongoId(),
+    // check("idTanque").custom(existeTanqueBKPorId),
     validarCampos,
   ],
   recepcionBKPost
