@@ -53,9 +53,9 @@ router.post(
     check("idBunkering", "El ID del bunkering es obligatorio").not().isEmpty(),
     check("idBunkering", "No es un ID válido").isMongoId(),
     check("idBunkering").custom(existeBunkeringPorId),
-    check("idMuelle", "El ID del muelle es obligatorio").not().isEmpty(),
-    check("idMuelle", "No es un ID válido").isMongoId(),
-    check("idMuelle").custom(existeMuellePorId),
+    // check("idMuelle", "El ID del muelle es obligatorio").not().isEmpty(),
+    // check("idMuelle", "No es un ID válido").isMongoId(),
+    // check("idMuelle").custom(existeMuellePorId),
     // check("idEmbarcacion", "El ID de la embarcación es obligatorio")
     //   .not()
     //   .isEmpty(),
