@@ -20,28 +20,28 @@ const populateOptions = [
   },
 ];
 
-// Obtener todas las recepciones con historial ordenado
+// Obtener todas las recepcions con historial ordenado
 const recepcionBKGets = async (req = request, res = response) => {
   const query = { eliminado: false };
 
   try {
-    const [total, recepciones] = await Promise.all([
+    const [total, recepcions] = await Promise.all([
       RecepcionBK.countDocuments(query),
       RecepcionBK.find(query).populate(populateOptions),
     ]);
 
     // Ordenar historial por fecha descendente en cada recepción
-    recepciones.forEach((r) => {
+    recepcions.forEach((r) => {
       if (Array.isArray(r.historial)) {
         r.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
 
-    res.json({ total, recepciones });
+    res.json({ total, recepcions });
   } catch (err) {
     console.error("Error en recepcionBKGets:", err);
     res.status(500).json({
-      error: "Error interno del servidor al obtener las recepciones.",
+      error: "Error interno del servidor al obtener las recepcions.",
     });
   }
 };
