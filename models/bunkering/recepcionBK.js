@@ -24,11 +24,11 @@ const TractomulaSchema = new Schema(
   {
     datosTractomula: {
       type: DatosTractomulaSchema,
-      required: true,
+      required: false,
     },
     datosChofer: {
       type: Object,
-      required: true,
+      required: false,
     },
   },
   { _id: false }
@@ -40,7 +40,7 @@ const MuelleSchema = new Schema(
     idMuelle: {
       type: Schema.Types.ObjectId,
       ref: "Muelle",
-      required: true,
+      required: false,
     },
   },
   { _id: false }
@@ -51,7 +51,7 @@ const EmbarcacionSchema = new Schema(
   {
     datosEmbarcacion: {
       type: Object,
-      required: true,
+      required: false,
     },
   },
   { _id: false }
@@ -122,7 +122,7 @@ const RecepcionBKSchema = new Schema(
     cantidadEnviada: {
       type: Number,
       min: [0, "La cantidad enviada no puede ser negativa"],
-      required: [true, "La cantidad enviada es obligatoria"],
+      required: [false, "La cantidad enviada es obligatoria"],
     },
     estadoRecepcion: {
       type: String,
@@ -158,7 +158,7 @@ const RecepcionBKSchema = new Schema(
     // NUEVO CAMPO: Tipo de recepción y su estructura asociada
     tipo: {
       type: String,
-      required: [true, "El tipo de recepción es obligatorio"],
+      required: [false, "El tipo de recepción es obligatorio"],
       enum: ["Tractomula", "Muelle", "Bunkering"],
     },
     tractomula: {
