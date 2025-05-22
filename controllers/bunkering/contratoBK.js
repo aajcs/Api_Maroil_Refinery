@@ -284,15 +284,30 @@ const contratoBKDelete = async (req = request, res = response) => {
   }
 };
 
-// Manejar solicitudes PATCH
+// Controlador para manejar actualizaciones parciales (PATCH)
 const contratoBKPatch = async (req = request, res = response) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
   try {
+    const antes = await ContratoBK.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Contrato no encontrado" });
+    }
+
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
+
     const contratoBKActualizado = await ContratoBK.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { $set: resto },
+      {
+        ...resto,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
       { new: true }
     ).populate(populateOptions);
 
