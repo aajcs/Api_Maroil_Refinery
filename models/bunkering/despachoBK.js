@@ -3,38 +3,6 @@ const auditPlugin = require("../plugins/audit");
 const Counter = require("../counter");
 
 
-// Subesquema para los datos de la tractomula
-const DatosTractomulaSchema = new Schema(
-  {
-    idGuia: {
-      type: Number,
-      required: [true, "El ID de la Guía es obligatorio"],
-    },
-    placa: {
-      type: String,
-      maxlength: [10, "La placa no puede exceder los 10 caracteres"],
-      required: [true, "La placa es obligatoria"],
-    },
-    // Puedes agregar más campos aquí si lo necesitas
-  },
-  { _id: false }
-);
-
-// Subesquema para Tractomula
-const TractomulaSchema = new Schema(
-  {
-    datosTractomula: {
-      type: DatosTractomulaSchema,
-      required: true,
-    },
-    datosChofer: {
-      type: Object, 
-      required: true,
-    },
-  },
-  { _id: false }
-);
-
 // Subesquema para Muelle
 const MuelleSchema = new Schema(
   {
@@ -58,11 +26,11 @@ const EmbarcacionSchema = new Schema(
   { _id: false }
 );
 
-// Definición del esquema para el modelo Recepción
+// Definición del esquema para el modelo Despacho
 const DespachoBKSchema = new Schema(
   {
     // Número de despacho
-    numeroDespachoBK: {
+    numeroDespacho: {
       type: Number,
     },
     // Relación con el modelo Contrato
@@ -74,48 +42,57 @@ const DespachoBKSchema = new Schema(
         "El ID del Contrato asociado al despacho es obligatorio",
       ],
     },
+    
+    // Relación con los ítems del contrato (opcional)
     idContratoItems: {
       type: Schema.Types.ObjectId,
       ref: "ContratoItemsBK",
     },
+    // Relación con el modelo Línea de Carga (opcional)
     idLinea: {
       type: Schema.Types.ObjectId,
       ref: "LineaCargaBK",
     },
+    // Relación con el modelo Bunkering (opcional)
     idBunkering: {
       type: Schema.Types.ObjectId,
       ref: "Bunkering",
-      required: [
-        true,
-        "El ID del Bunkering asociada al despacho es obligatorio",
-      ],
-    },
-    idMuelle: {
+     },
+
+    // Relación con el modelo Muelle (opcional)
+     idMuelle: {
       type: Schema.Types.ObjectId,
       ref: "Muelle",
     },
-    idEmbarcacion: {
+    
+    // Relación con el modelo Embarcación (opcional)
+     idEmbarcacion: {
       type: Schema.Types.ObjectId,
       ref: "Embarcacion",
     },
-    idProductoBK: {
+    // Relación con el modelo Producto (opcional)
+    idProducto: {
       type: Schema.Types.ObjectId,
       ref: "ProductoBK",
     },
+    // Relación con el modelo Tanque (opcional)
     idTanque: {
       type: Schema.Types.ObjectId,
       ref: "TanqueBK",
     },
-    idChequeoCalidadBK: {
+    idChequeoCalidad: {
       type: Schema.Types.ObjectId,
       ref: "ChequeoCalidadBK",
-      required: false,
+      
     },
-    idChequeoCantidadBK: {
+    
+    // Relación con el modelo Chequeo de Cantidad (opcional)
+    idChequeoCantidad: {
       type: Schema.Types.ObjectId,
       ref: "ChequeoCantidadBK",
-      required: false,
+     
     },
+    // Información del despaqcho
     cantidadRecibida: {
       type: Number,
       min: [0, "La cantidad recibida no puede ser negativa"],
@@ -125,7 +102,9 @@ const DespachoBKSchema = new Schema(
       min: [0, "La cantidad enviada no puede ser negativa"],
       required: [true, "La cantidad enviada es obligatoria"],
     },
-    estadoDespachoBK: {
+    
+    // estados de despacho
+    estadoDespacho: {
       type: String,
     },
     estadoCarga: {
@@ -134,55 +113,46 @@ const DespachoBKSchema = new Schema(
     estado: {
       type: String,
     },
+
+    // Fechas relacionadas con el despacho
     fechaInicio: {
-      type: Date,
+      type: Date,   // Fecha en la que se inicia el proceso de despacho
     },
     fechaFin: {
-      type: Date,
+      type: Date, // Fecha en la que finaliza el proceso de despacho
     },
     fechaDespacho: {
-      type: Date,
+      type: Date, // Fecha en la que se realiza el despacho
     },
-    fechaInicioDespachoBK: {
-      type: Date,
+    fechaInicioDespacho: {
+      type: Date,  // Fecha en la que se inicia el proceso de despacho
     },
-    fechaFinDespachoBK: {
-      type: Date,
+    fechaFinDespacho: {
+      type: Date,  // Fecha en la que finaliza el proceso de despacho
     },
     fechaSalida: {
-      type: Date,
+      type: Date, // Fecha en la que se realiza la salida del producto
     },
     fechaLlegada: {
-      type: Date,
+      type: Date,  // Fecha en la que se realiza la llegada del producto
     },
 
-    // NUEVO CAMPO: Tipo de despacho y su estructura asociada
-    tipo: {
+    // Información del transporte
+    idGuia: {
+      type: Number,
+      required: [true, "El ID de la Guía es obligatorio"],
+    },
+    placa: {
       type: String,
-      required: [true, "El tipo de despacho es obligatorio"],
-      enum: ["Tractomula", "Muelle", "Bunkering"],
+      maxlength: [10, "La placa no puede exceder los 10 caracteres"],
+      // required: [true, "La placa es obligatoria"],
     },
-    tractomula: {
-      type: TractomulaSchema,
-      required: function () {
-        return this.tipo === "Tractomula";
-      },
-      default: undefined,
+    nombreChofer: {
+      type: String,
+      // required: [true, "El nombre del chofer es obligatorio"],
+    maxlength: [20, "El nombre del chofer no puede exceder los 20 caracteres"],
     },
-    muelle: {
-      type: MuelleSchema,
-      required: function () {
-        return this.tipo === "Muelle";
-      },
-      default: undefined,
-    },
-    bunkering: {
-      type: EmbarcacionSchema,
-      required: function () {
-        return this.tipo === "Bunkering";
-      },
-      default: undefined,
-    },
+
 
     // Control de estado (eliminación lógica)
     eliminado: {
@@ -191,18 +161,20 @@ const DespachoBKSchema = new Schema(
     },
   },
   {
+    // Agrega automáticamente las propiedades createdAt y updatedAt
     timestamps: true,
+    // Elimina la propiedad __v que agrega Mongoose por defecto
     versionKey: false,
   }
 );
-
 DespachoBKSchema.plugin(auditPlugin);
 
+// Método para transformar el objeto devuelto por Mongoose
 DespachoBKSchema.set("toJSON", {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
+    returnedObject.id = returnedObject._id.toString();  // Cambia _id a id
+    delete returnedObject._id;  //Elimina _id
+    delete returnedObject.__v;  //Elimina __v
   },
 });
 
@@ -210,17 +182,24 @@ DespachoBKSchema.set("toJSON", {
 DespachoBKSchema.pre("save", async function (next) {
   if (this.isNew && this.idBunkering) {
     try {
+            
+      // Generar la clave del contador específico para cada refinería
       const counterKey = `despachoBK_${this.idBunkering.toString()}`;
+      
+      // Buscar el contador
       let bunkeringCounter = await Counter.findOne({ _id: counterKey });
 
+      // Si no existe, crear uno nuevo crearlo con el valor inicial de 1000
       if (!bunkeringCounter) {
         bunkeringCounter = new Counter({ _id: counterKey, seq: 999 });
         await bunkeringCounter.save();
       }
 
+      // Incrementar el contador en 1
       bunkeringCounter.seq += 1;
       await bunkeringCounter.save();
 
+      // Asignar el valor actualizado al campo "numeroDespacho"
       this.numeroDespachoBK = bunkeringCounter.seq;
       next();
     } catch (error) {
