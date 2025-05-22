@@ -22,25 +22,27 @@ const {
   despachoBKPatch,
 } = require("../../controllers/bunkering/despachoBK");
 
-
-
-
 const router = Router();
 
 // Obtener todas las recepciones
-router.get("/",[validarJWT], despachoBKGets);
+router.get("/", [validarJWT], despachoBKGets);
 
 // Obtener una despacho por ID
-router.get("/:id",
+router.get(
+  "/:id",
   [
     validarJWT,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeDespachoBKPorId),
     validarCampos,
-  ], despachoBKGet);
+  ],
+  despachoBKGet
+);
 
 // Crear una nueva despacho
-router.post("/", [
+router.post(
+  "/",
+  [
     validarJWT,
     check("idContrato", "El ID del contrato es obligatorio").not().isEmpty(),
     check("idContrato", "No es un ID válido").isMongoId(),
@@ -48,30 +50,38 @@ router.post("/", [
     check("idBunkering", "El ID del bunkering es obligatorio").not().isEmpty(),
     check("idBunkering", "No es un ID válido").isMongoId(),
     check("idBunkering").custom(existeBunkeringPorId),
-   
+
     validarCampos,
-  ], despachoBKPost);
+  ],
+  despachoBKPost
+);
 
 // Actualizar una despacho existente
-router.put("/:id",
+router.put(
+  "/:id",
   [
     validarJWT,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeDespachoBKPorId),
     validarCampos,
-  ], despachoBKPut);
+  ],
+  despachoBKPut
+);
 
 // Eliminar (marcar como eliminada) una despacho
-router.delete("/:id",
+router.delete(
+  "/:id",
   [
-     validarJWT,
+    validarJWT,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeDespachoBKPorId),
     validarCampos,
-  ], despachoBKDelete);
+  ],
+  despachoBKDelete
+);
 
-  // Actualizar parcialmente un despacho
+// Actualizar parcialmente un despacho
 router.patch(
   "/:id",
   [

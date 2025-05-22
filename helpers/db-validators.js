@@ -37,6 +37,7 @@ const {
   ContratoBK,
   RecepcionBK,
   LineaCargaBK,
+  DespachoBK,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -361,6 +362,14 @@ const existeRecepcionBKPorId = async (id) => {
     throw new Error(`El id no existe ${id}`);
   }
 };
+
+const existeDespachoBKPorId = async (id) => {
+  // Verificar si contacto existe
+  const existeDespachoBK = await DespachoBK.findById(id);
+  if (!existeDespachoBK) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
 const existeBunkeringPorId = async (id) => {
   //Verificar si el bunkering existe
   const existeBunkering = await Bunkering.findById(id);
@@ -433,6 +442,7 @@ module.exports = {
   existeProductoBKPorId,
   existeRecepcionBKPorId,
   existeLineaCargaBKPorId,
+  existeDespachoBKPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO

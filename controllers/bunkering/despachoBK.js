@@ -4,10 +4,10 @@ const DespachoBK = require("../../models/bunkering/despachoBK");
 // Opciones de población reutilizables para consultas
 const populateOptions = [
   {
-    path: "idContrato",   // Relación con el modelo Contrato
-    select: "idItems numeroContrato",   // Selecciona los campos idItems y numeroContrato
+    path: "idContrato", // Relación con el modelo Contrato
+    select: "idItems numeroContrato", // Selecciona los campos idItems y numeroContrato
     populate: {
-      path: "idItems",  // Relación con los ítems del contrato
+      path: "idItems", // Relación con los ítems del contrato
       populate: [
         { path: "producto", select: "nombre" }, // Relación con el modelo Producto
         { path: "idTipoProducto", select: "nombre" }, // Relación con el modelo TipoProducto
@@ -39,7 +39,7 @@ const despachoBKGets = async (req = request, res = response) => {
       DespachoBK.countDocuments(query),
       DespachoBK.find(query).populate(populateOptions),
     ]);
-    
+
     // Ordenar historial por fecha descendente en cada despacho
     despachos.forEach((t) => {
       if (Array.isArray(t.historial)) {
@@ -50,7 +50,9 @@ const despachoBKGets = async (req = request, res = response) => {
     res.json({ total, despachos });
   } catch (err) {
     console.error("Error en despachoBKGets:", err);
-    res.status(500).json({ error: "Error interno del servidor al obtener las despachos.",});
+    res
+      .status(500)
+      .json({ error: "Error interno del servidor al obtener las despachos." });
   }
 };
 
@@ -90,7 +92,7 @@ const despachoBKPost = async (req, res = response) => {
     idLinea,
     idMuelle,
     idBunkering,
-    idEmbarcacion,  
+    idEmbarcacion,
     idProducto,
     idTanque,
     idChequeoCalidad,
@@ -117,45 +119,47 @@ const despachoBKPost = async (req, res = response) => {
   } = req.body;
 
   try {
-  const nuevaDespacho = new DespachoBK({
-    idContrato,
-    idContratoItems,
-    idLinea,
-    idBunkering,
-    idEmbarcacion,
-    idMuelle,
-    idProducto, 
-    idTanque,
-    idChequeoCalidad,
-    idChequeoCantidad,
-    cantidadRecibida,
-    cantidadEnviada,
-    estadoDespacho,
-    estadoCarga,
-    estado,
-    fechaInicio,
-    fechaFin,
-    fechaInicioDespacho,
-    fechaFinDespacho,
-    fechaSalida,
-    fechaLlegada,
-    fechaDespacho,
-    idGuia,
-    placa,
-    tipo,
-    tractomula,
-    muelle,   
-    bunkering,
-    nombreChofer,
-    createdBy: req.usuario._id,
-  });
+    const nuevoDespacho = new DespachoBK({
+      idContrato,
+      idContratoItems,
+      idLinea,
+      idBunkering,
+      idEmbarcacion,
+      idMuelle,
+      idProducto,
+      idTanque,
+      idChequeoCalidad,
+      idChequeoCantidad,
+      cantidadRecibida,
+      cantidadEnviada,
+      estadoDespacho,
+      estadoCarga,
+      estado,
+      fechaInicio,
+      fechaFin,
+      fechaInicioDespacho,
+      fechaFinDespacho,
+      fechaSalida,
+      fechaLlegada,
+      fechaDespacho,
+      idGuia,
+      placa,
+      tipo,
+      tractomula,
+      muelle,
+      bunkering,
+      nombreChofer,
+      createdBy: req.usuario._id,
+    });
 
     await nuevoDespacho.save();
     await nuevoDespacho.populate(populateOptions);
     res.status(201).json({ despacho: nuevoDespacho }); // Responde con el despacho creado
   } catch (err) {
     console.error("Error en despachoBKPost:", err);
-    res.status(400).json({ error: "Error al crear el despacho. Verifica los datos proporcionados.", });
+    res.status(400).json({
+      error: "Error al crear el despacho. Verifica los datos proporcionados.",
+    });
   }
 };
 
@@ -169,14 +173,14 @@ const despachoBKPut = async (req, res = response) => {
     if (!antes) {
       return res.status(404).json({ msg: "Despacho no encontrada" });
     }
-        
+
     const cambios = {};
     for (let key in resto) {
       if (String(antes[key]) !== String(resto[key])) {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
     }
-    // Si no hay cambios, no se actualiza el despacho 
+    // Si no hay cambios, no se actualiza el despacho
     const despachoACtualizado = await DespachoBK.findByIdAndUpdate(
       { _id: id, eliminado: false },
       {
@@ -187,13 +191,16 @@ const despachoBKPut = async (req, res = response) => {
     ).populate(populateOptions);
 
     if (!despachoACtualizado) {
-      return res.status(404).json({ msg: "Despacho no encontrado",});
+      return res.status(404).json({ msg: "Despacho no encontrado" });
     }
-   
+
     res.json(despachoACtualizado);
   } catch (err) {
     console.error("Error en despachoBKPut:", err);
-    res.status(400).json({ error: "Error al actualizar el despacho. Verifica los datos proporcionados.", });
+    res.status(400).json({
+      error:
+        "Error al actualizar el despacho. Verifica los datos proporcionados.",
+    });
   }
 };
 
@@ -202,13 +209,13 @@ const despachoBKDelete = async (req, res = response) => {
   const { id } = req.params;
   try {
     const antes = await DespachoBK.findById(id);
-     if (!antes) {
+    if (!antes) {
       return res.status(404).json({ msg: "Despacho no encontrado" });
-  }
+    }
     // Verifica si el despacho ya está eliminado
-      const cambios = { eliminado: { from: antes.eliminado, to: true } };
-    
-      const despachoEliminado = await DespachoBK.findByIdAndUpdate(
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
+
+    const despachoEliminado = await DespachoBK.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
         eliminado: true,
@@ -217,13 +224,13 @@ const despachoBKDelete = async (req, res = response) => {
       { new: true }
     ).populate(populateOptions);
 
-    if (!despacho) {
-      return res.status(404).json({ msg: "Despacho no encontrada",});
+    if (!despachoEliminado) {
+      return res.status(404).json({ msg: "Despacho no encontrado" });
     }
 
     res.json(despachoEliminado);
   } catch (err) {
-   console.error("Error en despachoBKDelete:", err);
+    console.error("Error en despachoBKDelete:", err);
     res.status(500).json({
       error: "Error interno del servidor al eliminar el despacho.",
     });
@@ -232,31 +239,30 @@ const despachoBKDelete = async (req, res = response) => {
 
 // Controlador para manejar actualizaciones parciales (PATCH)
 const despachoBKPatch = async (req = request, res = response) => {
- const { id } = req.params;
+  const { id } = req.params;
   const { ...resto } = req.body;
   // Aquí puedes implementar la lógica para manejar actualizaciones parciales
- 
- 
- try {
-     const despachoActualizado = await DespachoBK.findOneAndUpdate(
-       { _id: id, eliminado: false },
-       { $set: resto },
-       { new: true }
-     ).populate(populateOptions);
- 
-     if (!despachoActualizado) {
-       return res.status(404).json({ msg: "Despacho no encontrado" });
-     }
- 
-     res.json(despachoActualizado);
-   } catch (err) {
-     console.error("Error en despachoBKPatch:", err);
-     res.status(500).json({
-       error:
-         "Error interno del servidor al actualizar parcialmente el despacho.",
-     });
-   }
-  };
+
+  try {
+    const despachoActualizado = await DespachoBK.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { $set: resto },
+      { new: true }
+    ).populate(populateOptions);
+
+    if (!despachoActualizado) {
+      return res.status(404).json({ msg: "Despacho no encontrado" });
+    }
+
+    res.json(despachoActualizado);
+  } catch (err) {
+    console.error("Error en despachoBKPatch:", err);
+    res.status(500).json({
+      error:
+        "Error interno del servidor al actualizar parcialmente el despacho.",
+    });
+  }
+};
 
 // Exportar los controladores
 module.exports = {
