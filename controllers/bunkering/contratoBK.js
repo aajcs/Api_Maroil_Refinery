@@ -16,8 +16,8 @@ const populateOptions = [
   },
   { path: "createdBy", select: "nombre correo" },
   {
-    path: "historialModificaciones",
-    populate: { path: "usuario", select: "nombre correo" },
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
   },
 ];
 
@@ -28,9 +28,11 @@ const contratoBKGets = async (req = request, res = response) => {
   try {
     const [total, contratos] = await Promise.all([
       ContratoBK.countDocuments(query),
-      ContratoBK.find(query).populate(populateOptions),
+      ContratoBK.find(query)
+        .sort({ numeroContrato: 1 })
+        .populate(populateOptions),
     ]);
-    // Ordenar historial por fecha descendente en cada contacto
+    // Ordenar historial por fecha descendente en cada contrato
     contratos.forEach((c) => {
       if (Array.isArray(c.historial)) {
         c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
@@ -58,10 +60,8 @@ const contratoBKGet = async (req = request, res = response) => {
     }
 
     // Ordenar historial por fecha descendente
-    if (Array.isArray(contrato.historialModificaciones)) {
-      contrato.historialModificaciones.sort(
-        (a, b) => new Date(b.fecha) - new Date(a.fecha)
-      );
+    if (Array.isArray(contrato.historial)) {
+      contrato.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     }
 
     res.json(contrato);
@@ -179,35 +179,32 @@ const contratoBKPut = async (req = request, res = response) => {
   const { items, abono, ...resto } = req.body;
 
   try {
-    const contratoBKExistente = await ContratoBK.findOne({
-      _id: id,
-      eliminado: false,
-    });
-
-    if (!contratoBKExistente) {
+    const antes = await ContratoBK.findById(id);
+    if (!antes) {
       return res.status(404).json({ msg: "Contrato no encontrado" });
     }
 
     // Auditoría: comparar cambios
     const cambios = {};
     for (let key in resto) {
-      if (String(contratoBKExistente[key]) !== String(resto[key])) {
-        cambios[key] = { from: contratoBKExistente[key], to: resto[key] };
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
       }
     }
 
-    // Actualizar el contratoBK
     const contratoBKActualizado = await ContratoBK.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
         ...resto,
         abono,
-        $push: {
-          historialModificaciones: { usuario: req.usuario._id, cambios },
-        },
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
       },
       { new: true }
-    );
+    ).populate(populateOptions);
+
+    if (!contratoBKActualizado) {
+      return res.status(404).json({ msg: "Contrato no encontrado" });
+    }
 
     // Actualizar o crear los ítems asociados al contratoBK
     if (items) {
@@ -234,8 +231,13 @@ const contratoBKPut = async (req = request, res = response) => {
     // Sincronizar la cuenta asociada al contratoBK
     await CuentaBK.syncFromContrato(contratoBKActualizado);
 
-    // Poblar referencias y responder con el contratoBK actualizado
-    await contratoBKActualizado.populate(populateOptions);
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(contratoBKActualizado.historial)) {
+      contratoBKActualizado.historial.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
+    }
+
     res.json(contratoBKActualizado);
   } catch (err) {
     console.error("Error en contratoBKPut:", err);
@@ -259,15 +261,20 @@ const contratoBKDelete = async (req = request, res = response) => {
       { _id: id, eliminado: false },
       {
         eliminado: true,
-        $push: {
-          historialModificaciones: { usuario: req.usuario._id, cambios },
-        },
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
       },
       { new: true }
     ).populate(populateOptions);
 
     if (!contratoBKEliminado) {
       return res.status(404).json({ msg: "Contrato no encontrado" });
+    }
+
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(contratoBKEliminado.historial)) {
+      contratoBKEliminado.historial.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
     }
 
     res.json(contratoBKEliminado);
@@ -278,10 +285,33 @@ const contratoBKDelete = async (req = request, res = response) => {
 };
 
 // Manejar solicitudes PATCH
-const contratoBKPatch = (req = request, res = response) => {
-  res.json({
-    msg: "PATCH API - contratoBKPatch",
-  });
+const contratoBKPatch = async (req = request, res = response) => {
+  const { id } = req.params;
+  const { ...resto } = req.body;
+
+  try {
+    const contratoBKActualizado = await ContratoBK.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { $set: resto },
+      { new: true }
+    ).populate(populateOptions);
+
+    if (!contratoBKActualizado) {
+      return res.status(404).json({ msg: "Contrato no encontrado" });
+    }
+
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(contratoBKActualizado.historial)) {
+      contratoBKActualizado.historial.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
+    }
+
+    res.json(contratoBKActualizado);
+  } catch (err) {
+    console.error("Error en contratoBKPatch:", err);
+    res.status(500).json({ error: "Error interno del servidor." });
+  }
 };
 
 module.exports = {
