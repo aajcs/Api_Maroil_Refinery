@@ -2,7 +2,6 @@ const { Schema, model } = require("mongoose");
 const auditPlugin = require("../plugins/audit");
 const Counter = require("../counter");
 
-
 // Subesquema para los datos de la tractomula
 const DatosTractomulaSchema = new Schema(
   {
@@ -28,7 +27,7 @@ const TractomulaSchema = new Schema(
       required: true,
     },
     datosChofer: {
-      type: Object, 
+      type: Object,
       required: true,
     },
   },
@@ -51,7 +50,7 @@ const MuelleSchema = new Schema(
 const EmbarcacionSchema = new Schema(
   {
     datosEmbarcacion: {
-      type: Object, 
+      type: Object,
       required: true,
     },
   },
@@ -98,7 +97,7 @@ const RecepcionBKSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Embarcacion",
     },
-    idProductoBK: {
+    idProducto: {
       type: Schema.Types.ObjectId,
       ref: "ProductoBK",
     },
@@ -125,7 +124,7 @@ const RecepcionBKSchema = new Schema(
       min: [0, "La cantidad enviada no puede ser negativa"],
       required: [true, "La cantidad enviada es obligatoria"],
     },
-    estadoRecepcionBK: {
+    estadoRecepcion: {
       type: String,
     },
     estadoCarga: {
@@ -143,10 +142,10 @@ const RecepcionBKSchema = new Schema(
     fechaDespacho: {
       type: Date,
     },
-    fechaInicioRecepcionBK: {
+    fechaInicioRecepcion: {
       type: Date,
     },
-    fechaFinRecepcionBK: {
+    fechaFinRecepcion: {
       type: Date,
     },
     fechaSalida: {
