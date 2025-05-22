@@ -19,8 +19,9 @@ const lineaCargaBKGets = async (req = request, res = response) => {
   try {
     const [total, lineaCargas] = await Promise.all([
       LineaCargaBK.countDocuments(query),
-      LineaCargaBK.find(query).populate(populateOptions).sort({ nombre: 1 }),
+      LineaCargaBK.find(query).sort({ nombre: 1 }).populate(populateOptions),
     ]);
+    // Ordenar historial por fecha descendente en cada línea de carga
     lineaCargas.forEach((t) => {
       if (Array.isArray(t.historial)) {
         t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
@@ -43,13 +44,16 @@ const lineaCargaBKGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-    lineaCarga.forEach((t) => {
-      if (Array.isArray(t.historial)) {
-        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      }
-    });
+
     if (!lineaCarga) {
       return res.status(404).json({ msg: "Línea de carga no encontrada" });
+    }
+
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(lineaCarga.historial)) {
+      lineaCarga.historial.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
     }
 
     res.json(lineaCarga);
@@ -65,7 +69,7 @@ const lineaCargaBKGet = async (req = request, res = response) => {
 const lineaCargaBKPost = async (req = request, res = response) => {
   try {
     const data = req.body;
-    data.createdBy = req.usuario?._id; // Si usas auditoría de usuario
+    data.createdBy = req.usuario?._id;
 
     const nuevaLinea = new LineaCargaBK(data);
     await nuevaLinea.save();
@@ -82,7 +86,7 @@ const lineaCargaBKPost = async (req = request, res = response) => {
   }
 };
 
-// Actualizar una línea de carga existente
+// Actualizar una línea de carga existente (con auditoría)
 const lineaCargaBKPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
@@ -94,7 +98,7 @@ const lineaCargaBKPut = async (req = request, res = response) => {
     }
     const cambios = {};
     for (let key in resto) {
-      if (JSON.stringify(antes[key]) !== JSON.stringify(resto[key])) {
+      if (String(antes[key]) !== String(resto[key])) {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
     }
@@ -112,6 +116,13 @@ const lineaCargaBKPut = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Línea de carga no encontrada" });
     }
 
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(lineaActualizada.historial)) {
+      lineaActualizada.historial.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
+    }
+
     res.json(lineaActualizada);
   } catch (err) {
     console.error("Error en lineaCargaBKPut:", err);
@@ -124,7 +135,7 @@ const lineaCargaBKPut = async (req = request, res = response) => {
   }
 };
 
-// Eliminar (marcar como eliminada) una línea de carga
+// Eliminar (marcar como eliminada) una línea de carga (con auditoría)
 const lineaCargaBKDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
@@ -148,10 +159,14 @@ const lineaCargaBKDelete = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Línea de carga no encontrada" });
     }
 
-    res.json({
-      msg: "Línea de carga eliminada correctamente.",
-      linea: lineaEliminada,
-    });
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(lineaEliminada.historial)) {
+      lineaEliminada.historial.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
+    }
+
+    res.json(lineaEliminada);
   } catch (err) {
     console.error("Error en lineaCargaBKDelete:", err);
     res.status(500).json({

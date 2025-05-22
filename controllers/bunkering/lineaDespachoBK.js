@@ -44,13 +44,16 @@ const lineaDespachoBKGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-    lineaDespacho.forEach((t) => {
-      if (Array.isArray(t.historial)) {
-        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      }
-    });
+
     if (!lineaDespacho) {
       return res.status(404).json({ msg: "Línea de despacho no encontrada" });
+    }
+
+    // Ordenar historial por fecha descendente
+    if (Array.isArray(lineaDespacho.historial)) {
+      lineaDespacho.historial.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
     }
 
     res.json(lineaDespacho);
