@@ -103,6 +103,9 @@ const recepcionBKPost = async (req = request, res = response) => {
     tractomula,
     muelle,
     bunkering,
+    idGuia,
+    placa,
+    nombreChofer,
   } = req.body;
 
   try {
@@ -133,6 +136,9 @@ const recepcionBKPost = async (req = request, res = response) => {
       tractomula,
       muelle,
       bunkering,
+      idGuia,
+      placa,
+      nombreChofer,
       createdBy: req.usuario._id,
     });
 
