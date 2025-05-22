@@ -34,7 +34,7 @@ const RecepcionBKSchema = new Schema(
     // Relación con el modelo Bunkering (opcional)
     idBunkering: {
       type: Schema.Types.ObjectId,
-      ref: "BunkeringBK", // Relación con el modelo Bunkering
+      ref: "Bunkering", // Relación con el modelo Bunkering
     },
 
     // Relación con el modelo Refinería

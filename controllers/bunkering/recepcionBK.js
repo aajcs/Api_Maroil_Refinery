@@ -9,7 +9,7 @@ const populateOptions = [
   { path: "idBunkering", select: "nombre" },
   { path: "idMuelle", select: "nombre" },
   { path: "idEmbarcacion", select: "nombre" },
-  { path: "idProductoBK", select: "nombre" },
+  { path: "idProducto", select: "nombre" },
   { path: "idTanque", select: "nombre" },
   { path: "idChequeoCalidad" },
   { path: "idChequeoCantidad" },
