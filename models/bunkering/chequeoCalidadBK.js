@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
-const Counter = require("./counter");
-const auditPlugin = require("./plugins/audit");
+const Counter = require("../counter");
+const auditPlugin = require("../plugins/audit");
 
 const ChequeoCalidadBKSchema = Schema(
   {

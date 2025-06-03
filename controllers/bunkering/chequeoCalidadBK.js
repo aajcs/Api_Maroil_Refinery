@@ -1,7 +1,7 @@
 // Importaciones necesarias
 const { response, request } = require("express");
 const mongoose = require("mongoose");
-const ChequeoCalidadBK = require("../../models/chequeoCalidadBK");
+const ChequeoCalidadBK = require("../../models/bunkering/chequeoCalidadBK");
 const Counter = require("../../models/counter");
 
 // Opciones de población reutilizables para consultas
