@@ -1,5 +1,6 @@
 const { Schema, model } = require("mongoose");
 const auditPlugin = require("./plugins/audit");
+const Counter = require("./counter");
 
 // Esquema para las líneas de facturación
 const LineaFacturaSchema = new Schema(
@@ -84,7 +85,7 @@ const FacturaSchema = new Schema(
     idSubPartida: {
       type: Schema.Types.ObjectId,
       ref: "SubPartida", // Relación con el modelo SubPartida
-      required: [true, "El ID de la subpartida es obligatorio"], // Campo obligatorio
+      required: [false, "El ID de la subpartida es obligatorio"], // Campo obligatorio
     },
 
     // Fechas de la factura
@@ -113,7 +114,6 @@ const FacturaSchema = new Schema(
     versionKey: false,
   }
 );
-
 
 // Middleware para generar un número único y secuencial
 FacturaSchema.pre("save", async function (next) {

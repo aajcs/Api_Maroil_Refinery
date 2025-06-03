@@ -93,6 +93,18 @@ const ContratoSchema = Schema(
       min: [0, "El monto total no puede ser negativo"], // Validación para evitar valores negativos
     },
 
+    montoPagado: {
+      type: Number,
+      default: 0,
+      min: [0, "El monto pagado no puede ser negativo"],
+    },
+
+    montoPendiente: {
+      type: Number,
+      default: 0,
+      min: [0, "El monto pendiente no puede ser negativo"],
+    },
+
     // Abonos realizados
     abono: [
       {

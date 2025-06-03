@@ -16,7 +16,7 @@ const populateOptions = [
 
 // Controlador para obtener todas las cuentas
 const cuentaGets = async (req = request, res = response) => {
-  const query = { eliminado: false }; // Filtro para obtener solo cuentas no eliminadas
+  const query = {}; // Filtro para obtener solo cuentas no eliminadas
 
   try {
     const [total, cuentas] = await Promise.all([
@@ -189,7 +189,9 @@ const cuentaSyncFromContrato = async (req = request, res = response) => {
     const cuentaExistente = await Cuenta.findOne({ idContrato: contratoId });
 
     if (!cuentaExistente) {
-      return res.status(404).json({ msg: "Cuenta no encontrada para sincronizar." });
+      return res
+        .status(404)
+        .json({ msg: "Cuenta no encontrada para sincronizar." });
     }
 
     const cambios = {};
