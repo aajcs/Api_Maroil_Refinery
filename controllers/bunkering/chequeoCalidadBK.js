@@ -1,8 +1,9 @@
-// Importaciones necesarias
 const { response, request } = require("express");
 const mongoose = require("mongoose");
 const ChequeoCalidadBK = require("../../models/bunkering/chequeoCalidadBK");
-const Counter = require("../../models/counter");
+const RecepcionBK = require("../../models/bunkering/recepcionBK");
+const DespachoBK = require("../../models/bunkering/despachoBK");
+const TanqueBK = require("../../models/bunkering/tanqueBK");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
@@ -23,24 +24,70 @@ const populateOptions = [
   },
 ];
 
+// Función auxiliar para actualizar el modelo relacionado
+const actualizarModeloRelacionadoBK = async (idReferencia, tipo, datos) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(idReferencia)) {
+      throw new Error(`El ID de referencia no es válido: ${idReferencia}`);
+    }
+
+    const modelo =
+      tipo === "Recepcion"
+        ? RecepcionBK
+        : tipo === "Despacho"
+        ? DespachoBK
+        : tipo === "Tanque"
+        ? TanqueBK
+        : null;
+
+    if (!modelo) {
+      throw new Error(`Tipo de modelo no válido: ${tipo}`);
+    }
+
+    const documentoExistente = await modelo.findById(idReferencia);
+    if (!documentoExistente) {
+      throw new Error(
+        `No se encontró el modelo ${tipo} con ID: ${idReferencia}`
+      );
+    }
+
+    const resultado = await modelo.findByIdAndUpdate(
+      idReferencia,
+      { $set: datos },
+      { new: true }
+    );
+
+    if (!resultado) {
+      throw new Error(
+        `No se pudo actualizar el modelo ${tipo} con ID: ${idReferencia}`
+      );
+    }
+
+    return resultado;
+  } catch (err) {
+    console.error(`Error al actualizar el modelo ${tipo}:`, err);
+    throw new Error(`Error al actualizar el modelo ${tipo}: ${err.message}`);
+  }
+};
+
 // Controlador para obtener todos los chequeos de calidad
 const chequeoCalidadBKGets = async (req = request, res = response) => {
   const query = { eliminado: false };
 
   try {
-    const [total, chequeos] = await Promise.all([
+    const [total, chequeoCalidads] = await Promise.all([
       ChequeoCalidadBK.countDocuments(query),
       ChequeoCalidadBK.find(query).populate(populateOptions),
     ]);
 
-    // Ordenar historial por fecha descendente
-    chequeos.forEach((c) => {
+    // Ordenar historial por fecha descendente en cada chequeo
+    chequeoCalidads.forEach((c) => {
       if (Array.isArray(c.historial)) {
         c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
 
-    res.json({ total, chequeos });
+    res.json({ total, chequeoCalidads });
   } catch (err) {
     console.error("Error en chequeoCalidadBKGets:", err);
     res.status(500).json({
@@ -54,21 +101,23 @@ const chequeoCalidadBKGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const chequeo = await ChequeoCalidadBK.findOne({
+    const chequeoCalidad = await ChequeoCalidadBK.findOne({
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
 
-    if (!chequeo) {
-      return res.status(404).json({ msg: "Chequeo de calidad no encontrado." });
+    if (!chequeoCalidad) {
+      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
     }
 
     // Ordenar historial por fecha descendente
-    if (Array.isArray(chequeo.historial)) {
-      chequeo.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    if (Array.isArray(chequeoCalidad.historial)) {
+      chequeoCalidad.historial.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
     }
 
-    res.json(chequeo);
+    res.json(chequeoCalidad);
   } catch (err) {
     console.error("Error en chequeoCalidadBKGet:", err);
     res.status(500).json({
@@ -112,6 +161,13 @@ const chequeoCalidadBKPost = async (req = request, res = response) => {
     await nuevoChequeo.save();
     await nuevoChequeo.populate(populateOptions);
 
+    // Actualizar el modelo relacionado
+    if (aplicar && aplicar.idReferencia && aplicar.tipo) {
+      await actualizarModeloRelacionadoBK(aplicar.idReferencia, aplicar.tipo, {
+        idChequeoCalidad: nuevoChequeo._id,
+      });
+    }
+
     res.status(201).json(nuevoChequeo);
   } catch (err) {
     console.error("Error en chequeoCalidadBKPost:", err);
@@ -127,11 +183,17 @@ const chequeoCalidadBKPut = async (req = request, res = response) => {
   const { _id, aplicar, ...resto } = req.body;
 
   try {
-    const antes = await ChequeoCalidadBK.findById(id);
-    if (!antes) {
-      return res.status(404).json({ msg: "Chequeo de calidad no encontrado." });
+    // Validar que idReferencia sea un ObjectId válido
+    if (
+      aplicar &&
+      aplicar.idReferencia &&
+      !mongoose.Types.ObjectId.isValid(aplicar.idReferencia)
+    ) {
+      return res.status(400).json({
+        error: "El ID de referencia no es válido.",
+      });
     }
-
+    const antes = await ChequeoCalidadBK.findById(id);
     const cambios = {};
     for (let key in resto) {
       if (String(antes[key]) !== String(resto[key])) {
@@ -150,7 +212,14 @@ const chequeoCalidadBKPut = async (req = request, res = response) => {
     ).populate(populateOptions);
 
     if (!chequeoActualizado) {
-      return res.status(404).json({ msg: "Chequeo de calidad no encontrado." });
+      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
+    }
+
+    // Actualizar el modelo relacionado
+    if (aplicar && aplicar.idReferencia && aplicar.tipo) {
+      await actualizarModeloRelacionadoBK(aplicar.idReferencia, aplicar.tipo, {
+        idChequeoCalidad: chequeoActualizado._id,
+      });
     }
 
     res.json(chequeoActualizado);
@@ -162,19 +231,48 @@ const chequeoCalidadBKPut = async (req = request, res = response) => {
   }
 };
 
+// Controlador para manejar actualizaciones parciales (PATCH)
+const chequeoCalidadBKPatch = async (req = request, res = response) => {
+  const { id } = req.params;
+  const { _id, aplicar, ...resto } = req.body;
+
+  try {
+    const chequeoActualizado = await ChequeoCalidadBK.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      { $set: resto },
+      { new: true }
+    ).populate(populateOptions);
+
+    if (!chequeoActualizado) {
+      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
+    }
+
+    // Actualizar el modelo relacionado
+    if (aplicar && aplicar.idReferencia && aplicar.tipo) {
+      await actualizarModeloRelacionadoBK(aplicar.idReferencia, aplicar.tipo, {
+        chequeoCalidad: chequeoActualizado._id,
+      });
+    }
+
+    res.json(chequeoActualizado);
+  } catch (err) {
+    console.error("Error en chequeoCalidadBKPatch:", err);
+    res.status(500).json({
+      error:
+        "Error interno del servidor al actualizar parcialmente el chequeo de calidad.",
+    });
+  }
+};
+
 // Controlador para eliminar (marcar como eliminado) un chequeo de calidad
 const chequeoCalidadBKDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
+    // Auditoría: captura estado antes de eliminar
     const antes = await ChequeoCalidadBK.findById(id);
-    if (!antes) {
-      return res.status(404).json({ msg: "Chequeo de calidad no encontrado." });
-    }
-
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
-
-    const chequeoEliminado = await ChequeoCalidadBK.findOneAndUpdate(
+    const chequeo = await ChequeoCalidadBK.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
         eliminado: true,
@@ -183,11 +281,26 @@ const chequeoCalidadBKDelete = async (req = request, res = response) => {
       { new: true }
     ).populate(populateOptions);
 
-    if (!chequeoEliminado) {
-      return res.status(404).json({ msg: "Chequeo de calidad no encontrado." });
+    if (!chequeo) {
+      return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
     }
 
-    res.json(chequeoEliminado);
+    // Actualizar el modelo relacionado
+    if (
+      chequeo.aplicar &&
+      chequeo.aplicar.idReferencia &&
+      chequeo.aplicar.tipo
+    ) {
+      await actualizarModeloRelacionadoBK(
+        chequeo.aplicar.idReferencia,
+        chequeo.aplicar.tipo,
+        {
+          chequeoCalidad: null,
+        }
+      );
+    }
+
+    res.json(chequeo);
   } catch (err) {
     console.error("Error en chequeoCalidadBKDelete:", err);
     res.status(500).json({
@@ -196,11 +309,11 @@ const chequeoCalidadBKDelete = async (req = request, res = response) => {
   }
 };
 
-// Exporta los controladores con los nuevos nombres
 module.exports = {
-  chequeoCalidadBKGets,
-  chequeoCalidadBKGet,
-  chequeoCalidadBKPost,
-  chequeoCalidadBKPut,
-  chequeoCalidadBKDelete,
+  chequeoCalidadBKGets, // Obtener todos los chequeos de calidad
+  chequeoCalidadBKGet, // Obtener un chequeo de calidad específico por ID
+  chequeoCalidadBKPost, // Crear un nuevo chequeo de calidad
+  chequeoCalidadBKPut, // Actualizar un chequeo de calidad existente
+  chequeoCalidadBKPatch, // Actualizar parcialmente un chequeo de calidad
+  chequeoCalidadBKDelete, // Eliminar (marcar como eliminado) un chequeo de calidad
 };
