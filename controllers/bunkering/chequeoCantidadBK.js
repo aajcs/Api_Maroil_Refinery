@@ -65,16 +65,15 @@ const chequeoCantidadBKGets = async (req = request, res = response) => {
   try {
     const [total, chequeoCantidads] = await Promise.all([
       ChequeoCantidadBK.countDocuments(query),
-      ChequeoCantidadBK.find(query).populate(populateOptions),
+      ChequeoCantidadBK.find(query)
+        .populate(populateOptions)
+        .sort({ numeroChequeoCantidad: -1 }),
     ]);
-
-    // Ordenar historial por fecha descendente en cada chequeo
     chequeoCantidads.forEach((t) => {
       if (Array.isArray(t.historial)) {
         t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
-
     res.json({ total, chequeoCantidads });
   } catch (err) {
     console.error("Error en chequeoCantidadBKGets:", err);
@@ -93,16 +92,13 @@ const chequeoCantidadBKGet = async (req = request, res = response) => {
       _id: id,
       eliminado: false,
     }).populate(populateOptions);
-
+    chequeoCantidad.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
     if (!chequeoCantidad) {
       return res.status(404).json({ msg: "Chequeo de cantidad no encontrado" });
-    }
-
-    // Ordenar historial por fecha descendente
-    if (Array.isArray(chequeoCantidad.historial)) {
-      chequeoCantidad.historial.sort(
-        (a, b) => new Date(b.fecha) - new Date(a.fecha)
-      );
     }
 
     res.json(chequeoCantidad);
@@ -151,15 +147,16 @@ const chequeoCantidadBKPost = async (req = request, res = response) => {
     res.status(201).json(nuevoChequeo);
   } catch (err) {
     console.error("Error en chequeoCantidadBKPost:", err);
-    res.status(400).json({
-      error:
-        err.message ||
-        "Error interno del servidor al crear el chequeo de cantidad.",
-    });
+    let errorMsg =
+      "Error interno del servidor al crear el chequeo de cantidad.";
+    if (err.code === 11000) {
+      errorMsg = "Ya existe un chequeo de cantidad con ese número.";
+    }
+    res.status(400).json({ error: errorMsg });
   }
 };
 
-// Controlador para actualizar un chequeo de cantidad existente
+// Actualizar un chequeo de cantidad existente
 const chequeoCantidadBKPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { _id, aplicar, ...resto } = req.body;
@@ -207,13 +204,16 @@ const chequeoCantidadBKPut = async (req = request, res = response) => {
     res.json(chequeoActualizado);
   } catch (err) {
     console.error("Error en chequeoCantidadBKPut:", err);
-    res.status(400).json({
-      error: "Error interno del servidor al actualizar el chequeo de cantidad.",
-    });
+    let errorMsg =
+      "Error interno del servidor al actualizar el chequeo de cantidad.";
+    if (err.code === 11000) {
+      errorMsg = "Ya existe un chequeo de cantidad con ese número.";
+    }
+    res.status(400).json({ error: errorMsg });
   }
 };
 
-// Controlador para eliminar (marcar como eliminado) un chequeo de cantidad
+// Eliminar (marcar como eliminado) un chequeo de cantidad
 const chequeoCantidadBKDelete = async (req = request, res = response) => {
   const { id } = req.params;
 
