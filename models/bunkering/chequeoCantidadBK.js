@@ -25,7 +25,7 @@ const ChequeoCantidadBKSchema = Schema(
     aplicar: {
       tipo: {
         type: String,
-        enum: ["Recepcion", "Tanque", "Despacho"], // Tipos De operación permitidos
+        enum: ["RecepcionBK", "TanqueBK", "DespachoBK"], // Tipos De operación permitidos
         required: true,
       },
       idReferencia: {

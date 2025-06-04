@@ -28,19 +28,19 @@ const populateOptions = [
 const actualizarModeloRelacionadoBK = async (idReferencia, tipo, datos) => {
   try {
     let resultado;
-    if (tipo === "Recepcion") {
+    if (tipo === "RecepcionBK") {
       resultado = await RecepcionBK.findByIdAndUpdate(
         idReferencia,
         { $set: datos },
         { new: true }
       );
-    } else if (tipo === "Despacho") {
+    } else if (tipo === "DespachoBK") {
       resultado = await DespachoBK.findByIdAndUpdate(
         idReferencia,
         { $set: datos },
         { new: true }
       );
-    } else if (tipo === "Tanque") {
+    } else if (tipo === "TanqueBK") {
       resultado = await TanqueBK.findByIdAndUpdate(
         idReferencia,
         { $set: datos },
