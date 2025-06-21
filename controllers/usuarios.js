@@ -3,7 +3,7 @@ const { response, request } = require("express"); // Importa objetos de Express 
 const bcryptjs = require("bcryptjs"); // Librería para encriptar contraseñas
 const populateOptions = [
   { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
-
+  { path: "idRefineria", select: "nombre" },
   {
     path: "historial",
     populate: { path: "modificadoPor", select: "nombre correo" },

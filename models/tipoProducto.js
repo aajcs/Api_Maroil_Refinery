@@ -67,13 +67,13 @@ const TipoProductoSchema = Schema(
       ], // Campo obligatorio
     },
 
-    // Porcentaje de azufre en el producto
-    indiceCetano: {
-      type: Number,
-      min: [0, "El porcentaje de azufre no puede ser negativo"], // Validación para evitar valores negativos
-      max: [100, "El porcentaje de azufre no puede exceder el 100%"], // Validación de rango máximo
-      required: [true, "El porcentaje de azufre en el producto es obligatorio"], // Campo obligatorio
-    },
+    // // Porcentaje de azufre en el producto
+    // indiceCetano: {
+    //   type: Number,
+    //   min: [0, "El porcentaje de azufre no puede ser negativo"], // Validación para evitar valores negativos
+    //   max: [100, "El porcentaje de azufre no puede exceder el 100%"], // Validación de rango máximo
+    //   required: [true, "El porcentaje de azufre en el producto es obligatorio"], // Campo obligatorio
+    // },
 
     // Rendimiento del productos
 
