@@ -48,7 +48,7 @@ const RefineriaSchema = Schema(
     nit: {
       type: String,
       required: [true, "El NIT es necesario"], // Campo obligatorio
-      unique: true, // Índice único para evitar duplicados
+      unique: [true, "El NIT debe ser único"], // Índice único para evitar duplicados
       minlength: [5, "El NIT debe tener al menos 5 caracteres"], // Validación de longitud mínima
       maxlength: [20, "El NIT no puede exceder los 20 caracteres"], // Validación de longitud máxima
     },

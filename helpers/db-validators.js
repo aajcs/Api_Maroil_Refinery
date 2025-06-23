@@ -2,6 +2,7 @@ const Role = require("../models/role");
 const {
   Usuario,
   Balance,
+  Abono,
   Categoria,
   Producto,
   Refineria,
@@ -140,6 +141,14 @@ const existeContratoPorId = async (id) => {
   // Verificar si contrato existe
   const existeContrato = await Contrato.findById(id);
   if (!existeContrato) {
+    throw new Error(`El id no existe ${id}`);
+  }
+};
+
+const existeAbonoPorId = async (id) => {
+  // Verificar si contrato existe
+  const existeAbono = await Abono.findById(id);
+  if (!existeAbono) {
     throw new Error(`El id no existe ${id}`);
   }
 };
@@ -443,6 +452,7 @@ module.exports = {
   existeRecepcionBKPorId,
   existeLineaCargaBKPorId,
   existeDespachoBKPorId,
+  existeAbonoPorId,
 };
 
 // SENTENCIA QUE NOS PERMITE DEJAR UN CAMPO VACIO
