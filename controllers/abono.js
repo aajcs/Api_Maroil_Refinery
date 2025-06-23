@@ -3,13 +3,13 @@ const Abono = require("../models/abono");
 const Contrato = require("../models/contrato");
 const Cuenta = require("../models/cuenta");
 
-// Opciones de población reutilizables para consultas
 const populateOptions = [
   {
     path: "idContrato",
     select:
       "numeroContrato descripcion montoTotal montoPagado montoPendiente abono",
   },
+  { path: "idRefineria", select: "nombre" },
   { path: "createdBy", select: "nombre correo" },
   {
     path: "historial",
@@ -32,12 +32,10 @@ const abonoGets = async (req = request, res = response) => {
     const contratos = await Contrato.find({ _id: { $in: contratosIds } });
     const cuentas = await Cuenta.find({ idContrato: { $in: contratosIds } });
 
-    // Ordenar historial por fecha descendente en cada abono
     abonos.forEach((a) => {
       if (Array.isArray(a.historial)) {
         a.historial.sort((x, y) => new Date(y.fecha) - new Date(x.fecha));
       }
-      // Agregar info de contrato y cuenta asociada
       a._doc.contrato = contratos.find((c) => c._id.equals(a.idContrato));
       a._doc.cuenta = cuentas.find((c) => c.idContrato.equals(a.idContrato));
     });
@@ -67,7 +65,6 @@ const abonoGet = async (req = request, res = response) => {
       abono.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     }
 
-    // Buscar contrato y cuenta asociada
     const contrato = await Contrato.findById(abono.idContrato);
     const cuenta = await Cuenta.findOne({ idContrato: abono.idContrato });
 
@@ -83,7 +80,8 @@ const abonoGet = async (req = request, res = response) => {
 
 // Crear un nuevo abono, agregarlo al contrato y actualizar la cuenta asociada
 const abonoPost = async (req = request, res = response) => {
-  const { idContrato, monto, fecha, tipoOperacion, referencia } = req.body;
+  const { idRefineria, idContrato, monto, fecha, tipoOperacion, referencia } =
+    req.body;
 
   try {
     // Validar que el contrato exista y no esté eliminado
@@ -105,6 +103,7 @@ const abonoPost = async (req = request, res = response) => {
 
     // Crear el abono
     const nuevoAbono = new Abono({
+      idRefineria,
       idContrato,
       monto,
       fecha,
@@ -116,32 +115,53 @@ const abonoPost = async (req = request, res = response) => {
     await nuevoAbono.save();
     await nuevoAbono.populate(populateOptions);
 
-    // Agregar el abono al array del contrato
-    contrato.abono.push({
-      monto,
-      fecha,
-      tipoOperacion,
-      referencia,
-      eliminado: false,
-    });
-
-    // Actualizar los montos del contrato
+    // Agregar el abono al array del contrato (si usas array de IDs)
+    contrato.abonos.push(nuevoAbono._id);
     contrato.montoPagado += monto;
     contrato.montoPendiente = (contrato.montoTotal || 0) - contrato.montoPagado;
     await contrato.save();
 
-    // Agregar el abono al array de la cuenta y actualizar saldo
-    cuenta.abonos.push({
-      monto,
-      fecha,
-      tipoOperacion,
-      referencia,
+    // // Agregar el abono al array de la cuenta (array de IDs)
+    // cuenta.abonos.push(nuevoAbono._id);
+
+    // // Recalcular totalAbonado y balancePendiente usando los abonos activos
+    // const abonosActivos = await Abono.find({
+    //   _id: { $in: cuenta.abonos },
+    //   eliminado: false,
+    // });
+    // console.log("Abonos activos:", abonosActivos);
+    // const totalAbonado = abonosActivos.reduce(
+    //   (sum, a) => sum + (a.monto || 0),
+    //   0
+    // );
+    // console.log("Total abonado:", totalAbonado);
+    // cuenta.totalAbonado = 5000;
+    // cuenta.balancePendiente = Math.max(
+    //   (cuenta.montoTotalContrato || 0) - totalAbonado,
+    //   0
+    // );
+
+    // await cuenta.save();
+
+    // CORRECCIÓN PRINCIPAL: Usar el valor calculado en lugar de 5000
+    const abonosActivos = await Abono.find({
+      _id: { $in: cuenta.abonos },
       eliminado: false,
     });
-    cuenta.saldo = (cuenta.saldo || 0) - monto;
-    cuenta.montoPagado = (cuenta.montoPagado || 0) + monto;
-    cuenta.montoPendiente =
-      (cuenta.montoTotalContrato || 0) - cuenta.montoPagado;
+
+    // CORRECCIÓN 2: Asegurar que monto sea número usando parseFloat
+    const totalAbonado = abonosActivos.reduce(
+      (sum, a) => sum + parseFloat(a.monto || 0),
+      0
+    );
+
+    // Asignar el valor calculado correctamente
+    cuenta.totalAbonado = totalAbonado;
+    cuenta.balancePendiente = Math.max(
+      parseFloat(cuenta.montoTotalContrato || 0) - totalAbonado,
+      0
+    );
+
     await cuenta.save();
 
     res.status(201).json(nuevoAbono);
@@ -187,25 +207,13 @@ const abonoPut = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Abono no encontrado" });
     }
 
-    // Actualizar el abono en el array del contrato
+    // Actualizar el abono en el contrato (solo recalcula montos)
     const contrato = await Contrato.findById(abonoActualizado.idContrato);
     if (contrato) {
-      const abonoContrato = contrato.abono.find(
-        (a) =>
-          a.monto === abonoAntes.monto &&
-          a.fecha.getTime() === abonoAntes.fecha.getTime() &&
-          a.tipoOperacion === abonoAntes.tipoOperacion &&
-          a.referencia === abonoAntes.referencia &&
-          a.eliminado === abonoAntes.eliminado
-      );
-      if (abonoContrato) {
-        abonoContrato.monto = monto;
-        abonoContrato.fecha = fecha;
-        abonoContrato.tipoOperacion = tipoOperacion;
-        abonoContrato.referencia = referencia;
-      }
-      // Recalcular los montos del contrato
-      const abonosContrato = contrato.abono.filter((a) => !a.eliminado);
+      const abonosContrato = await Abono.find({
+        _id: { $in: contrato.abonos },
+        eliminado: false,
+      });
       contrato.montoPagado = abonosContrato.reduce(
         (sum, a) => sum + (a.monto || 0),
         0
@@ -215,34 +223,22 @@ const abonoPut = async (req = request, res = response) => {
       await contrato.save();
     }
 
-    // Actualizar el abono en el array de la cuenta y ajustar saldo
+    // Actualizar el abono en la cuenta y recalcular totales
     const cuenta = await Cuenta.findOne({ idContrato: abonoAntes.idContrato });
     if (cuenta) {
-      const abonoCuenta = cuenta.abonos.find(
-        (a) =>
-          a.monto === abonoAntes.monto &&
-          a.fecha.getTime() === abonoAntes.fecha.getTime() &&
-          a.tipoOperacion === abonoAntes.tipoOperacion &&
-          a.referencia === abonoAntes.referencia &&
-          a.eliminado === abonoAntes.eliminado
-      );
-      if (abonoCuenta) {
-        abonoCuenta.monto = monto;
-        abonoCuenta.fecha = fecha;
-        abonoCuenta.tipoOperacion = tipoOperacion;
-        abonoCuenta.referencia = referencia;
-      }
-      // Ajustar saldo y montos
-      const diferencia = monto - abonoAntes.monto;
-      cuenta.saldo = (cuenta.saldo || 0) - diferencia;
-      // Recalcular montoPagado y montoPendiente en cuenta
-      const abonosCuenta = cuenta.abonos.filter((a) => !a.eliminado);
-      cuenta.montoPagado = abonosCuenta.reduce(
+      const abonosCuenta = await Abono.find({
+        _id: { $in: cuenta.abonos },
+        eliminado: false,
+      });
+      const totalAbonado = abonosCuenta.reduce(
         (sum, a) => sum + (a.monto || 0),
         0
       );
-      cuenta.montoPendiente =
-        (cuenta.montoTotalContrato || 0) - cuenta.montoPagado;
+      cuenta.totalAbonado = totalAbonado;
+      cuenta.balancePendiente = Math.max(
+        (cuenta.montoTotalContrato || 0) - totalAbonado,
+        0
+      );
       await cuenta.save();
     }
 
@@ -277,22 +273,13 @@ const abonoDelete = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Abono no encontrado" });
     }
 
-    // Marcar como eliminado en el array del contrato y actualizar montos
+    // Actualizar montos del contrato
     const contrato = await Contrato.findById(abono.idContrato);
     if (contrato) {
-      const abonoContrato = contrato.abono.find(
-        (a) =>
-          a.monto === abonoAntes.monto &&
-          a.fecha.getTime() === abonoAntes.fecha.getTime() &&
-          a.tipoOperacion === abonoAntes.tipoOperacion &&
-          a.referencia === abonoAntes.referencia &&
-          a.eliminado === abonoAntes.eliminado
-      );
-      if (abonoContrato) {
-        abonoContrato.eliminado = true;
-      }
-      // Recalcular los montos del contrato
-      const abonosContrato = contrato.abono.filter((a) => !a.eliminado);
+      const abonosContrato = await Abono.find({
+        _id: { $in: contrato.abonos },
+        eliminado: false,
+      });
       contrato.montoPagado = abonosContrato.reduce(
         (sum, a) => sum + (a.monto || 0),
         0
@@ -302,29 +289,22 @@ const abonoDelete = async (req = request, res = response) => {
       await contrato.save();
     }
 
-    // Marcar como eliminado en el array de la cuenta y actualizar saldo
+    // Actualizar la cuenta y recalcular totales
     const cuenta = await Cuenta.findOne({ idContrato: abonoAntes.idContrato });
     if (cuenta) {
-      const abonoCuenta = cuenta.abonos.find(
-        (a) =>
-          a.monto === abonoAntes.monto &&
-          a.fecha.getTime() === abonoAntes.fecha.getTime() &&
-          a.tipoOperacion === abonoAntes.tipoOperacion &&
-          a.referencia === abonoAntes.referencia &&
-          a.eliminado === abonoAntes.eliminado
-      );
-      if (abonoCuenta) {
-        abonoCuenta.eliminado = true;
-      }
-      // Recalcular saldo y montos
-      cuenta.saldo = (cuenta.saldo || 0) + abonoAntes.monto;
-      const abonosCuenta = cuenta.abonos.filter((a) => !a.eliminado);
-      cuenta.montoPagado = abonosCuenta.reduce(
+      const abonosCuenta = await Abono.find({
+        _id: { $in: cuenta.abonos },
+        eliminado: false,
+      });
+      const totalAbonado = abonosCuenta.reduce(
         (sum, a) => sum + (a.monto || 0),
         0
       );
-      cuenta.montoPendiente =
-        (cuenta.montoTotalContrato || 0) - cuenta.montoPagado;
+      cuenta.totalAbonado = totalAbonado;
+      cuenta.balancePendiente = Math.max(
+        (cuenta.montoTotalContrato || 0) - totalAbonado,
+        0
+      );
       await cuenta.save();
     }
 

@@ -2,6 +2,12 @@ const { Schema, model } = require("mongoose");
 const auditPlugin = require("./plugins/audit");
 const CuentaSchema = new Schema(
   {
+    //Referencia al modelo Refineria
+    idRefineria: {
+      type: Schema.Types.ObjectId,
+      ref: "Refineria",
+      required: [true, "El ID de refinería es obligatorio"],
+    },
     // Referencia al contrato del cual se extraen los datos
     idContrato: {
       type: Schema.Types.ObjectId,
@@ -25,15 +31,9 @@ const CuentaSchema = new Schema(
     // Abonos obtenidos del contrato
     abonos: [
       {
-        monto: {
-          type: Number,
-          required: [true, "El monto del abono es obligatorio"],
-          min: [0, "El monto no puede ser negativo"],
-        },
-        fecha: {
-          type: Date,
-          required: [true, "La fecha del abono es obligatoria"],
-        },
+        type: Schema.Types.ObjectId,
+        ref: "Abono",
+        required: [false, "El ID del abono es obligatorio"],
       },
     ],
     // Monto total declarado en el contrato (útil para calcular el saldo)
@@ -64,7 +64,10 @@ CuentaSchema.plugin(auditPlugin);
 // Hook "pre("save")" para recalcular totales antes de guardar
 CuentaSchema.pre("save", function (next) {
   if (this.abonos && this.abonos.length > 0) {
-    this.totalAbonado = this.abonos.reduce((acum, abono) => acum + (abono.monto || 0), 0);
+    this.totalAbonado = this.abonos.reduce(
+      (acum, abono) => acum + (abono.monto || 0),
+      0
+    );
   } else {
     this.totalAbonado = 0;
   }
@@ -91,7 +94,7 @@ CuentaSchema.statics.syncFromContrato = async function (contrato) {
     // Por defecto en casos no contemplados, se define según tu lógica de negocio.
     tipoCuenta = "Cuentas por Cobrar";
   }
-  
+
   // Buscar si ya existe una cuenta asociada a este contrato
   let cuenta = await this.findOne({ contrato: contrato._id });
   if (!cuenta) {
@@ -107,10 +110,10 @@ CuentaSchema.statics.syncFromContrato = async function (contrato) {
     cuenta.abonos = contrato.abono || [];
     cuenta.montoTotalContrato = contrato.montoTotal || 0;
   }
-  
+
   // Al guardar, el hook pre recalculará los totales automáticamente.
   await cuenta.save();
-  
+
   return cuenta;
 };
 

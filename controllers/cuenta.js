@@ -38,12 +38,11 @@ const cuentaGet = async (req = request, res = response) => {
   const { id } = req.params;
 
   try {
-    const cuenta = await Cuenta.findOne({
-      _id: id,
-      eliminado: false,
-    }).populate(populateOptions);
+    // Usar findById para buscar por _id directamente
+    const cuenta = await Cuenta.findById(id).populate(populateOptions);
 
-    if (!cuenta) {
+    // Si quieres filtrar solo cuentas no eliminadas, agrega este chequeo:
+    if (!cuenta || cuenta.eliminado) {
       return res.status(404).json({ msg: "Cuenta no encontrada" });
     }
 

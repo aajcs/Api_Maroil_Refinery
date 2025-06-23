@@ -1,8 +1,21 @@
 const { Schema, model } = require("mongoose");
 const auditPlugin = require("./plugins/audit");
 
+const Counter = require("./counter");
+
 const AbonoSchema = Schema(
   {
+    // Número de chequeo de cantidad
+    numeroAbono: {
+      type: Number,
+    },
+
+    idRefineria: {
+      type: Schema.Types.ObjectId,
+      ref: "Refineria",
+      required: true,
+    },
+
     idContrato: {
       type: Schema.Types.ObjectId,
       ref: "Contrato",
@@ -46,6 +59,37 @@ AbonoSchema.set("toJSON", {
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject.__v;
   },
+});
+
+// Middleware para incrementar el contador antes de guardar
+AbonoSchema.pre("save", async function (next) {
+  if (this.isNew && this.idRefineria) {
+    try {
+      // Generar la clave del contador específico para cada refinería
+      const counterKey = `abono_${this.idRefineria.toString()}`;
+
+      // Buscar el contador
+      let refineriaCounter = await Counter.findOne({ _id: counterKey });
+
+      // Si el contador no existe, crearlo con el valor inicial de 1000
+      if (!refineriaCounter) {
+        refineriaCounter = new Counter({ _id: counterKey, seq: 999 });
+        await refineriaCounter.save();
+      }
+
+      // Incrementar el contador en 1
+      refineriaCounter.seq += 1;
+      await refineriaCounter.save();
+
+      // Asignar el valor actualizado al campo "numeroAbono"
+      this.numeroAbono = refineriaCounter.seq;
+      next();
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    next();
+  }
 });
 
 module.exports = model("Abono", AbonoSchema);

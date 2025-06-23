@@ -106,29 +106,11 @@ const ContratoSchema = Schema(
     },
 
     // Abonos realizados
-    abono: [
+    abonos: [
       {
-        monto: {
-          type: Number,
-          required: false,
-          min: [0, "El monto no puede ser negativo"],
-        },
-        fecha: { type: Date, required: false },
-        tipoOperacion: {
-          type: String,
-          enum: ["Efectivo", "Cheque", "Deposito"],
-          required: false,
-        },
-        referencia: {
-          type: String,
-          required: false,
-          minlength: [3, "La referencia debe tener al menos 3 caracteres"],
-          maxlength: [100, "La referencia no puede exceder los 100 caracteres"],
-        },
-        eliminado: {
-          type: Boolean,
-          default: false,
-        },
+        type: Schema.Types.ObjectId,
+        ref: "Abono",
+        required: [false, "El ID del abono es obligatorio"],
       },
     ],
 

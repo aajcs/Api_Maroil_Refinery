@@ -177,6 +177,7 @@ const contratoPost = async (req, res = response) => {
     const nuevaCuenta = new Cuenta({
       idContrato: nuevoContrato._id,
       idContacto: nuevoContrato.idContacto,
+      idRefineria: nuevoContrato.idRefineria,
       tipoCuenta:
         tipoContrato === "Venta" ? "Cuentas por Cobrar" : "Cuentas por Pagar",
       abonos: abono || [],
