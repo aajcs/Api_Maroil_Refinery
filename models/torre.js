@@ -94,7 +94,11 @@ const TorreSchema = Schema(
 TorreSchema.plugin(auditPlugin);
 
 // Agrega índice compuesto único para nombre por refinería
-TorreSchema.index({ idRefineria: 1, nombre: 1 }, { unique: true });
+TorreSchema.index(
+  { idRefineria: 1, nombre: 1 },
+
+  { unique: true, partialFilterExpression: { eliminado: { $ne: true } } }
+);
 
 // Configuración para transformar el objeto JSON al devolverlo
 TorreSchema.set("toJSON", {

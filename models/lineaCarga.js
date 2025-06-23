@@ -48,7 +48,10 @@ lineaCargaSchema.set("toJSON", {
 });
 
 // Agrega un índice compuesto único para garantizar que 'nombre' sea único por 'idRefineria'
-lineaCargaSchema.index({ idRefineria: 1, nombre: 1 }, { unique: true });
+lineaCargaSchema.index(
+  { idRefineria: 1, nombre: 1 },
+  { unique: true, partialFilterExpression: { eliminado: { $ne: true } } }
+);
 
 // Exporta el modelo LineaCarga basado en el esquema definido
 module.exports = model("LineaCarga", lineaCargaSchema);
