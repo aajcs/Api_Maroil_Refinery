@@ -141,7 +141,10 @@ TipoProductoSchema.path("rendimientos").validate(function (rendimientos) {
 }, "El campo idProducto debe ser único dentro de rendimientos.");
 
 // Agrega índice compuesto único para nombre por refinería
-TipoProductoSchema.index({ idRefineria: 1, nombre: 1 }, { unique: true });
+TipoProductoSchema.index(
+  { idRefineria: 1, nombre: 1 },
+  { unique: true, partialFilterExpression: { eliminado: { $ne: true } } }
+);
 TipoProductoSchema.plugin(auditPlugin);
 
 // Configuración para transformar el objeto JSON al devolverlo

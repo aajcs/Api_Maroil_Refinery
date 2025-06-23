@@ -58,8 +58,16 @@ const usuariosGet = async (req = request, res = response) => {
 // Controlador para crear un nuevo usuario
 const usuariosPost = async (req, res = response) => {
   // Extrae los datos del cuerpo de la solicitud
-  const { nombre, correo, password, rol, estado, acceso, idRefineria } =
-    req.body;
+  const {
+    nombre,
+    correo,
+    password,
+    rol,
+    estado,
+    acceso,
+    idRefineria,
+    departamento,
+  } = req.body;
 
   // Crea una nueva instancia del modelo Usuario con los datos proporcionados
   const usuario = new Usuario({
@@ -70,6 +78,7 @@ const usuariosPost = async (req, res = response) => {
     rol,
     acceso,
     estado,
+    departamento,
     createdBy: req.usuario._id, // ID del usuario que creó el tanque
   });
 

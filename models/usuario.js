@@ -29,6 +29,12 @@ const UsuarioSchema = Schema(
       default: "lectura",
       enum: ["superAdmin", "admin", "operador", "user", "lectura"],
     },
+    departamento: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
 
     acceso: {
       type: String,

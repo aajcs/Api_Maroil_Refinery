@@ -13,7 +13,10 @@ const login = async (req, res = response) => {
 
   try {
     // Verificar si el correo existe
-    const usuario = await Usuario.findOne({ correo });
+    const usuario = await Usuario.findOne({ correo }).populate(
+      "idRefineria",
+      "nombre"
+    ); // Busca el usuario por correo y popula la refinería
     if (!usuario) {
       return res.status(400).json({
         msg: "Usuario / Password no son correctos - correo", // Error si el correo no existe

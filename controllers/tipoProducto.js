@@ -1,7 +1,7 @@
 // Importaciones necesarias
 const { response, request } = require("express"); // Objetos de Express para manejar solicitudes y respuestas
 const TipoProducto = require("../models/tipoProducto"); // Modelo TipoProducto para interactuar con la base de datos
-const { Producto, ProductoBK } = require("../models"); // Modelo Producto para manejar relaciones
+const { Producto } = require("../models"); // Modelo Producto para manejar relaciones
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
@@ -126,7 +126,7 @@ const tipoProductoPost = async (req = request, res = response) => {
     await nuevoTipoProducto.save(); // Guarda el nuevo tipo de producto en la base de datos
 
     // Actualiza el modelo Producto para agregar la referencia al nuevo tipo de producto
-    await ProductoBK.findByIdAndUpdate(
+    await Producto.findByIdAndUpdate(
       idProducto,
       { $push: { idTipoProducto: nuevoTipoProducto._id } }, // Agrega el ID del nuevo tipo de producto al campo idTipoProducto
       { new: true }
@@ -187,10 +187,9 @@ const tipoProductoPut = async (req = request, res = response) => {
 // Controlador para eliminar (marcar como eliminado) un tipo de producto
 const tipoProductoDelete = async (req = request, res = response) => {
   const { id } = req.params; // Obtiene el ID del tipo de producto desde los parámetros de la URL
-
   try {
     // Auditoría: captura estado antes de eliminar
-    const antes = await Producto.findById(id);
+    const antes = await TipoProducto.findById(id);
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
     // Marca el tipo de producto como eliminado (eliminación lógica)
     const tipoProducto = await TipoProducto.findOneAndUpdate(
