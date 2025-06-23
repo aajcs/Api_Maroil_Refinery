@@ -72,12 +72,28 @@ const productoGet = async (req = request, res = response) => {
 const productoPost = async (req = request, res = response) => {
   try {
     const { nombre, idRefineria, posicion, color, estado, tipoMaterial } =
-      req.body; // Extrae los datos del cuerpo de la solicitud
+      req.body;
 
     if (!nombre || !idRefineria) {
       return res
         .status(400)
-        .json({ error: "Nombre y Refinería son requeridos" }); // Valida que los campos obligatorios estén presentes
+        .json({ error: "Nombre y Refinería son requeridos" });
+    }
+
+    // Validar que la posición no esté repetida en la misma refinería
+    if (posicion !== undefined) {
+      const existePosicion = await Producto.findOne({
+        idRefineria,
+        posicion,
+        eliminado: false,
+      });
+      if (existePosicion) {
+        return res
+          .status(400)
+          .json({
+            error: "Ya existe un producto con esa posición en la refinería.",
+          });
+      }
     }
 
     const nuevoProducto = new Producto({
@@ -87,25 +103,42 @@ const productoPost = async (req = request, res = response) => {
       color,
       estado,
       tipoMaterial,
-      createdBy: req.usuario._id, // ID del usuario que creó el tanque
+      createdBy: req.usuario._id,
     });
 
-    await nuevoProducto.save(); // Guarda el nuevo producto en la base de datos
-    await nuevoProducto.populate(populateOptions); // Poblar referencias después de guardar
+    await nuevoProducto.save();
+    await nuevoProducto.populate(populateOptions);
 
-    res.status(201).json(nuevoProducto); // Responde con un código 201 (creado) y los datos del producto
+    res.status(201).json(nuevoProducto);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    console.error(err);
+    res.status(400).json({ error: err.message });
   }
 };
 
 // Controlador para actualizar un producto existente
 const productoPut = async (req, res = response) => {
-  const { id } = req.params; // Obtiene el ID del producto desde los parámetros de la URL
-  const { ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud
+  const { id } = req.params;
+  const { posicion, idRefineria, ...resto } = req.body;
 
   try {
+    // Validar que la posición no esté repetida en la misma refinería (excluyendo el producto actual)
+    if (posicion !== undefined && idRefineria) {
+      const existePosicion = await Producto.findOne({
+        _id: { $ne: id },
+        idRefineria,
+        posicion,
+        eliminado: false,
+      });
+      if (existePosicion) {
+        return res
+          .status(400)
+          .json({
+            error: "Ya existe un producto con esa posición en la refinería.",
+          });
+      }
+    }
+
     const antes = await Producto.findById(id);
     const cambios = {};
     for (let key in resto) {
@@ -114,22 +147,24 @@ const productoPut = async (req, res = response) => {
       }
     }
     const productoActualizado = await Producto.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar el producto no eliminado
+      { _id: id, eliminado: false },
       {
         ...resto,
+        ...(posicion !== undefined ? { posicion } : {}),
+        ...(idRefineria ? { idRefineria } : {}),
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
-      }, // Datos a actualizar
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Poblar referencias después de actualizar
+      },
+      { new: true }
+    ).populate(populateOptions);
 
     if (!productoActualizado) {
-      return res.status(404).json({ msg: "Producto no encontrado" }); // Responde con un error 404 si no se encuentra el producto
+      return res.status(404).json({ msg: "Producto no encontrado" });
     }
 
-    res.json(productoActualizado); // Responde con los datos del producto actualizado
+    res.json(productoActualizado);
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    console.error(err);
+    res.status(400).json({ error: err.message });
   }
 };
 

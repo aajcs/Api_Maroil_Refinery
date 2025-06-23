@@ -24,6 +24,7 @@ const Producto = require("./producto");
 const Recepcion = require("./recepcion");
 // const RecepcionBunker = require("./bunker/recepcionBunker");
 const Refineria = require("./refineria");
+const Abono = require("./abono");
 const Refinacion = require("./refinacion");
 const RefinacionSalida = require("./refinacionSalida");
 const Role = require("./role");
@@ -116,4 +117,5 @@ module.exports = {
   ContratoBK,
   ChequeoCantidadBK,
   ChequeoCalidadBK,
+  Abono,
 };

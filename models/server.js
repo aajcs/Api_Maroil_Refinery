@@ -51,6 +51,7 @@ class Server {
       factura: "/api/factura",
       corteRefinacion: "/api/corteRefinacion",
       cuenta: "/api/cuenta",
+      abono: "/api/abono",
       // bunker: "/api/bunker/bunker",
       // balanceBunker: "/api/bunker/balanceBunker",
       // barcaza: "/api/bunker/barcaza",
@@ -159,6 +160,7 @@ class Server {
     // Rutas relacionadas con el módulo de finanzas
     this.app.use(this.paths.factura, require("../routes/factura"));
     this.app.use(this.paths.balance, require("../routes/balance"));
+    this.app.use(this.paths.abono, require("../routes/abono"));
 
     // Rutas relacionadas con operaciones de calidad y cantidad
     this.app.use(
