@@ -172,6 +172,80 @@ const abonoPost = async (req = request, res = response) => {
 };
 
 // Actualizar un abono existente, sincronizar el contrato y la cuenta
+// const abonoPut = async (req = request, res = response) => {
+//   const { id } = req.params;
+//   const { monto, fecha, tipoOperacion, referencia } = req.body;
+
+//   try {
+//     const abonoAntes = await Abono.findById(id);
+//     if (!abonoAntes) {
+//       return res.status(404).json({ msg: "Abono no encontrado" });
+//     }
+
+//     // Guardar cambios para auditoría
+//     const cambios = {};
+//     ["monto", "fecha", "tipoOperacion", "referencia"].forEach((key) => {
+//       if (String(abonoAntes[key]) !== String(req.body[key])) {
+//         cambios[key] = { from: abonoAntes[key], to: req.body[key] };
+//       }
+//     });
+
+//     // Actualizar el abono
+//     const abonoActualizado = await Abono.findOneAndUpdate(
+//       { _id: id, eliminado: false },
+//       {
+//         monto,
+//         fecha,
+//         tipoOperacion,
+//         referencia,
+//         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+//       },
+//       { new: true }
+//     ).populate(populateOptions);
+
+//     if (!abonoActualizado) {
+//       return res.status(404).json({ msg: "Abono no encontrado" });
+//     }
+
+//     const cuenta = await Cuenta.findOne({ idContrato: abonoAntes.idContrato });
+//     if (cuenta) {
+//       // Asegúrate de que cuenta.abonos esté actualizado
+//       if (!cuenta.abonos.includes(abonoAntes._id)) {
+//         cuenta.abonos.push(abonoAntes._id);
+//       }
+
+//       const abonosCuenta = await Abono.find({
+//         _id: { $in: cuenta.abonos },
+//         eliminado: false,
+//       });
+
+//       // Convierte monto a número para evitar problemas de tipo
+//       const totalAbonado = abonosCuenta.reduce(
+//         (sum, a) => sum + parseFloat(a.monto || 0),
+//         0
+//       );
+//       console.log("Total abonado recalculado:", totalAbonado);
+
+//       cuenta.totalAbonado = totalAbonado;
+//       cuenta.balancePendiente = Math.max(
+//         parseFloat(cuenta.montoTotalContrato || 0) - totalAbonado,
+//         0
+//       );
+//       console.log("cuenta antes de guardar: ", cuenta);
+
+//       try {
+//         const que = await cuenta.save();
+//         console.log("Cuenta actualizada:", que);
+//       } catch (err) {
+//         console.error("Error guardando cuenta:", err);
+//       }
+//     }
+//     res.json(abonoActualizado);
+//   } catch (err) {
+//     console.error("Error en abonoPut:", err);
+//     res.status(400).json({ error: err.message });
+//   }
+// };
 const abonoPut = async (req = request, res = response) => {
   const { id } = req.params;
   const { monto, fecha, tipoOperacion, referencia } = req.body;
@@ -207,10 +281,41 @@ const abonoPut = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Abono no encontrado" });
     }
 
+    // --- ACTUALIZAR CONTRATO ---
+    const contrato = await Contrato.findById(abonoAntes.idContrato);
+    if (contrato) {
+      // Asegúrate de que el abono esté en el array de abonos del contrato
+      if (
+        !contrato.abonos
+          .map((id) => id.toString())
+          .includes(abonoAntes._id.toString())
+      ) {
+        contrato.abonos.push(abonoAntes._id);
+      }
+
+      // Recalcular montos usando solo abonos activos
+      const abonosContrato = await Abono.find({
+        _id: { $in: contrato.abonos },
+        eliminado: false,
+      });
+      contrato.montoPagado = abonosContrato.reduce(
+        (sum, a) => sum + parseFloat(a.monto || 0),
+        0
+      );
+      contrato.montoPendiente =
+        (contrato.montoTotal || 0) - contrato.montoPagado;
+      await contrato.save();
+    }
+
+    // --- ACTUALIZAR CUENTA ---
     const cuenta = await Cuenta.findOne({ idContrato: abonoAntes.idContrato });
     if (cuenta) {
       // Asegúrate de que cuenta.abonos esté actualizado
-      if (!cuenta.abonos.includes(abonoAntes._id)) {
+      if (
+        !cuenta.abonos
+          .map((id) => id.toString())
+          .includes(abonoAntes._id.toString())
+      ) {
         cuenta.abonos.push(abonoAntes._id);
       }
 
@@ -224,22 +329,14 @@ const abonoPut = async (req = request, res = response) => {
         (sum, a) => sum + parseFloat(a.monto || 0),
         0
       );
-      console.log("Total abonado recalculado:", totalAbonado);
-
       cuenta.totalAbonado = totalAbonado;
       cuenta.balancePendiente = Math.max(
         parseFloat(cuenta.montoTotalContrato || 0) - totalAbonado,
         0
       );
-      console.log("cuenta antes de guardar: ", cuenta);
-
-      try {
-        const que = await cuenta.save();
-        console.log("Cuenta actualizada:", que);
-      } catch (err) {
-        console.error("Error guardando cuenta:", err);
-      }
+      await cuenta.save();
     }
+
     res.json(abonoActualizado);
   } catch (err) {
     console.error("Error en abonoPut:", err);
@@ -271,9 +368,15 @@ const abonoDelete = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Abono no encontrado" });
     }
 
-    // Actualizar montos del contrato
+    // Actualizar montos del contrato y eliminar el abono del array de abonos del contrato
     const contrato = await Contrato.findById(abono.idContrato);
     if (contrato) {
+      // Eliminar el abono del array de abonos del contrato
+      contrato.abonos = contrato.abonos.filter(
+        (abonoId) => abonoId.toString() !== abonoAntes._id.toString()
+      );
+
+      // Recalcular montos
       const abonosContrato = await Abono.find({
         _id: { $in: contrato.abonos },
         eliminado: false,
@@ -287,9 +390,13 @@ const abonoDelete = async (req = request, res = response) => {
       await contrato.save();
     }
 
-    // Actualizar la cuenta y recalcular totales
+    // Actualizar la cuenta y recalcular totales, eliminando el abono del array
     const cuenta = await Cuenta.findOne({ idContrato: abonoAntes.idContrato });
     if (cuenta) {
+      cuenta.abonos = cuenta.abonos.filter(
+        (abonoId) => abonoId.toString() !== abonoAntes._id.toString()
+      );
+
       const abonosCuenta = await Abono.find({
         _id: { $in: cuenta.abonos },
         eliminado: false,
