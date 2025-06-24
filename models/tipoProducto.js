@@ -96,13 +96,11 @@ const TipoProductoSchema = Schema(
 
     transporte: {
       type: Number,
-      min: [0, "El costo de transporte no puede ser negativo"], // Validación para evitar valores negativos
       required: [false, "El costo de transporte del producto es obligatorio"], // Campo obligatorio
     },
 
     convenio: {
       type: Number,
-      min: [0, "El costo de convenio no puede ser negativo"], // Validación para evitar valores negativos
       required: [false, "El costo de convenio del producto es obligatorio"], // Campo obligatorio
     },
 
