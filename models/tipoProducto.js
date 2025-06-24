@@ -143,7 +143,7 @@ TipoProductoSchema.path("rendimientos").validate(function (rendimientos) {
 // Agrega índice compuesto único para nombre por refinería
 TipoProductoSchema.index(
   { idRefineria: 1, nombre: 1 },
-  { unique: true, partialFilterExpression: { eliminado: { $ne: true } } }
+  { unique: true, partialFilterExpression: { eliminado: false } }
 );
 TipoProductoSchema.plugin(auditPlugin);
 

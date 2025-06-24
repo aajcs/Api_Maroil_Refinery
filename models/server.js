@@ -8,6 +8,7 @@ const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
 const despachoBK = require("./bunkering/despachoBK");
 const chequeoCantidad = require("./chequeoCantidad");
+const errorHandler = require("../middlewares/error-handler");
 // const tipoProductoBK = require("./bunkering/tipoProductoBK");
 // const productoBK = require("./bunkering/productoBK");
 
@@ -133,6 +134,7 @@ class Server {
         createParentPath: true,
       })
     );
+    this.app.use(errorHandler);
   }
 
   routes() {

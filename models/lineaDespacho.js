@@ -69,7 +69,7 @@ lineaDespachoSchema.set("toJSON", {
 // Agrega índice compuesto único para nombre por refinería
 lineaDespachoSchema.index(
   { idRefineria: 1, nombre: 1 },
-  { unique: true, partialFilterExpression: { eliminado: { $ne: true } } }
+  { unique: true, partialFilterExpression: { eliminado: false } }
 );
 
 // Exporta el modelo LineaDespacho basado en el esquema definido

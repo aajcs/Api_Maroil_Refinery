@@ -12,14 +12,14 @@ const RefineriaSchema = Schema(
       maxlength: [100, "La ubicación no puede exceder los 100 caracteres"], // Validación de longitud máxima
     },
 
-    //Correo electrónico de la refinería
-    correo: {
-      type: String,
-      required: [false, "El correo electrónico es necesario"], // Campo obligatorio
-      unique: true, // Índice único para evitar duplicados
-      minlength: [5, "El correo debe tener al menos 5 caracteres"], // Validación de longitud mínima
-      maxlength: [100, "El correo no puede exceder los 100 caracteres"], // Validación de longitud máxima
-    },
+    // //Correo electrónico de la refinería
+    // correo: {
+    //   type: String,
+    //   required: [false, "El correo electrónico es necesario"], // Campo obligatorio
+    //   unique: true, // Índice único para evitar duplicados
+    //   minlength: [5, "El correo debe tener al menos 5 caracteres"], // Validación de longitud mínima
+    //   maxlength: [100, "El correo no puede exceder los 100 caracteres"], // Validación de longitud máxima
+    // },
 
     //Telefono de la refinería
     telefono: {
@@ -42,6 +42,7 @@ const RefineriaSchema = Schema(
       required: [true, "El nombre de la refinería es necesario"], // Campo obligatorio
       minlength: [3, "El nombre debe tener al menos 3 caracteres"], // Validación de longitud mínima
       maxlength: [50, "El nombre no puede exceder los 50 caracteres"], // Validación de longitud máxima
+      unique: [true, "El nombre de la refinería debe ser único"], // Índice único para evitar duplicados
     },
 
     // Número de Identificación Tributaria (NIT)

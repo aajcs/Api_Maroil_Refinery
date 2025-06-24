@@ -96,9 +96,10 @@ const TanqueSchema = Schema(
   }
 );
 
+// Agrega índice compuesto único para nombre por refinería
 TanqueSchema.index(
   { idRefineria: 1, nombre: 1 },
-  { unique: true, partialFilterExpression: { eliminado: { $ne: true } } }
+  { unique: true, partialFilterExpression: { eliminado: false } }
 );
 TanqueSchema.plugin(auditPlugin);
 // Configuración para transformar el objeto JSON al devolverlo

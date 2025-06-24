@@ -78,11 +78,11 @@ ProductoSchema.set("toJSON", {
 // Agrega índices compuestos únicos para nombre y posición por refinería
 ProductoSchema.index(
   { idRefineria: 1, nombre: 1 },
-  { unique: true, partialFilterExpression: { eliminado: { $ne: true } } }
+  { unique: true, partialFilterExpression: { eliminado: false } }
 );
 ProductoSchema.index(
   { idRefineria: 1, posicion: 1 },
-  { unique: true, partialFilterExpression: { eliminado: { $ne: true } } }
+  { unique: true, partialFilterExpression: { eliminado: false } }
 );
 ProductoSchema.plugin(auditPlugin);
 

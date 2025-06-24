@@ -34,8 +34,7 @@ const refineriasGets = async (req = request, res = response) => {
       refinerias,
     });
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -75,7 +74,7 @@ const refineriasGet = async (req = request, res = response) => {
 };
 
 // Controlador para crear una nueva refinería
-const refineriasPost = async (req = request, res = response) => {
+const refineriasPost = async (req = request, res = response, next) => {
   // Extrae los datos del cuerpo de la solicitud
   const {
     ubicacion,
@@ -110,8 +109,7 @@ const refineriasPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaRefineria); // Responde con un código 201 (creado) y los datos de la refinería
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 

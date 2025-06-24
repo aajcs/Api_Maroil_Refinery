@@ -226,7 +226,7 @@ const ContactoSchema = new Schema(
 // Agrega índice compuesto único para nombre por refinería
 ContactoSchema.index(
   { idRefineria: 1, identificacionFiscal: 1 },
-  { unique: true, partialFilterExpression: { eliminado: { $ne: true } } }
+  { unique: true, partialFilterExpression: { eliminado: false } }
 );
 ContactoSchema.plugin(auditPlugin);
 
