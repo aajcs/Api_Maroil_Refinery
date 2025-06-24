@@ -122,7 +122,7 @@ const abonoPost = async (req = request, res = response) => {
     await contrato.save();
 
     // // Agregar el abono al array de la cuenta (array de IDs)
-    // cuenta.abonos.push(nuevoAbono._id);
+    cuenta.abonos.push(nuevoAbono._id);
 
     // // Recalcular totalAbonado y balancePendiente usando los abonos activos
     // const abonosActivos = await Abono.find({
@@ -207,41 +207,39 @@ const abonoPut = async (req = request, res = response) => {
       return res.status(404).json({ msg: "Abono no encontrado" });
     }
 
-    // Actualizar el abono en el contrato (solo recalcula montos)
-    const contrato = await Contrato.findById(abonoActualizado.idContrato);
-    if (contrato) {
-      const abonosContrato = await Abono.find({
-        _id: { $in: contrato.abonos },
-        eliminado: false,
-      });
-      contrato.montoPagado = abonosContrato.reduce(
-        (sum, a) => sum + (a.monto || 0),
-        0
-      );
-      contrato.montoPendiente =
-        (contrato.montoTotal || 0) - contrato.montoPagado;
-      await contrato.save();
-    }
-
-    // Actualizar el abono en la cuenta y recalcular totales
     const cuenta = await Cuenta.findOne({ idContrato: abonoAntes.idContrato });
     if (cuenta) {
+      // Asegúrate de que cuenta.abonos esté actualizado
+      if (!cuenta.abonos.includes(abonoAntes._id)) {
+        cuenta.abonos.push(abonoAntes._id);
+      }
+
       const abonosCuenta = await Abono.find({
         _id: { $in: cuenta.abonos },
         eliminado: false,
       });
+
+      // Convierte monto a número para evitar problemas de tipo
       const totalAbonado = abonosCuenta.reduce(
-        (sum, a) => sum + (a.monto || 0),
+        (sum, a) => sum + parseFloat(a.monto || 0),
         0
       );
+      console.log("Total abonado recalculado:", totalAbonado);
+
       cuenta.totalAbonado = totalAbonado;
       cuenta.balancePendiente = Math.max(
-        (cuenta.montoTotalContrato || 0) - totalAbonado,
+        parseFloat(cuenta.montoTotalContrato || 0) - totalAbonado,
         0
       );
-      await cuenta.save();
-    }
+      console.log("cuenta antes de guardar: ", cuenta);
 
+      try {
+        const que = await cuenta.save();
+        console.log("Cuenta actualizada:", que);
+      } catch (err) {
+        console.error("Error guardando cuenta:", err);
+      }
+    }
     res.json(abonoActualizado);
   } catch (err) {
     console.error("Error en abonoPut:", err);

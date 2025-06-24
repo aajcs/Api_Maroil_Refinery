@@ -1,7 +1,13 @@
 const { Schema, model } = require("mongoose");
 const auditPlugin = require("./plugins/audit");
+const Counter = require("./counter");
 const CuentaSchema = new Schema(
   {
+    // Número de cuenta
+    numeroCuenta: {
+      type: Number,
+    },
+
     //Referencia al modelo Refineria
     idRefineria: {
       type: Schema.Types.ObjectId,
@@ -28,7 +34,7 @@ const CuentaSchema = new Schema(
       ref: "Contacto",
       required: [true, "El ID de contacto es obligatorio"],
     },
-    // Abonos obtenidos del contrato
+    // Cuentas obtenidos del contrato
     abonos: [
       {
         type: Schema.Types.ObjectId,
@@ -62,18 +68,18 @@ const CuentaSchema = new Schema(
 );
 CuentaSchema.plugin(auditPlugin);
 // Hook "pre("save")" para recalcular totales antes de guardar
-CuentaSchema.pre("save", function (next) {
-  if (this.abonos && this.abonos.length > 0) {
-    this.totalAbonado = this.abonos.reduce(
-      (acum, abono) => acum + (abono.monto || 0),
-      0
-    );
-  } else {
-    this.totalAbonado = 0;
-  }
-  this.balancePendiente = this.montoTotalContrato - this.totalAbonado;
-  next();
-});
+// CuentaSchema.pre("save", function (next) {
+//   if (this.abonos && this.abonos.length > 0) {
+//     this.totalAbonado = this.abonos.reduce(
+//       (acum, abono) => acum + (abono.monto || 0),
+//       0
+//     );
+//   } else {
+//     this.totalAbonado = 0;
+//   }
+//   this.balancePendiente = this.montoTotalContrato - this.totalAbonado;
+//   next();
+// });
 
 /**
  * Método estático para sincronizar los datos de una cuenta a partir de un contrato.
@@ -123,5 +129,34 @@ CuentaSchema.set("toJSON", {
     delete returnedObject.__v;
   },
 });
+// Middleware para incrementar el contador antes de guardar
+CuentaSchema.pre("save", async function (next) {
+  if (this.isNew && this.idRefineria) {
+    try {
+      // Generar la clave del contador específico para cada refinería
+      const counterKey = `cuenta_${this.idRefineria.toString()}`;
 
+      // Buscar el contador
+      let refineriaCounter = await Counter.findOne({ _id: counterKey });
+
+      // Si el contador no existe, crearlo con el valor inicial de 1000
+      if (!refineriaCounter) {
+        refineriaCounter = new Counter({ _id: counterKey, seq: 999 });
+        await refineriaCounter.save();
+      }
+
+      // Incrementar el contador en 1
+      refineriaCounter.seq += 1;
+      await refineriaCounter.save();
+
+      // Asignar el valor actualizado al campo "numeroCuenta"
+      this.numeroCuenta = refineriaCounter.seq;
+      next();
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    next();
+  }
+});
 module.exports = model("Cuenta", CuentaSchema);

@@ -8,10 +8,12 @@ const populateOptions = [
     path: "idContrato",
     select: "numeroContrato tipoContrato montoTotal descripcion estadoContrato",
   },
+  { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
   {
     path: "idContacto",
     select: "nombre telefono email direccion",
   },
+  { path: "abonos", select: "monto fecha referencia numeroAbono" }, // Relación con el modelo Abono
 ];
 
 // Controlador para obtener todas las cuentas
