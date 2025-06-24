@@ -35,6 +35,13 @@ const AbonoSchema = Schema(
       enum: ["Efectivo", "Cheque", "Deposito"],
       required: true,
     },
+
+    tipoAbono: {
+      type: String,
+      enum: ["Cuentas por Pagar", "Cuentas por Cobrar"],
+      required: true,
+    },
+
     referencia: {
       type: String,
       required: true,

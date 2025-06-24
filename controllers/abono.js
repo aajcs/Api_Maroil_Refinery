@@ -80,8 +80,15 @@ const abonoGet = async (req = request, res = response) => {
 
 // Crear un nuevo abono, agregarlo al contrato y actualizar la cuenta asociada
 const abonoPost = async (req = request, res = response) => {
-  const { idRefineria, idContrato, monto, fecha, tipoOperacion, referencia } =
-    req.body;
+  const {
+    idRefineria,
+    idContrato,
+    monto,
+    fecha,
+    tipoOperacion,
+    referencia,
+    tipoAbono,
+  } = req.body;
 
   try {
     // Validar que el contrato exista y no esté eliminado
@@ -109,6 +116,7 @@ const abonoPost = async (req = request, res = response) => {
       fecha,
       tipoOperacion,
       referencia,
+      tipoAbono,
       createdBy: req.usuario._id,
     });
 
