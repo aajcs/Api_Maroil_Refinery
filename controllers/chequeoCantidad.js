@@ -231,7 +231,7 @@ const chequeoCantidadDelete = async (req = request, res = response) => {
 
   try {
     // Auditoría: captura estado antes de eliminar
-    const antes = await ChequeoCalidad.findById(id);
+    const antes = await ChequeoCantidad.findById(id);
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const chequeo = await ChequeoCantidad.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar el chequeo no eliminado
