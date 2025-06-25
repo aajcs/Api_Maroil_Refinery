@@ -16,15 +16,33 @@ class Sockets {
   socketEvents() {
     // On connection
     this.io.on("connection", async (socket) => {
+      console.log(
+        "Intentando conectar socket:",
+        socket.handshake.query["x-token"]
+      );
       const [valido, id] = comprobarJWT(socket.handshake.query["x-token"]);
-
+      console.log("Resultado de validación JWT:", valido, id);
       if (!valido) {
         console.log("socket no identificado");
         return socket.disconnect();
       }
 
-      await usuarioConectado(id);
-      console.log("Cliente conectado", id);
+      // Mark user as connected
+      const usuario = await usuarioConectado(id);
+      console.log("Cliente conectado:", usuario.nombre);
+
+      // Join the user to their specific room
+      socket.join(`user-${id}`);
+      console.log(`Usuario unido a la sala: user-${id}`);
+
+      // Emit a welcome message to the user
+      socket.emit("welcome", `Bienvenido, ${usuario.nombre}`);
+
+      // Listen for custom events (e.g., join-user-room)
+      socket.on("join-user-room", (userId) => {
+        socket.join(`user-${userId}`);
+        console.log(`Usuario unido a la sala: user-${userId}`);
+      });
 
       // Unir al usuario a una sala de socket.io
       // socket.join(id);
