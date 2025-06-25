@@ -76,7 +76,7 @@ const contratoGet = async (req = request, res = response, next) => {
 // Crear un nuevo contrato
 // Crear un nuevo contrato
 // Crear un nuevo contrato
-const contratoPost = async (req, res = response) => {
+const contratoPost = async (req, res = response, next) => {
   const {
     idRefineria,
     idContacto,
@@ -215,7 +215,7 @@ const contratoPost = async (req, res = response) => {
   }
 };
 
-const contratoPut = async (req, res = response) => {
+const contratoPut = async (req, res = response, next) => {
   const { id } = req.params;
   const { items, abono, ...resto } = req.body;
 
@@ -394,7 +394,7 @@ const contratoPut = async (req, res = response) => {
 };
 
 // Eliminar (marcar como eliminado) un contrato
-const contratoDelete = async (req, res = response) => {
+const contratoDelete = async (req, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -421,7 +421,7 @@ const contratoDelete = async (req, res = response) => {
 };
 
 // Manejar solicitudes PATCH
-const contratoPatch = (req, res = response) => {
+const contratoPatch = (req, res = response, next) => {
   res.json({
     msg: "patch API - contratosPatch",
   });
