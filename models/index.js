@@ -58,6 +58,7 @@ const CuentaBK = require("./bunkering/cuentaBK");
 const ContratoBK = require("./bunkering/contratoBK");
 const ChequeoCalidadBK = require("./bunkering/chequeoCalidadBK");
 const ChequeoCantidadBK = require("./bunkering/chequeoCantidadBK");
+const notification = require("./notification");
 
 module.exports = {
   Ventana,
@@ -118,4 +119,5 @@ module.exports = {
   ChequeoCantidadBK,
   ChequeoCalidadBK,
   Abono,
+  notification,
 };

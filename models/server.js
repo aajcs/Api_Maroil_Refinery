@@ -6,8 +6,6 @@ const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
-const despachoBK = require("./bunkering/despachoBK");
-const chequeoCantidad = require("./chequeoCantidad");
 const errorHandler = require("../middlewares/error-handler");
 // const tipoProductoBK = require("./bunkering/tipoProductoBK");
 // const productoBK = require("./bunkering/productoBK");
@@ -82,6 +80,7 @@ class Server {
       contratoBK: "/api/bunkering/contratoBK",
       chequeoCantidadBK: "/api/bunkering/chequeoCantidadBK",
       chequeoCalidadBK: "/api/bunkering/chequeoCalidadBK",
+      notification: "/api/notification",
     };
 
     // Conectar a base de datos
@@ -256,6 +255,7 @@ class Server {
       this.paths.chequeoCalidadBK,
       require("../routes/bunkering/chequeoCalidadBK")
     );
+    this.app.use(this.paths.notification, require("../routes/notification"));
 
     // Rutas específicas del módulo Bunker
     // const bunkerRoutes = "../routes/bunker";
