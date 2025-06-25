@@ -86,7 +86,7 @@ const recepcionGet = async (req = request, res = response, next) => {
 };
 
 // Controlador para crear una nueva recepción
-const recepcionPost = async (req, res = response) => {
+const recepcionPost = async (req, res = response, next) => {
   const {
     idContrato,
     idContratoItems,
@@ -152,7 +152,7 @@ const recepcionPost = async (req, res = response) => {
 };
 
 // Controlador para actualizar una recepción existente
-const recepcionPut = async (req, res = response) => {
+const recepcionPut = async (req, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la recepción desde los parámetros de la URL
   const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
 
@@ -188,7 +188,7 @@ const recepcionPut = async (req, res = response) => {
 };
 
 // Controlador para eliminar (marcar como eliminado) una recepción
-const recepcionDelete = async (req, res = response) => {
+const recepcionDelete = async (req, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la recepción desde los parámetros de la URL
   console.log("aqui entro", id);
   try {
@@ -217,7 +217,7 @@ const recepcionDelete = async (req, res = response) => {
 };
 
 // Controlador para manejar solicitudes PATCH (ejemplo básico)
-const recepcionPatch = (req, res = response) => {
+const recepcionPatch = (req, res = response, next) => {
   res.json({
     msg: "patch API - usuariosPatch", // Mensaje de prueba
   });
