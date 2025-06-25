@@ -2,6 +2,8 @@ const { response, request } = require("express");
 const Contrato = require("../models/contrato");
 const contratoItems = require("../models/contratoItems");
 const Cuenta = require("../models/cuenta"); // Importar el modelo Cuenta
+const usuario = require("../models/usuario");
+const notification = require("../models/notification");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
@@ -205,6 +207,45 @@ const contratoPost = async (req, res = response, next) => {
 
     // Poblar referencias y responder con el contrato creado
     await nuevoContrato.populate(populateOptions);
+
+    // if (nuevoContrato) {
+    //   const notificacionNewContrato = await notification.create({
+    //     title: "Nuevo contrato creado",
+    //     message: `Se ha creado un nuevo contrato (${nuevoContrato.numeroContrato}) para la refinería ${nuevoContrato.idRefineria.nombre} y el contacto ${nuevoContrato.idContacto.nombre}.`,
+    //     type: "in-app",
+    //     createdBy: req.usuario._id,
+    //     read: false,
+    //     userId: req.usuario._id,
+    //   });
+    //   console.log("noti", notificacionNewContrato);
+    // }
+    if (nuevoContrato) {
+      // Fetch users based on access type and refinery association
+      const usuariosFinanzas = await usuario.find({
+        departamento: { $in: ["Finanzas"] },
+
+        eliminado: false,
+        $or: [
+          { acceso: "completo" }, // Include users with complete access
+          { acceso: "limitado", idRefineria: nuevoContrato.idRefineria }, // Include users with limited access and matching refinery
+        ],
+      });
+      console.log("usuariosFinanzas", usuariosFinanzas);
+      // Create notifications for each user
+      const notificaciones = usuariosFinanzas.map((usuario) => ({
+        title: "Nuevo contrato creado",
+        message: `Se ha creado un nuevo contrato (${nuevoContrato.numeroContrato}) para la refinería ${nuevoContrato.idRefineria.nombre} y el contacto ${nuevoContrato.idContacto.nombre}.`,
+        type: "in-app",
+        createdBy: req.usuario._id,
+        read: false,
+        userId: usuario._id,
+      }));
+
+      await notification.insertMany(notificaciones); // Bulk insert notifications
+
+      console.log("Notificaciones creadas:", notificaciones);
+    }
+
     res.status(201).json(nuevoContrato);
   } catch (err) {
     // Si ocurre un error, eliminar el contrato creado

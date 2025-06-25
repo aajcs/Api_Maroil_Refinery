@@ -5,7 +5,7 @@ const notificationSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Usuario",
       required: true,
     },
     title: {
@@ -28,6 +28,11 @@ const notificationSchema = new mongoose.Schema(
       default: false,
     },
     link: String, // URL para acciones
+    // Eliminación lógica
+    eliminado: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     // Agrega automáticamente las propiedades createdAt y updatedAt

@@ -14,7 +14,14 @@ const { generarJWT } = require("../helpers"); // Función para generar tokens JW
 
 // Controlador para obtener todos los usuarios no eliminados
 const usuariosGets = async (req = request, res = response, next) => {
-  const query = { eliminado: false }; // Filtro para obtener solo usuarios no eliminados
+  const query = {
+    // departamento: { $in: ["Finanzas"] },
+    eliminado: false,
+    // $or: [
+    //   { acceso: "completo" },
+    //   { acceso: "limitado", idRefineria: "685abcb476ada69b5bc1d294" },
+    // ],
+  }; // Filtro para obtener solo usuarios no eliminados y cuyo departamento esté en el array
 
   // Ejecuta ambas consultas en paralelo para optimizar el tiempo de respuesta
   const [total, usuarios] = await Promise.all([

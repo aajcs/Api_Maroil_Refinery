@@ -8,6 +8,7 @@ const populateOptions = [
     path: "historial",
     populate: { path: "modificadoPor", select: "nombre correo" },
   },
+  { path: "userId", select: "nombre correo" }, // Población del usuario destinatario
 ];
 
 // Controlador para obtener todas las notificaciones
@@ -82,6 +83,8 @@ const notificationsPost = async (req = request, res = response, next) => {
     });
 
     await newNotification.save();
+    await newNotification.populate(populateOptions); // Poblar referencias después de guardar
+
     req.io.emit("new-notification", newNotification); // Emite un evento de WebSocket para notificar la modificación
     res.status(201).json(newNotification);
   } catch (err) {
