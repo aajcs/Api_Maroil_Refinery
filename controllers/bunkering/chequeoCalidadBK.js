@@ -65,13 +65,12 @@ const actualizarModeloRelacionadoBK = async (idReferencia, tipo, datos) => {
 
     return resultado;
   } catch (err) {
-    console.error(`Error al actualizar el modelo ${tipo}:`, err);
-    throw new Error(`Error al actualizar el modelo ${tipo}: ${err.message}`);
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener todos los chequeos de calidad
-const chequeoCalidadBKGets = async (req = request, res = response) => {
+const chequeoCalidadBKGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -89,15 +88,12 @@ const chequeoCalidadBKGets = async (req = request, res = response) => {
 
     res.json({ total, chequeoCalidads });
   } catch (err) {
-    console.error("Error en chequeoCalidadBKGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los chequeos de calidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un chequeo de calidad específico por ID
-const chequeoCalidadBKGet = async (req = request, res = response) => {
+const chequeoCalidadBKGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -119,15 +115,12 @@ const chequeoCalidadBKGet = async (req = request, res = response) => {
 
     res.json(chequeoCalidad);
   } catch (err) {
-    console.error("Error en chequeoCalidadBKGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el chequeo de calidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo chequeo de calidad
-const chequeoCalidadBKPost = async (req = request, res = response) => {
+const chequeoCalidadBKPost = async (req = request, res = response, next) => {
   const {
     idBunkering,
     aplicar,
@@ -170,15 +163,12 @@ const chequeoCalidadBKPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoChequeo);
   } catch (err) {
-    console.error("Error en chequeoCalidadBKPost:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al crear el chequeo de calidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar un chequeo de calidad existente
-const chequeoCalidadBKPut = async (req = request, res = response) => {
+const chequeoCalidadBKPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, aplicar, ...resto } = req.body;
 
@@ -224,15 +214,12 @@ const chequeoCalidadBKPut = async (req = request, res = response) => {
 
     res.json(chequeoActualizado);
   } catch (err) {
-    console.error("Error en chequeoCalidadBKPut:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar el chequeo de calidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const chequeoCalidadBKPatch = async (req = request, res = response) => {
+const chequeoCalidadBKPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, aplicar, ...resto } = req.body;
 
@@ -256,16 +243,12 @@ const chequeoCalidadBKPatch = async (req = request, res = response) => {
 
     res.json(chequeoActualizado);
   } catch (err) {
-    console.error("Error en chequeoCalidadBKPatch:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente el chequeo de calidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un chequeo de calidad
-const chequeoCalidadBKDelete = async (req = request, res = response) => {
+const chequeoCalidadBKDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -302,10 +285,7 @@ const chequeoCalidadBKDelete = async (req = request, res = response) => {
 
     res.json(chequeo);
   } catch (err) {
-    console.error("Error en chequeoCalidadBKDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el chequeo de calidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

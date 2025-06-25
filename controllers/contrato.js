@@ -28,7 +28,7 @@ const populateOptions = [
 ];
 
 // Obtener todos los contratos
-const contratoGets = async (req = request, res = response) => {
+const contratoGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -44,13 +44,12 @@ const contratoGets = async (req = request, res = response) => {
     });
     res.json({ total, contratos });
   } catch (err) {
-    console.error("Error en contratoGets:", err);
-    res.status(500).json({ error: "Error interno del servidor." });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener un contrato específico por ID
-const contratoGet = async (req = request, res = response) => {
+const contratoGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -70,8 +69,7 @@ const contratoGet = async (req = request, res = response) => {
 
     res.json(contrato);
   } catch (err) {
-    console.error("Error en contratoGet:", err);
-    res.status(500).json({ error: "Error interno del servidor." });
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -209,13 +207,11 @@ const contratoPost = async (req, res = response) => {
     await nuevoContrato.populate(populateOptions);
     res.status(201).json(nuevoContrato);
   } catch (err) {
-    console.error("Error en contratoPost:", err);
-
     // Si ocurre un error, eliminar el contrato creado
     if (nuevoContrato && nuevoContrato.id) {
       await Contrato.findByIdAndDelete(nuevoContrato.id);
     }
-    res.status(400).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -393,8 +389,7 @@ const contratoPut = async (req, res = response) => {
     await contratoActualizado.populate(populateOptions);
     res.json(contratoActualizado);
   } catch (err) {
-    console.error("Error en contratoPut:", err);
-    res.status(400).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -421,8 +416,7 @@ const contratoDelete = async (req, res = response) => {
 
     res.json(contrato);
   } catch (err) {
-    console.error("Error en contratoDelete:", err);
-    res.status(500).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 

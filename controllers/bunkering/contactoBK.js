@@ -12,7 +12,7 @@ const populateOptions = [
 ];
 
 // Obtener todos los contactos
-const contactoGets = async (req = request, res = response) => {
+const contactoGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -30,15 +30,12 @@ const contactoGets = async (req = request, res = response) => {
 
     res.json({ total, contactos });
   } catch (err) {
-    console.error("Error en contactoGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los contactos.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener un contacto específico por ID
-const contactoGet = async (req = request, res = response) => {
+const contactoGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -58,15 +55,12 @@ const contactoGet = async (req = request, res = response) => {
 
     res.json(contacto);
   } catch (err) {
-    console.error("Error en contactoGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el contacto.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Crear un nuevo contacto
-const contactoPost = async (req = request, res = response) => {
+const contactoPost = async (req = request, res = response, next) => {
   const {
     idBunkering,
     nombre,
@@ -110,15 +104,12 @@ const contactoPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoContacto);
   } catch (err) {
-    console.error("Error en contactoPost:", err);
-    res.status(400).json({
-      error: "Error al crear el contacto. Verifica los datos proporcionados.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Actualizar un contacto existente con historial de modificaciones
-const contactoPut = async (req = request, res = response) => {
+const contactoPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -150,16 +141,12 @@ const contactoPut = async (req = request, res = response) => {
 
     res.json(contactoActualizado);
   } catch (err) {
-    console.error("Error en contactoPut:", err);
-    res.status(400).json({
-      error:
-        "Error al actualizar el contacto. Verifica los datos proporcionados.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Eliminar (marcar como eliminado) un contacto con historial de auditoría
-const contactoDelete = async (req = request, res = response) => {
+const contactoDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -185,10 +172,7 @@ const contactoDelete = async (req = request, res = response) => {
 
     res.json(contactoEliminado);
   } catch (err) {
-    console.error("Error en contactoDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el contacto.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

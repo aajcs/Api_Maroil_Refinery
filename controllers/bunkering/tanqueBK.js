@@ -20,7 +20,7 @@ const populateOptions = [
 ];
 
 // Obtener todos los tanques con historial ordenado
-const tanqueGets = async (req = request, res = response) => {
+const tanqueGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -38,15 +38,12 @@ const tanqueGets = async (req = request, res = response) => {
 
     res.json({ total, tanques });
   } catch (err) {
-    console.error("Error en tanqueGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los tanques.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener un tanque específico por ID
-const tanqueGet = async (req = request, res = response) => {
+const tanqueGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -66,15 +63,12 @@ const tanqueGet = async (req = request, res = response) => {
 
     res.json(tanque);
   } catch (err) {
-    console.error("Error en tanqueGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el tanque.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Crear un nuevo tanque
-const tanquePost = async (req = request, res = response) => {
+const tanquePost = async (req = request, res = response, next) => {
   const {
     nombre,
     capacidad,
@@ -140,15 +134,12 @@ const tanquePost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoTanque);
   } catch (err) {
-    console.error("Error en tanquePost:", err);
-    res.status(400).json({
-      error: "Error al crear el tanque. Verifica los datos proporcionados.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Actualizar un tanque existente con historial de modificaciones
-const tanquePut = async (req = request, res = response) => {
+const tanquePut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, idEmbarcacion, nombre, ...resto } = req.body;
 
@@ -244,16 +235,12 @@ const tanquePut = async (req = request, res = response) => {
 
     res.json(tanqueActualizado);
   } catch (err) {
-    console.error("Error en tanquePut:", err);
-    res.status(400).json({
-      error:
-        "Error al actualizar el tanque. Verifica los datos proporcionados.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Eliminar (marcar como eliminado) un tanque con historial de auditoría
-const tanqueDelete = async (req = request, res = response) => {
+const tanqueDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -279,15 +266,12 @@ const tanqueDelete = async (req = request, res = response) => {
 
     res.json(tanqueEliminado);
   } catch (err) {
-    console.error("Error en tanqueDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el tanque.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const tanquePatch = async (req = request, res = response) => {
+const tanquePatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -304,10 +288,7 @@ const tanquePatch = async (req = request, res = response) => {
 
     res.json(tanqueActualizado);
   } catch (err) {
-    console.error("Error en tanquePatch:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar parcialmente el tanque.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

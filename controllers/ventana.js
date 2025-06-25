@@ -32,7 +32,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todas las ventanas
-const ventanaGets = async (req = request, res = response) => {
+const ventanaGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -50,15 +50,12 @@ const ventanaGets = async (req = request, res = response) => {
 
     res.json({ total, ventanas });
   } catch (err) {
-    console.error("Error en ventanaGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener las ventanas.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener una ventana específica por ID
-const ventanaGet = async (req = request, res = response) => {
+const ventanaGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -78,15 +75,12 @@ const ventanaGet = async (req = request, res = response) => {
 
     res.json(ventana);
   } catch (err) {
-    console.error("Error en ventanaGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la ventana.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear una nueva ventana
-const ventanaPost = async (req = request, res = response) => {
+const ventanaPost = async (req = request, res = response, next) => {
   const {
     idRefineria,
     compra,
@@ -118,15 +112,12 @@ const ventanaPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaVentana);
   } catch (err) {
-    console.error("Error en ventanaPost:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al crear la ventana.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar una ventana existente
-const ventanaPut = async (req = request, res = response) => {
+const ventanaPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -158,15 +149,12 @@ const ventanaPut = async (req = request, res = response) => {
 
     res.json(ventanaActualizada);
   } catch (err) {
-    console.error("Error en ventanaPut:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar la ventana.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminada) una ventana
-const ventanaDelete = async (req = request, res = response) => {
+const ventanaDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -192,15 +180,12 @@ const ventanaDelete = async (req = request, res = response) => {
 
     res.json(ventanaEliminada);
   } catch (err) {
-    console.error("Error en ventanaDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la ventana.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const ventanaPatch = async (req = request, res = response) => {
+const ventanaPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -217,11 +202,7 @@ const ventanaPatch = async (req = request, res = response) => {
 
     res.json(ventanaActualizada);
   } catch (err) {
-    console.error("Error en ventanaPatch:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente la ventana.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

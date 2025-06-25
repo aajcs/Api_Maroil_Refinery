@@ -14,7 +14,7 @@ const populateOptions = [
 ];
 
 // Obtener todas las líneas de despacho
-const lineaDespachoBKGets = async (req = request, res = response) => {
+const lineaDespachoBKGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -29,15 +29,12 @@ const lineaDespachoBKGets = async (req = request, res = response) => {
     });
     res.json({ total, lineaDespachos });
   } catch (err) {
-    console.error("Error en lineaDespachoBKGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener las líneas de despacho.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener una línea de despacho por ID
-const lineaDespachoBKGet = async (req = request, res = response) => {
+const lineaDespachoBKGet = async (req = request, res = response, next) => {
   const { id } = req.params;
   try {
     const lineaDespacho = await LineaDespachoBK.findOne({
@@ -58,15 +55,12 @@ const lineaDespachoBKGet = async (req = request, res = response) => {
 
     res.json(lineaDespacho);
   } catch (err) {
-    console.error("Error en lineaDespachoBKGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la línea de despacho.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Crear una nueva línea de despacho
-const lineaDespachoBKPost = async (req = request, res = response) => {
+const lineaDespachoBKPost = async (req = request, res = response, next) => {
   try {
     const data = req.body;
     data.createdBy = req.usuario?._id; // Si usas auditoría de usuario
@@ -77,17 +71,12 @@ const lineaDespachoBKPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaLinea);
   } catch (err) {
-    console.error("Error en lineaDespachoBKPost:", err);
-    let errorMsg = "Error interno del servidor al crear la línea de despacho.";
-    if (err.code === 11000) {
-      errorMsg = "Ya existe una línea de despacho con ese nombre en el muelle.";
-    }
-    res.status(500).json({ error: errorMsg });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Actualizar una línea de despacho existente
-const lineaDespachoBKPut = async (req = request, res = response) => {
+const lineaDespachoBKPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -118,18 +107,12 @@ const lineaDespachoBKPut = async (req = request, res = response) => {
 
     res.json(lineaActualizada);
   } catch (err) {
-    console.error("Error en lineaDespachoBKPut:", err);
-    let errorMsg =
-      "Error interno del servidor al actualizar la línea de despacho.";
-    if (err.code === 11000) {
-      errorMsg = "Ya existe una línea de despacho con ese nombre en el muelle.";
-    }
-    res.status(500).json({ error: errorMsg });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Eliminar (marcar como eliminada) una línea de despacho
-const lineaDespachoBKDelete = async (req = request, res = response) => {
+const lineaDespachoBKDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -157,10 +140,7 @@ const lineaDespachoBKDelete = async (req = request, res = response) => {
       linea: lineaEliminada,
     });
   } catch (err) {
-    console.error("Error en lineaDespachoBKDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la línea de despacho.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

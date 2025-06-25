@@ -11,7 +11,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todas las facturas
-const facturaGets = async (req = request, res = response) => {
+const facturaGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo las facturas no eliminadas
 
   try {
@@ -22,15 +22,12 @@ const facturaGets = async (req = request, res = response) => {
 
     res.json({ total, facturas }); // Responde con el total y la lista de facturas
   } catch (err) {
-    console.error("Error en facturaGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener las facturas.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener una factura específica por ID
-const facturaGet = async (req = request, res = response) => {
+const facturaGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -44,22 +41,12 @@ const facturaGet = async (req = request, res = response) => {
 
     res.json(factura); // Responde con los datos de la factura
   } catch (err) {
-    console.error("Error en facturaGet:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de factura no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la factura.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear una nueva factura
-const facturaPost = async (req = request, res = response) => {
+const facturaPost = async (req = request, res = response, next) => {
   const {
     idRefineria,
     concepto,
@@ -92,22 +79,12 @@ const facturaPost = async (req = request, res = response) => {
 
     res.status(201).json(facturaPopulada); // Responde con un código 201 (creado) y los datos de la factura populada
   } catch (err) {
-    console.error("Error en facturaPost:", err);
-
-    if (err.name === "ValidationError") {
-      return res.status(400).json({
-        error: "Datos de factura no válidos.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al crear la factura.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar una factura existente
-const facturaPut = async (req = request, res = response) => {
+const facturaPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body; // Excluye el campo _id del cuerpo de la solicitud
 
@@ -126,22 +103,12 @@ const facturaPut = async (req = request, res = response) => {
 
     res.json(facturaActualizada); // Responde con los datos de la factura actualizada
   } catch (err) {
-    console.error("Error en facturaPut:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de factura no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar la factura.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const facturaPatch = async (req = request, res = response) => {
+const facturaPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body; // Excluye el campo _id del cuerpo de la solicitud
 
@@ -175,23 +142,12 @@ const facturaPatch = async (req = request, res = response) => {
 
     res.json(facturaActualizada); // Responde con los datos de la factura actualizada
   } catch (err) {
-    console.error("Error en facturaPatch:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de factura no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente la factura.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminada) una factura
-const facturaDelete = async (req = request, res = response) => {
+const facturaDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -209,17 +165,7 @@ const facturaDelete = async (req = request, res = response) => {
 
     res.json(factura); // Responde con los datos de la factura eliminada
   } catch (err) {
-    console.error("Error en facturaDelete:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de factura no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la factura.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

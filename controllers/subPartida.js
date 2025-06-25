@@ -15,7 +15,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todas las subpartidas
-const subPartidaGets = async (req = request, res = response) => {
+const subPartidaGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -26,15 +26,12 @@ const subPartidaGets = async (req = request, res = response) => {
 
     res.json({ total, subPartidas });
   } catch (err) {
-    console.error("Error en subPartidaGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener las subpartidas.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener una subpartida específica por ID
-const subPartidaGet = async (req = request, res = response) => {
+const subPartidaGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -49,15 +46,12 @@ const subPartidaGet = async (req = request, res = response) => {
 
     res.json(subPartida);
   } catch (err) {
-    console.error("Error en subPartidaGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la subpartida.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear una nueva subpartida
-const subPartidaPost = async (req = request, res = response) => {
+const subPartidaPost = async (req = request, res = response, next) => {
   const { idRefineria, idPartida, descripcion, codigo } = req.body;
 
   try {
@@ -77,15 +71,12 @@ const subPartidaPost = async (req = request, res = response) => {
 
     res.status(201).json(subPartidaPopulada);
   } catch (err) {
-    console.error("Error en subPartidaPost:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al crear la subpartida.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar una subpartida existente
-const subPartidaPut = async (req = request, res = response) => {
+const subPartidaPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -117,15 +108,12 @@ const subPartidaPut = async (req = request, res = response) => {
 
     res.json(subPartidaActualizada);
   } catch (err) {
-    console.error("Error en subPartidaPut:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar la subpartida.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminada) una subpartida
-const subPartidaDelete = async (req = request, res = response) => {
+const subPartidaDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -151,15 +139,12 @@ const subPartidaDelete = async (req = request, res = response) => {
 
     res.json(subPartidaEliminada);
   } catch (err) {
-    console.error("Error en subPartidaDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la subpartida.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const subPartidaPatch = async (req = request, res = response) => {
+const subPartidaPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -176,11 +161,7 @@ const subPartidaPatch = async (req = request, res = response) => {
 
     res.json(subPartidaActualizada);
   } catch (err) {
-    console.error("Error en subPartidaPatch:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente la subpartida.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

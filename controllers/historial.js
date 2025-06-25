@@ -9,7 +9,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todos los historiales con población de referencias
-const historialGets = async (req = request, res = response) => {
+const historialGets = async (req = request, res = response, next) => {
   const query = { estado: "activo", eliminado: false }; // Filtro para obtener solo historiales activos y no eliminados
 
   try {
@@ -27,16 +27,12 @@ const historialGets = async (req = request, res = response) => {
 
     res.json({ total, historials }); // Responde con el total y la lista de historiales
   } catch (err) {
-    console.error("Error en historialGets:", err); // Muestra el error completo en la consola
-    res.status(500).json({
-      error:
-        err.message || "Error interno del servidor al obtener los historiales.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un historial específico por ID
-const historialGet = async (req = request, res = response) => {
+const historialGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -52,15 +48,12 @@ const historialGet = async (req = request, res = response) => {
 
     res.json(historial);
   } catch (err) {
-    console.error("Error en historialGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el historial.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo historial
-const historialPost = async (req = request, res = response) => {
+const historialPost = async (req = request, res = response, next) => {
   const {
     idRefineria,
     criticidad,
@@ -87,20 +80,12 @@ const historialPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoHistorial);
   } catch (err) {
-    console.error("Error en historialPost:", err.message);
-    res.status(500).json({
-      error: err.message || "Error interno del servidor al crear el historial.",
-    });
-
-    // console.error("Error en historialPost:", err);
-    // res.status(500).json({
-    //   error: "Error interno del servidor al crear el historial.",
-    // });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar un historial existente
-const historialPut = async (req = request, res = response) => {
+const historialPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -117,15 +102,12 @@ const historialPut = async (req = request, res = response) => {
 
     res.json(historialActualizado);
   } catch (err) {
-    console.error("Error en historialPut:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar el historial.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const historialPatch = async (req = request, res = response) => {
+const historialPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -142,16 +124,12 @@ const historialPatch = async (req = request, res = response) => {
 
     res.json(historialActualizado);
   } catch (err) {
-    console.error("Error en historialPatch:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente el historial.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un historial
-const historialDelete = async (req = request, res = response) => {
+const historialDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -167,10 +145,7 @@ const historialDelete = async (req = request, res = response) => {
 
     res.json(historial);
   } catch (err) {
-    console.error("Error en historialDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el historial.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

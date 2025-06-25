@@ -9,7 +9,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todos los costos con población de referencias
-const costoGets = async (req = request, res = response) => {
+const costoGets = async (req = request, res = response, next) => {
   const query = { estado: true, eliminado: false }; // Filtro para obtener solo costos activos y no eliminados
 
   try {
@@ -26,22 +26,12 @@ const costoGets = async (req = request, res = response) => {
 
     res.json({ total, costos }); // Responde con el total y la lista de costos
   } catch (err) {
-    console.error("Error en costoGets:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "Error en las referencias. Verifica que los IDs sean válidos.",
-      }); // Responde con un error 400 si hay un problema con las referencias
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los costos.",
-    }); // Responde con un error 500 en caso de un problema interno
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un costo específico por ID
-const costoGet = async (req = request, res = response) => {
+const costoGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del costo desde los parámetros de la URL
 
   try {
@@ -57,22 +47,12 @@ const costoGet = async (req = request, res = response) => {
 
     res.json(costo); // Responde con los datos del costo
   } catch (err) {
-    console.error("Error en costoGet:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de costo no válido.",
-      }); // Responde con un error 400 si el ID no es válido
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el costo.",
-    }); // Responde con un error 500 en caso de un problema interno
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo costo
-const costoPost = async (req = request, res = response) => {
+const costoPost = async (req = request, res = response, next) => {
   const { idRefineria, idContratoCompra, costos, costoTotal } = req.body; // Extrae los datos del cuerpo de la solicitud
 
   try {
@@ -89,22 +69,12 @@ const costoPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaCosto); // Responde con un código 201 (creado) y los datos del costo
   } catch (err) {
-    console.error("Error en costoPost:", err);
-
-    if (err.name === "ValidationError") {
-      return res.status(400).json({
-        error: "Datos de costo no válidos.",
-      }); // Responde con un error 400 si los datos no son válidos
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al crear el costo.",
-    }); // Responde con un error 500 en caso de un problema interno
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar un costo existente
-const costoPut = async (req = request, res = response) => {
+const costoPut = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del costo desde los parámetros de la URL
   const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
 
@@ -121,22 +91,12 @@ const costoPut = async (req = request, res = response) => {
 
     res.json(costoActualizada); // Responde con los datos del costo actualizado
   } catch (err) {
-    console.error("Error en costoPut:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de costo no válido.",
-      }); // Responde con un error 400 si el ID no es válido
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar el costo.",
-    }); // Responde con un error 500 en caso de un problema interno
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un costo
-const costoDelete = async (req = request, res = response) => {
+const costoDelete = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del costo desde los parámetros de la URL
 
   try {
@@ -152,22 +112,12 @@ const costoDelete = async (req = request, res = response) => {
 
     res.json(costo); // Responde con los datos del costo eliminado
   } catch (err) {
-    console.error("Error en costoDelete:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de costo no válido.",
-      }); // Responde con un error 400 si el ID no es válido
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el costo.",
-    }); // Responde con un error 500 en caso de un problema interno
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH (ejemplo básico)
-const costoPatch = (req = request, res = response) => {
+const costoPatch = (req = request, res = response, next) => {
   res.json({
     msg: "patch API - costoPatch", // Mensaje de prueba
   });

@@ -14,7 +14,7 @@ const populateOptions = [
 ];
 
 // Obtener todos los productos
-const productoBKGets = async (req = request, res = response) => {
+const productoBKGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -31,15 +31,12 @@ const productoBKGets = async (req = request, res = response) => {
     });
     res.json({ total, productos });
   } catch (err) {
-    console.error("Error en productoBKGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los productos.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener un producto por ID
-const productoBKGet = async (req = request, res = response) => {
+const productoBKGet = async (req = request, res = response, next) => {
   const { id } = req.params;
   try {
     const producto = await ProductoBK.findOne({
@@ -58,15 +55,12 @@ const productoBKGet = async (req = request, res = response) => {
 
     res.json(producto);
   } catch (err) {
-    console.error("Error en productoBKGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el producto.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Crear un nuevo producto
-const productoBKPost = async (req = request, res = response) => {
+const productoBKPost = async (req = request, res = response, next) => {
   try {
     const data = req.body;
     data.createdBy = req.usuario?._id; // Si usas auditoría de usuario
@@ -77,18 +71,12 @@ const productoBKPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoProducto);
   } catch (err) {
-    console.error("Error en productoBKPost:", err);
-    let errorMsg = "Error interno del servidor al crear el producto.";
-    if (err.code === 11000) {
-      errorMsg =
-        "Ya existe un producto con ese nombre o posición en el bunkering.";
-    }
-    res.status(500).json({ error: errorMsg });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Actualizar un producto existente
-const productoBKPut = async (req = request, res = response) => {
+const productoBKPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -119,18 +107,12 @@ const productoBKPut = async (req = request, res = response) => {
 
     res.json(productoActualizado);
   } catch (err) {
-    console.error("Error en productoBKPut:", err);
-    let errorMsg = "Error interno del servidor al actualizar el producto.";
-    if (err.code === 11000) {
-      errorMsg =
-        "Ya existe un producto con ese nombre o posición en el bunkering.";
-    }
-    res.status(500).json({ error: errorMsg });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Eliminar (marcar como eliminado) un producto
-const productoBKDelete = async (req = request, res = response) => {
+const productoBKDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -158,10 +140,7 @@ const productoBKDelete = async (req = request, res = response) => {
       producto: productoEliminado,
     });
   } catch (err) {
-    console.error("Error en productoBKDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el producto.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

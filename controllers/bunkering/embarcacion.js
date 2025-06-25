@@ -25,7 +25,7 @@ const populateOptions = [
 ];
 
 // Obtener todas las embarcaciones
-const embarcacionesGets = async (req = request, res = response) => {
+const embarcacionesGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -44,15 +44,12 @@ const embarcacionesGets = async (req = request, res = response) => {
     });
     res.json({ total, embarcacions });
   } catch (err) {
-    console.error("Error en embarcacionesGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener las embarcaciones.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener una embarcación específica por ID
-const embarcacionGet = async (req = request, res = response) => {
+const embarcacionGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -78,15 +75,12 @@ const embarcacionGet = async (req = request, res = response) => {
 
     res.json(embarcacion);
   } catch (err) {
-    console.error("Error en embarcacionGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la embarcación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Crear una nueva embarcación y sus tanques asociados (con rollback si hay error en tanques)
-const embarcacionPost = async (req = request, res = response) => {
+const embarcacionPost = async (req = request, res = response, next) => {
   const { idBunkering, capacidad, nombre, imo, tipo, tanques } = req.body;
 
   const session = await Embarcacion.startSession();
@@ -172,7 +166,7 @@ const embarcacionPost = async (req = request, res = response) => {
 };
 
 // Actualizar una embarcación y sus tanques (PUT) - SOLO ACTUALIZA, NO DUPLICA
-const embarcacionPut = async (req = request, res = response) => {
+const embarcacionPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, tanques, ...resto } = req.body;
 
@@ -365,7 +359,7 @@ const embarcacionPut = async (req = request, res = response) => {
 };
 
 // Eliminar (marcar como eliminado) una embarcación con historial de auditoría
-const embarcacionDelete = async (req = request, res = response) => {
+const embarcacionDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -398,15 +392,12 @@ const embarcacionDelete = async (req = request, res = response) => {
 
     res.json(embarcacionEliminada);
   } catch (err) {
-    console.error("Error en embarcacionDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la embarcación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const embarcacionPatch = async (req = request, res = response) => {
+const embarcacionPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -430,11 +421,7 @@ const embarcacionPatch = async (req = request, res = response) => {
 
     res.json(embarcacionActualizada);
   } catch (err) {
-    console.error("Error en embarcacionPatch:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente la embarcación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

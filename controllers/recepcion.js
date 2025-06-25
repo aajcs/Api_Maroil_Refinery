@@ -36,7 +36,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todas las recepciones con población de referencias
-const recepcionGets = async (req = request, res = response) => {
+const recepcionGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener todas las recepciones
 
   try {
@@ -55,13 +55,12 @@ const recepcionGets = async (req = request, res = response) => {
       recepcions,
     });
   } catch (err) {
-    console.log(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener una recepción específica por ID
-const recepcionGet = async (req = request, res = response) => {
+const recepcionGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la recepción desde los parámetros de la URL
 
   try {
@@ -82,7 +81,7 @@ const recepcionGet = async (req = request, res = response) => {
       });
     }
   } catch (err) {
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -148,7 +147,7 @@ const recepcionPost = async (req, res = response) => {
 
     res.json({ recepcion: nuevaRecepcion }); // Responde con la recepción creada
   } catch (err) {
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -184,7 +183,7 @@ const recepcionPut = async (req, res = response) => {
     req.io.emit("recepcion-modificada", recepcionActualizada); // Emite un evento de WebSocket para notificar la modificación
     res.json(recepcionActualizada); // Responde con los datos de la recepción actualizada
   } catch (err) {
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -213,7 +212,7 @@ const recepcionDelete = async (req, res = response) => {
 
     res.json(recepcion); // Responde con los datos de la recepción eliminada
   } catch (err) {
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 

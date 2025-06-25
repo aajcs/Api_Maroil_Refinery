@@ -16,7 +16,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todas las refinaciones con paginación y población de referencias
-const corteRefinacionGets = async (req = request, res = response) => {
+const corteRefinacionGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo cortes no eliminados
 
   try {
@@ -34,16 +34,12 @@ const corteRefinacionGets = async (req = request, res = response) => {
     });
     res.json({ total, corteRefinacions }); // Responde con el total y la lista de cortes
   } catch (err) {
-    console.error("Error en corteRefinacionGets:", err);
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los cortes de refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un corte específico por ID
-const corteRefinacionGet = async (req = request, res = response) => {
+const corteRefinacionGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -63,16 +59,12 @@ const corteRefinacionGet = async (req = request, res = response) => {
 
     res.json(corteRefinacion);
   } catch (err) {
-    console.error("Error en corteRefinacionGet:", err);
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el corte de refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo corte de refinación
-const corteRefinacionPost = async (req = request, res = response) => {
+const corteRefinacionPost = async (req = request, res = response, next) => {
   const {
     idRefineria,
     corteTorre,
@@ -120,16 +112,12 @@ const corteRefinacionPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoCorte);
   } catch (err) {
-    console.error("Error en corteRefinacionPost:", err);
-
-    res.status(500).json({
-      error: "Error interno del servidor al crear el corte de refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar un corte de refinación existente
-const corteRefinacionPut = async (req = request, res = response) => {
+const corteRefinacionPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -156,16 +144,12 @@ const corteRefinacionPut = async (req = request, res = response) => {
 
     res.json(corteActualizado);
   } catch (err) {
-    console.error("Error en corteRefinacionPut:", err);
-
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar el corte de refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un corte de refinación
-const corteRefinacionDelete = async (req = request, res = response) => {
+const corteRefinacionDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
   try {
     // Auditoría: captura estado antes de eliminar
@@ -206,16 +190,12 @@ const corteRefinacionDelete = async (req = request, res = response) => {
       corte,
     });
   } catch (err) {
-    console.error("Error en corteRefinacionDelete:", err);
-
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el corte de refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH
-const corteRefinacionPatch = async (req = request, res = response) => {
+const corteRefinacionPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -232,11 +212,7 @@ const corteRefinacionPatch = async (req = request, res = response) => {
 
     res.json(corteActualizado);
   } catch (err) {
-    console.error("Error en corteRefinacionPatch:", err);
-
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar parcialmente el corte.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

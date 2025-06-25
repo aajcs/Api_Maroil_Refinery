@@ -18,7 +18,7 @@ const populateOptions = [
 ];
 
 // Obtener todos los abonos, con info de contrato y cuenta asociada
-const abonoGets = async (req = request, res = response) => {
+const abonoGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -42,13 +42,12 @@ const abonoGets = async (req = request, res = response) => {
 
     res.json({ total, abonos });
   } catch (err) {
-    console.error("Error en abonoGets:", err);
-    res.status(500).json({ error: "Error interno del servidor." });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener un abono específico por ID, con info de contrato y cuenta asociada
-const abonoGet = async (req = request, res = response) => {
+const abonoGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -73,13 +72,12 @@ const abonoGet = async (req = request, res = response) => {
 
     res.json(abono);
   } catch (err) {
-    console.error("Error en abonoGet:", err);
-    res.status(500).json({ error: "Error interno del servidor." });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Crear un nuevo abono, agregarlo al contrato y actualizar la cuenta asociada
-const abonoPost = async (req = request, res = response) => {
+const abonoPost = async (req = request, res = response, next) => {
   const {
     idRefineria,
     idContrato,
@@ -174,13 +172,12 @@ const abonoPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoAbono);
   } catch (err) {
-    console.error("Error en abonoPost:", err);
-    res.status(400).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Actualizar un abono existente, sincronizar el contrato y la cuenta
-// const abonoPut = async (req = request, res = response) => {
+// const abonoPut = async (req = request, res = response, next) => {
 //   const { id } = req.params;
 //   const { monto, fecha, tipoOperacion, referencia } = req.body;
 
@@ -254,7 +251,7 @@ const abonoPost = async (req = request, res = response) => {
 //     res.status(400).json({ error: err.message });
 //   }
 // };
-const abonoPut = async (req = request, res = response) => {
+const abonoPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { monto, fecha, tipoOperacion, referencia } = req.body;
 
@@ -347,13 +344,12 @@ const abonoPut = async (req = request, res = response) => {
 
     res.json(abonoActualizado);
   } catch (err) {
-    console.error("Error en abonoPut:", err);
-    res.status(400).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Eliminar (marcar como eliminado) un abono, actualizar el contrato y la cuenta
-const abonoDelete = async (req = request, res = response) => {
+const abonoDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -423,8 +419,7 @@ const abonoDelete = async (req = request, res = response) => {
 
     res.json(abono);
   } catch (err) {
-    console.error("Error en abonoDelete:", err);
-    res.status(500).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 

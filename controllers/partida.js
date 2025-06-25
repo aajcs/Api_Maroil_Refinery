@@ -13,7 +13,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todas las partidas
-const partidaGets = async (req = request, res = response) => {
+const partidaGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo las partidas no eliminadas
 
   try {
@@ -31,15 +31,12 @@ const partidaGets = async (req = request, res = response) => {
 
     res.json({ total, partidas }); // Responde con el total y la lista de partidas
   } catch (err) {
-    console.error("Error en partidaGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener las partidas.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener una partida específica por ID
-const partidaGet = async (req = request, res = response) => {
+const partidaGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -57,22 +54,12 @@ const partidaGet = async (req = request, res = response) => {
 
     res.json(partida); // Responde con los datos de la partida
   } catch (err) {
-    console.error("Error en partidaGet:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de partida no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la partida.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear una nueva partida
-const partidaPost = async (req = request, res = response) => {
+const partidaPost = async (req = request, res = response, next) => {
   const { idRefineria, descripcion, codigo } = req.body;
 
   try {
@@ -87,22 +74,12 @@ const partidaPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaPartida); // Responde con un código 201 (creado) y los datos de la partida
   } catch (err) {
-    console.error("Error en partidaPost:", err);
-
-    if (err.name === "ValidationError") {
-      return res.status(400).json({
-        error: "Datos de partida no válidos.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al crear la partida.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar una partida existente
-const partidaPut = async (req = request, res = response) => {
+const partidaPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body; // Excluye el campo _id del cuerpo de la solicitud
 
@@ -137,16 +114,12 @@ const partidaPut = async (req = request, res = response) => {
 
     res.json(partidaActualizada); // Responde con los datos de la partida actualizada
   } catch (err) {
-    console.error("Error en partidaPut:", err);
-
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar la partida.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const partidaPatch = async (req = request, res = response) => {
+const partidaPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body; // Excluye el campo _id del cuerpo de la solicitud
 
@@ -165,23 +138,12 @@ const partidaPatch = async (req = request, res = response) => {
 
     res.json(partidaActualizada); // Responde con los datos de la partida actualizada
   } catch (err) {
-    console.error("Error en partidaPatch:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de partida no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente la partida.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminada) una partida
-const partidaDelete = async (req = request, res = response) => {
+const partidaDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -215,11 +177,7 @@ const partidaDelete = async (req = request, res = response) => {
       partida,
     });
   } catch (err) {
-    console.error("Error en partidaDelete:", err);
-
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la partida.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

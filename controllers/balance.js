@@ -29,10 +29,7 @@ const balanceGets = async (req, res = response) => {
 
     res.json({ total, balances });
   } catch (err) {
-    console.error("Error en balanceGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los balances.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -52,10 +49,7 @@ const balanceGet = async (req, res = response) => {
 
     res.json(balance);
   } catch (err) {
-    console.error("Error en balanceGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el balance.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -117,10 +111,7 @@ const balancePost = async (req, res = response) => {
 
     res.status(201).json(balancePopulado);
   } catch (err) {
-    console.error("Error en balancePost:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al crear el balance.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -157,10 +148,7 @@ const balancePut = async (req, res = response) => {
 
     res.json(balanceActualizado);
   } catch (err) {
-    console.error("Error en balancePut:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar el balance.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -182,11 +170,7 @@ const balancePatch = async (req, res = response) => {
 
     res.json(balanceActualizado);
   } catch (err) {
-    console.error("Error en balancePatch:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente el balance.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -220,10 +204,7 @@ const balanceDelete = async (req, res = response) => {
       balance,
     });
   } catch (err) {
-    console.error("Error en balanceDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el balance.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

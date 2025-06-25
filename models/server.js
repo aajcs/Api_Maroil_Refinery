@@ -110,6 +110,7 @@ class Server {
 
     // Rutas de la aplicación
     this.routes();
+    this.app.use(errorHandler);
   }
 
   async conectarDB() {
@@ -134,7 +135,6 @@ class Server {
         createParentPath: true,
       })
     );
-    this.app.use(errorHandler);
   }
 
   routes() {

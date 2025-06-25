@@ -13,7 +13,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todas las torres con paginación y población de referencias
-const torreGets = async (req = request, res = response) => {
+const torreGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -31,15 +31,12 @@ const torreGets = async (req = request, res = response) => {
 
     res.json({ total, torres });
   } catch (err) {
-    console.error("Error en torreGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener las torres.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener una torre específica por ID
-const torreGet = async (req = request, res = response) => {
+const torreGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -58,15 +55,12 @@ const torreGet = async (req = request, res = response) => {
 
     res.json(torre);
   } catch (err) {
-    console.error("Error en torreGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la torre.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear una nueva torre
-const torrePost = async (req = request, res = response) => {
+const torrePost = async (req = request, res = response, next) => {
   const {
     idRefineria,
     almacenamiento,
@@ -94,15 +88,12 @@ const torrePost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaTorre);
   } catch (err) {
-    console.error("Error en torrePost:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al crear la torre.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar una torre existente
-const torrePut = async (req = request, res = response) => {
+const torrePut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -134,15 +125,12 @@ const torrePut = async (req = request, res = response) => {
 
     res.json(torreActualizada);
   } catch (err) {
-    console.error("Error en torrePut:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar la torre.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminada) una torre
-const torreDelete = async (req = request, res = response) => {
+const torreDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -168,15 +156,12 @@ const torreDelete = async (req = request, res = response) => {
 
     res.json(torreEliminada);
   } catch (err) {
-    console.error("Error en torreDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la torre.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const torrePatch = async (req = request, res = response) => {
+const torrePatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -193,10 +178,7 @@ const torrePatch = async (req = request, res = response) => {
 
     res.json(torreActualizada);
   } catch (err) {
-    console.error("Error en torrePatch:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar parcialmente la torre.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

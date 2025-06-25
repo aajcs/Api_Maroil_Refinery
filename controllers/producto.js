@@ -17,7 +17,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todos los productos con población de referencias
-const productoGets = async (req = request, res = response) => {
+const productoGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo productos no eliminados
 
   try {
@@ -36,13 +36,12 @@ const productoGets = async (req = request, res = response) => {
       productos,
     });
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un producto específico por ID
-const productoGet = async (req = request, res = response) => {
+const productoGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del producto desde los parámetros de la URL
 
   try {
@@ -63,13 +62,12 @@ const productoGet = async (req = request, res = response) => {
 
     res.json(producto); // Responde con los datos del producto
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo producto
-const productoPost = async (req = request, res = response) => {
+const productoPost = async (req = request, res = response, next) => {
   try {
     const { nombre, idRefineria, posicion, color, estado, tipoMaterial } =
       req.body;
@@ -88,11 +86,9 @@ const productoPost = async (req = request, res = response) => {
         eliminado: false,
       });
       if (existePosicion) {
-        return res
-          .status(400)
-          .json({
-            error: "Ya existe un producto con esa posición en la refinería.",
-          });
+        return res.status(400).json({
+          error: "Ya existe un producto con esa posición en la refinería.",
+        });
       }
     }
 
@@ -111,8 +107,7 @@ const productoPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoProducto);
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -131,11 +126,9 @@ const productoPut = async (req, res = response) => {
         eliminado: false,
       });
       if (existePosicion) {
-        return res
-          .status(400)
-          .json({
-            error: "Ya existe un producto con esa posición en la refinería.",
-          });
+        return res.status(400).json({
+          error: "Ya existe un producto con esa posición en la refinería.",
+        });
       }
     }
 
@@ -163,13 +156,12 @@ const productoPut = async (req, res = response) => {
 
     res.json(productoActualizado);
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un producto
-const productoDelete = async (req = request, res = response) => {
+const productoDelete = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del producto desde los parámetros de la URL
 
   try {
@@ -191,13 +183,12 @@ const productoDelete = async (req = request, res = response) => {
 
     res.json(producto); // Responde con los datos del producto eliminado
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH (ejemplo básico)
-const productoPatch = (req = request, res = response) => {
+const productoPatch = (req = request, res = response, next) => {
   res.json({
     msg: "patch API - productoPatch", // Mensaje de prueba
   });

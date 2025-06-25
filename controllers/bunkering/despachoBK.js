@@ -31,7 +31,7 @@ const populateOptions = [
 ];
 
 // Obtener todos los despachos con población de referencias ordenados
-const despachoBKGets = async (req = request, res = response) => {
+const despachoBKGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -49,15 +49,12 @@ const despachoBKGets = async (req = request, res = response) => {
     // Emitir evento de socket para notificar a los clientes
     res.json({ total, despachos });
   } catch (err) {
-    console.error("Error en despachoBKGets:", err);
-    res
-      .status(500)
-      .json({ error: "Error interno del servidor al obtener las despachos." });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener un despacho específica por ID
-const despachoBKGet = async (req = request, res = response) => {
+const despachoBKGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -77,10 +74,7 @@ const despachoBKGet = async (req = request, res = response) => {
     }
     res.json(despacho);
   } catch (err) {
-    console.error("Error en despachoBKGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el despacho.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -156,10 +150,7 @@ const despachoBKPost = async (req, res = response) => {
     await nuevoDespacho.populate(populateOptions);
     res.status(201).json({ despacho: nuevoDespacho }); // Responde con el despacho creado
   } catch (err) {
-    console.error("Error en despachoBKPost:", err);
-    res.status(400).json({
-      error: "Error al crear el despacho. Verifica los datos proporcionados.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -196,11 +187,7 @@ const despachoBKPut = async (req, res = response) => {
 
     res.json(despachoACtualizado);
   } catch (err) {
-    console.error("Error en despachoBKPut:", err);
-    res.status(400).json({
-      error:
-        "Error al actualizar el despacho. Verifica los datos proporcionados.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -230,15 +217,12 @@ const despachoBKDelete = async (req, res = response) => {
 
     res.json(despachoEliminado);
   } catch (err) {
-    console.error("Error en despachoBKDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el despacho.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const despachoBKPatch = async (req = request, res = response) => {
+const despachoBKPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
   // Aquí puedes implementar la lógica para manejar actualizaciones parciales
@@ -256,11 +240,7 @@ const despachoBKPatch = async (req = request, res = response) => {
 
     res.json(despachoActualizado);
   } catch (err) {
-    console.error("Error en despachoBKPatch:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente el despacho.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

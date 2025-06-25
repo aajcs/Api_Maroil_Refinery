@@ -13,7 +13,7 @@ const populateOptions = [
 ];
 
 // Obtener todas las líneas de carga
-const lineaCargaBKGets = async (req = request, res = response) => {
+const lineaCargaBKGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -29,15 +29,12 @@ const lineaCargaBKGets = async (req = request, res = response) => {
     });
     res.json({ total, lineaCargas });
   } catch (err) {
-    console.error("Error en lineaCargaBKGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener las líneas de carga.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener una línea de carga por ID
-const lineaCargaBKGet = async (req = request, res = response) => {
+const lineaCargaBKGet = async (req = request, res = response, next) => {
   const { id } = req.params;
   try {
     const lineaCarga = await LineaCargaBK.findOne({
@@ -58,15 +55,12 @@ const lineaCargaBKGet = async (req = request, res = response) => {
 
     res.json(lineaCarga);
   } catch (err) {
-    console.error("Error en lineaCargaBKGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la línea de carga.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Crear una nueva línea de carga
-const lineaCargaBKPost = async (req = request, res = response) => {
+const lineaCargaBKPost = async (req = request, res = response, next) => {
   try {
     const data = req.body;
     data.createdBy = req.usuario?._id;
@@ -77,17 +71,12 @@ const lineaCargaBKPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaLinea);
   } catch (err) {
-    console.error("Error en lineaCargaBKPost:", err);
-    let errorMsg = "Error interno del servidor al crear la línea de carga.";
-    if (err.code === 11000) {
-      errorMsg = "Ya existe una línea de carga con ese nombre en el muelle.";
-    }
-    res.status(500).json({ error: errorMsg });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Actualizar una línea de carga existente (con auditoría)
-const lineaCargaBKPut = async (req = request, res = response) => {
+const lineaCargaBKPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -125,18 +114,12 @@ const lineaCargaBKPut = async (req = request, res = response) => {
 
     res.json(lineaActualizada);
   } catch (err) {
-    console.error("Error en lineaCargaBKPut:", err);
-    let errorMsg =
-      "Error interno del servidor al actualizar la línea de carga.";
-    if (err.code === 11000) {
-      errorMsg = "Ya existe una línea de carga con ese nombre en el muelle.";
-    }
-    res.status(500).json({ error: errorMsg });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Eliminar (marcar como eliminada) una línea de carga (con auditoría)
-const lineaCargaBKDelete = async (req = request, res = response) => {
+const lineaCargaBKDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -168,10 +151,7 @@ const lineaCargaBKDelete = async (req = request, res = response) => {
 
     res.json(lineaEliminada);
   } catch (err) {
-    console.error("Error en lineaCargaBKDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la línea de carga.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

@@ -22,7 +22,7 @@ const populateOptions = [
 ];
 
 // Obtener todos los tipos de producto con historial ordenado
-const tipoProductoBKGets = async (req = request, res = response) => {
+const tipoProductoBKGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -37,13 +37,12 @@ const tipoProductoBKGets = async (req = request, res = response) => {
     });
     res.json({ total, tipoProductos });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener un tipo de producto específico por ID
-const tipoProductoBKGet = async (req = request, res = response) => {
+const tipoProductoBKGet = async (req = request, res = response, next) => {
   const { id } = req.params;
   try {
     const tipoProducto = await TipoProductoBK.findOne({
@@ -61,13 +60,12 @@ const tipoProductoBKGet = async (req = request, res = response) => {
     }
     res.json(tipoProducto);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Crear un nuevo tipo de producto
-const tipoProductoBKPost = async (req = request, res = response) => {
+const tipoProductoBKPost = async (req = request, res = response, next) => {
   const {
     idBunkering,
     idProducto,
@@ -118,18 +116,12 @@ const tipoProductoBKPost = async (req = request, res = response) => {
     await nuevoTipoProducto.populate(populateOptions);
     res.status(201).json(nuevoTipoProducto);
   } catch (err) {
-    console.error(err);
-    let errorMsg = "Error interno del servidor al crear el tipo de producto.";
-    if (err.code === 11000) {
-      errorMsg =
-        "Ya existe un tipo de producto con ese nombre en el bunkering.";
-    }
-    res.status(400).json({ error: errorMsg });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Actualizar un tipo de producto existente
-const tipoProductoBKPut = async (req = request, res = response) => {
+const tipoProductoBKPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { idProducto, datosProducto, ...resto } = req.body;
 
@@ -169,19 +161,12 @@ const tipoProductoBKPut = async (req = request, res = response) => {
 
     res.json(tipoProductoActualizado);
   } catch (err) {
-    console.error(err);
-    let errorMsg =
-      "Error interno del servidor al actualizar el tipo de producto.";
-    if (err.code === 11000) {
-      errorMsg =
-        "Ya existe un tipo de producto con ese nombre en el bunkering.";
-    }
-    res.status(400).json({ error: errorMsg });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Eliminar (marcar como eliminado) un tipo de producto
-const tipoProductoBKDelete = async (req = request, res = response) => {
+const tipoProductoBKDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -212,13 +197,12 @@ const tipoProductoBKDelete = async (req = request, res = response) => {
 
     res.json(tipoProducto);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH (ejemplo básico)
-const tipoProductoBKPatch = (req = request, res = response) => {
+const tipoProductoBKPatch = (req = request, res = response, next) => {
   res.json({
     msg: "patch API - tipoProductoBKPatch",
   });

@@ -11,7 +11,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todas las refinaciones con paginación y población de referencias
-const corteRefinacionGets = async (req = request, res = response) => {
+const corteRefinacionGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo cortes no eliminados
 
   try {
@@ -25,22 +25,12 @@ const corteRefinacionGets = async (req = request, res = response) => {
 
     res.json({ total, corteRefinacions }); // Responde con el total y la lista de cortes
   } catch (err) {
-    console.error("Error en corteRefinacionGets:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "Error en las referencias. Verifica que los IDs sean válidos.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los cortes de refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un corte específico por ID
-const corteRefinacionGet = async (req = request, res = response) => {
+const corteRefinacionGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -55,22 +45,12 @@ const corteRefinacionGet = async (req = request, res = response) => {
 
     res.json(corte);
   } catch (err) {
-    console.error("Error en corteRefinacionGet:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de corte de refinación no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el corte de refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo corte de refinación
-const corteRefinacionPost = async (req = request, res = response) => {
+const corteRefinacionPost = async (req = request, res = response, next) => {
   console.log("req.body", JSON.stringify(req.body, null, 2)); // Log para depuración
   const {
     idRefineria,
@@ -99,22 +79,12 @@ const corteRefinacionPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoCorte); // Responde con el corte creado
   } catch (err) {
-    console.error("Error en corteRefinacionPost:", err);
-
-    if (err.name === "ValidationError") {
-      return res.status(400).json({
-        error: "Datos del corte de refinación no válidos.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al crear el corte de refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar un corte de refinación existente
-const corteRefinacionPut = async (req = request, res = response) => {
+const corteRefinacionPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -131,22 +101,12 @@ const corteRefinacionPut = async (req = request, res = response) => {
 
     res.json(corteActualizado);
   } catch (err) {
-    console.error("Error en corteRefinacionPut:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de corte de refinación no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar el corte de refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un corte de refinación
-const corteRefinacionDelete = async (req = request, res = response) => {
+const corteRefinacionDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -162,22 +122,12 @@ const corteRefinacionDelete = async (req = request, res = response) => {
 
     res.json(corte);
   } catch (err) {
-    console.error("Error en corteRefinacionDelete:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de corte de refinación no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el corte de refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH
-const corteRefinacionPatch = async (req = request, res = response) => {
+const corteRefinacionPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -194,17 +144,7 @@ const corteRefinacionPatch = async (req = request, res = response) => {
 
     res.json(corteActualizado);
   } catch (err) {
-    console.error("Error en corteRefinacionPatch:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de corte de refinación no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar parcialmente el corte.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

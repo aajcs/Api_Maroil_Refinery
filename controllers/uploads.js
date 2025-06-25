@@ -16,9 +16,8 @@ const cargarArchivo = async (req, res = response) => {
     // Subir archivo al servidor (por defecto en la carpeta 'imgs')
     const nombre = await subirArchivo(req.files, undefined, "imgs");
     res.json({ nombre }); // Responde con el nombre del archivo subido
-  } catch (msg) {
-    // Manejo de errores: responde con un mensaje de error
-    res.status(400).json({ msg });
+  } catch (err) {
+    next(err); // Propaga el error al middleware
   }
 };
 

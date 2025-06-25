@@ -13,7 +13,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todos los muelle con paginación y población de referencias
-const muelleGets = async (req = request, res = response) => {
+const muelleGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
   try {
     const [total, muelles] = await Promise.all([
@@ -30,15 +30,12 @@ const muelleGets = async (req = request, res = response) => {
 
     res.json({ total, muelles });
   } catch (err) {
-    console.error("Error en muelleGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los muelle.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un muelle específico por ID
-const muelleGet = async (req = request, res = response) => {
+const muelleGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -58,15 +55,12 @@ const muelleGet = async (req = request, res = response) => {
 
     res.json(muelle);
   } catch (err) {
-    console.error("Error en muelleGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el muelle.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo muelle
-const muellePost = async (req = request, res = response) => {
+const muellePost = async (req = request, res = response, next) => {
   const {
     ubicacion,
     correo,
@@ -98,15 +92,12 @@ const muellePost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoMuelle);
   } catch (err) {
-    console.error("Error en muellePost:", err);
-    res.status(400).json({
-      error: "Error al crear el muelle. Verifica los datos proporcionados.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar un muelle existente
-const muellePut = async (req = request, res = response) => {
+const muellePut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -138,16 +129,12 @@ const muellePut = async (req = request, res = response) => {
 
     res.json(muelleActualizado);
   } catch (err) {
-    console.error("Error en muellePut:", err);
-    res.status(400).json({
-      error:
-        "Error al actualizar el muelle. Verifica los datos proporcionados.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un muelle
-const muelleDelete = async (req = request, res = response) => {
+const muelleDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -173,15 +160,12 @@ const muelleDelete = async (req = request, res = response) => {
 
     res.json(muelleEliminado);
   } catch (err) {
-    console.error("Error en muelleDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el muelle.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const muellePatch = async (req = request, res = response) => {
+const muellePatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -198,10 +182,7 @@ const muellePatch = async (req = request, res = response) => {
 
     res.json(muelleActualizado);
   } catch (err) {
-    console.error("Error en muellePatch:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar parcialmente el muelle.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

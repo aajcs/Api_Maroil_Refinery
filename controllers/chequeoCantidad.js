@@ -64,13 +64,12 @@ const actualizarModeloRelacionado = async (idReferencia, tipo, datos) => {
       );
     }
   } catch (err) {
-    console.error(`Error al actualizar el modelo ${tipo}:`, err);
-    throw new Error(`Error al actualizar el modelo ${tipo}`);
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener todos los chequeos de cantidad
-const chequeoCantidadGets = async (req = request, res = response) => {
+const chequeoCantidadGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo chequeos activos y no eliminados
 
   try {
@@ -88,15 +87,12 @@ const chequeoCantidadGets = async (req = request, res = response) => {
 
     res.json({ total, chequeoCantidads }); // Responde con el total y la lista de chequeos
   } catch (err) {
-    console.error("Error en chequeoCantidadGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los chequeos de cantidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un chequeo de cantidad específico por ID
-const chequeoCantidadGet = async (req = request, res = response) => {
+const chequeoCantidadGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -118,15 +114,12 @@ const chequeoCantidadGet = async (req = request, res = response) => {
 
     res.json(chequeoCantidad);
   } catch (err) {
-    console.error("Error en chequeoCantidadGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el chequeo de cantidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo chequeo de cantidad
-const chequeoCantidadPost = async (req = request, res = response) => {
+const chequeoCantidadPost = async (req = request, res = response, next) => {
   const {
     idRefineria,
     aplicar,
@@ -161,17 +154,12 @@ const chequeoCantidadPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoChequeo); // Responde con un código 201 (creado) y los datos del chequeo
   } catch (err) {
-    console.error("Error en chequeoCantidadPost:", err); // Muestra el error completo en la consola
-    res.status(400).json({
-      error:
-        err.message ||
-        "Error interno del servidor al crear el chequeo de cantidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar un chequeo de cantidad existente
-const chequeoCantidadPut = async (req = request, res = response) => {
+const chequeoCantidadPut = async (req = request, res = response, next) => {
   console.log(req.body);
   const { id } = req.params;
   const { _id, aplicar, ...resto } = req.body;
@@ -218,15 +206,12 @@ const chequeoCantidadPut = async (req = request, res = response) => {
 
     res.json(chequeoActualizado); // Responde con los datos del chequeo actualizado
   } catch (err) {
-    console.error("Error en chequeoCantidadPut:", err);
-    res.status(400).json({
-      error: "Error interno del servidor al actualizar el chequeo de cantidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un chequeo de cantidad
-const chequeoCantidadDelete = async (req = request, res = response) => {
+const chequeoCantidadDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -262,15 +247,12 @@ const chequeoCantidadDelete = async (req = request, res = response) => {
 
     res.json(chequeo); // Responde con los datos del chequeo eliminado
   } catch (err) {
-    console.error("Error en chequeoCantidadDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el chequeo de cantidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH
-const chequeoCantidadPatch = async (req = request, res = response) => {
+const chequeoCantidadPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -293,11 +275,7 @@ const chequeoCantidadPatch = async (req = request, res = response) => {
 
     res.json(chequeoActualizado);
   } catch (err) {
-    console.error("Error en chequeoCantidadPatch:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente el chequeo de cantidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

@@ -53,13 +53,12 @@ const actualizarModeloRelacionadoBK = async (idReferencia, tipo, datos) => {
       );
     }
   } catch (err) {
-    console.error(`Error al actualizar el modelo ${tipo}:`, err);
-    throw new Error(`Error al actualizar el modelo ${tipo}`);
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener todos los chequeos de cantidad
-const chequeoCantidadBKGets = async (req = request, res = response) => {
+const chequeoCantidadBKGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -76,15 +75,12 @@ const chequeoCantidadBKGets = async (req = request, res = response) => {
     });
     res.json({ total, chequeoCantidads });
   } catch (err) {
-    console.error("Error en chequeoCantidadBKGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los chequeos de cantidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un chequeo de cantidad específico por ID
-const chequeoCantidadBKGet = async (req = request, res = response) => {
+const chequeoCantidadBKGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -103,15 +99,12 @@ const chequeoCantidadBKGet = async (req = request, res = response) => {
 
     res.json(chequeoCantidad);
   } catch (err) {
-    console.error("Error en chequeoCantidadBKGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el chequeo de cantidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo chequeo de cantidad
-const chequeoCantidadBKPost = async (req = request, res = response) => {
+const chequeoCantidadBKPost = async (req = request, res = response, next) => {
   const {
     idBunkering,
     aplicar,
@@ -146,18 +139,12 @@ const chequeoCantidadBKPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoChequeo);
   } catch (err) {
-    console.error("Error en chequeoCantidadBKPost:", err);
-    let errorMsg =
-      "Error interno del servidor al crear el chequeo de cantidad.";
-    if (err.code === 11000) {
-      errorMsg = "Ya existe un chequeo de cantidad con ese número.";
-    }
-    res.status(400).json({ error: errorMsg });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Actualizar un chequeo de cantidad existente
-const chequeoCantidadBKPut = async (req = request, res = response) => {
+const chequeoCantidadBKPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, aplicar, ...resto } = req.body;
 
@@ -203,18 +190,12 @@ const chequeoCantidadBKPut = async (req = request, res = response) => {
 
     res.json(chequeoActualizado);
   } catch (err) {
-    console.error("Error en chequeoCantidadBKPut:", err);
-    let errorMsg =
-      "Error interno del servidor al actualizar el chequeo de cantidad.";
-    if (err.code === 11000) {
-      errorMsg = "Ya existe un chequeo de cantidad con ese número.";
-    }
-    res.status(400).json({ error: errorMsg });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Eliminar (marcar como eliminado) un chequeo de cantidad
-const chequeoCantidadBKDelete = async (req = request, res = response) => {
+const chequeoCantidadBKDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -250,15 +231,12 @@ const chequeoCantidadBKDelete = async (req = request, res = response) => {
 
     res.json(chequeo);
   } catch (err) {
-    console.error("Error en chequeoCantidadBKDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el chequeo de cantidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH
-const chequeoCantidadBKPatch = async (req = request, res = response) => {
+const chequeoCantidadBKPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { aplicar, ...resto } = req.body;
 
@@ -281,11 +259,7 @@ const chequeoCantidadBKPatch = async (req = request, res = response) => {
 
     res.json(chequeoActualizado);
   } catch (err) {
-    console.error("Error en chequeoCantidadBKPatch:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente el chequeo de cantidad.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

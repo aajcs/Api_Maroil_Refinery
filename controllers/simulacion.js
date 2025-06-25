@@ -27,7 +27,7 @@ const populateOptions = [
 // ----------------------------------------------------------------------
 // Obtener todas las simulaciones (GET - listado)
 // ----------------------------------------------------------------------
-const simulacionGets = async (req = request, res = response) => {
+const simulacionGets = async (req = request, res = response, next) => {
   // Filtra solo las simulaciones activas y no eliminadas
   const query = { estado: "Activo", eliminado: false };
 
@@ -40,15 +40,14 @@ const simulacionGets = async (req = request, res = response) => {
 
     res.json({ total, simulaciones });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // ----------------------------------------------------------------------
 // Obtener una simulación específica por ID (GET)
 // ----------------------------------------------------------------------
-const simulacionGet = async (req = request, res = response) => {
+const simulacionGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -64,15 +63,14 @@ const simulacionGet = async (req = request, res = response) => {
 
     res.json(simulacion);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // ----------------------------------------------------------------------
 // Crear una nueva simulación (POST)
 // ----------------------------------------------------------------------
-const simulacionPost = async (req = request, res = response) => {
+const simulacionPost = async (req = request, res = response, next) => {
   // Extrae los datos del cuerpo de la solicitud
   // Se esperan: idTipoProducto, idRefineria, rendimientos, precioUnitario, brent, convenio, montoTransporte y costoOperativo
   const {
@@ -105,15 +103,14 @@ const simulacionPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaSimulacion);
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // ----------------------------------------------------------------------
 // Actualizar una simulación existente (PUT)
 // ----------------------------------------------------------------------
-const simulacionPut = async (req = request, res = response) => {
+const simulacionPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   // Se extraen los datos a actualizar desde el body.
   // Puedes controlar cuáles campos quieres permitir modificar.
@@ -133,15 +130,14 @@ const simulacionPut = async (req = request, res = response) => {
 
     res.json(simulacionActualizada);
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // ----------------------------------------------------------------------
 // Eliminar una simulación (DELETE - eliminación lógica)
 // ----------------------------------------------------------------------
-const simulacionDelete = async (req = request, res = response) => {
+const simulacionDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -158,15 +154,14 @@ const simulacionDelete = async (req = request, res = response) => {
 
     res.json(simulacionEliminada);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // ----------------------------------------------------------------------
 // Controlador para manejo de PATCH (ejemplo básico)
 // ----------------------------------------------------------------------
-const simulacionPatch = (req = request, res = response) => {
+const simulacionPatch = (req = request, res = response, next) => {
   res.json({
     msg: "Patch API - simulacionPatch - funcionalidad pendiente de desarrollo",
   });

@@ -22,7 +22,7 @@ const populateOptions = [
 ];
 
 // Obtener todos los contratoBKs
-const contratoBKGets = async (req = request, res = response) => {
+const contratoBKGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -40,13 +40,12 @@ const contratoBKGets = async (req = request, res = response) => {
     });
     res.json({ total, contratos });
   } catch (err) {
-    console.error("Error en contratoBKGets:", err);
-    res.status(500).json({ error: "Error interno del servidor." });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener un contratoBK específico por ID
-const contratoBKGet = async (req = request, res = response) => {
+const contratoBKGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -66,13 +65,12 @@ const contratoBKGet = async (req = request, res = response) => {
 
     res.json(contrato);
   } catch (err) {
-    console.error("Error en contratoBKGet:", err);
-    res.status(500).json({ error: "Error interno del servidor." });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Crear un nuevo contratoBK
-const contratoBKPost = async (req = request, res = response) => {
+const contratoBKPost = async (req = request, res = response, next) => {
   const {
     numeroContrato,
     descripcion,
@@ -163,18 +161,16 @@ const contratoBKPost = async (req = request, res = response) => {
     await nuevoContrato.populate(populateOptions);
     res.status(201).json(nuevoContrato);
   } catch (err) {
-    console.error("Error en contratoBKPost:", err);
-
     // Si ocurre un error, eliminar el contratoBK creado
     if (nuevoContrato && nuevoContrato.id) {
       await ContratoBK.findByIdAndDelete(nuevoContrato.id);
     }
-    res.status(400).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Actualizar un contratoBK existente (con auditoría)
-const contratoBKPut = async (req = request, res = response) => {
+const contratoBKPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { items, abono, ...resto } = req.body;
 
@@ -240,13 +236,12 @@ const contratoBKPut = async (req = request, res = response) => {
 
     res.json(contratoBKActualizado);
   } catch (err) {
-    console.error("Error en contratoBKPut:", err);
-    res.status(400).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Eliminar (marcar como eliminado) un contratoBK (con auditoría)
-const contratoBKDelete = async (req = request, res = response) => {
+const contratoBKDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -279,13 +274,12 @@ const contratoBKDelete = async (req = request, res = response) => {
 
     res.json(contratoBKEliminado);
   } catch (err) {
-    console.error("Error en contratoBKDelete:", err);
-    res.status(500).json({ error: err.message });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const contratoBKPatch = async (req = request, res = response) => {
+const contratoBKPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -324,8 +318,7 @@ const contratoBKPatch = async (req = request, res = response) => {
 
     res.json(contratoBKActualizado);
   } catch (err) {
-    console.error("Error en contratoBKPatch:", err);
-    res.status(500).json({ error: "Error interno del servidor." });
+    next(err); // Propaga el error al middleware
   }
 };
 

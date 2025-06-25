@@ -19,7 +19,7 @@ const populateOptions = [
 ];
 
 // Obtener todas las cuentasBK
-const cuentasBKGets = async (req = request, res = response) => {
+const cuentasBKGets = async (req = request, res = response, next) => {
   const filtro = { eliminado: false };
 
   try {
@@ -37,15 +37,12 @@ const cuentasBKGets = async (req = request, res = response) => {
 
     res.json({ total, cuentasBK });
   } catch (err) {
-    console.error("Error en cuentasBKGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener las cuentasBK.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener una cuentaBK específica por ID
-const cuentaBKGet = async (req = request, res = response) => {
+const cuentaBKGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -65,15 +62,16 @@ const cuentaBKGet = async (req = request, res = response) => {
 
     res.json(cuentaBK);
   } catch (err) {
-    console.error("Error en cuentaBKGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la cuentaBK.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Crear una nueva cuentaBK desde un contrato
-const cuentaBKPostFromContrato = async (req = request, res = response) => {
+const cuentaBKPostFromContrato = async (
+  req = request,
+  res = response,
+  next
+) => {
   const { idContrato } = req.body;
 
   try {
@@ -116,16 +114,12 @@ const cuentaBKPostFromContrato = async (req = request, res = response) => {
       cuentaBK: nuevaCuentaBK,
     });
   } catch (err) {
-    console.error("Error en cuentaBKPostFromContrato:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al crear la cuentaBK desde el contrato.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Actualizar una cuentaBK existente con historial de modificaciones
-const cuentaBKPut = async (req = request, res = response) => {
+const cuentaBKPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...datosActualizados } = req.body;
 
@@ -160,15 +154,12 @@ const cuentaBKPut = async (req = request, res = response) => {
 
     res.json(cuentaBKActualizada);
   } catch (err) {
-    console.error("Error en cuentaBKPut:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar la cuentaBK.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Eliminar (marcar como eliminado) una cuentaBK con historial de auditoría
-const cuentaBKDelete = async (req = request, res = response) => {
+const cuentaBKDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -197,15 +188,16 @@ const cuentaBKDelete = async (req = request, res = response) => {
       cuentaBK: cuentaBKEliminada,
     });
   } catch (err) {
-    console.error("Error en cuentaBKDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la cuentaBK.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Sincronizar una cuentaBK desde un contrato
-const cuentaBKSycnFromContrato = async (req = request, res = response) => {
+const cuentaBKSycnFromContrato = async (
+  req = request,
+  res = response,
+  next
+) => {
   const { contratoId } = req.params;
 
   try {
@@ -222,10 +214,7 @@ const cuentaBKSycnFromContrato = async (req = request, res = response) => {
       cuentaBK: cuentaBKSincronizada,
     });
   } catch (err) {
-    console.error("Error en cuentaBKSycnFromContrato:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al sincronizar la cuentaBK.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

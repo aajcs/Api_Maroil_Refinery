@@ -13,7 +13,7 @@ const populateOptions = [
 ]; // Relación con el modelo Refineria, seleccionando solo el campo "nombre"
 
 // Controlador para obtener todos los contactos con población de referencias
-const contactoGets = async (req = request, res = response) => {
+const contactoGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo contactos no eliminados
 
   try {
@@ -29,22 +29,12 @@ const contactoGets = async (req = request, res = response) => {
     });
     res.json({ total, contactos }); // Responde con el total y la lista de contactos
   } catch (err) {
-    console.error("Error en contactoGets:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "Error en las referencias. Verifica que los IDs sean válidos.",
-      }); // Responde con un error 400 si hay un problema con las referencias
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los contactos.",
-    }); // Responde con un error 500 en caso de un problema interno
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un contacto específico por ID
-const contactoGet = async (req = request, res = response) => {
+const contactoGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del contacto desde los parámetros de la URL
 
   try {
@@ -65,22 +55,12 @@ const contactoGet = async (req = request, res = response) => {
 
     res.json(contacto); // Responde con los datos del contacto
   } catch (err) {
-    console.error("Error en contactoGet:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de contacto no válido.",
-      }); // Responde con un error 400 si el ID no es válido
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el contacto.",
-    }); // Responde con un error 500 en caso de un problema interno
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo contacto
-const contactoPost = async (req = request, res = response) => {
+const contactoPost = async (req = request, res = response, next) => {
   const {
     correo,
     cuentasBancarias,
@@ -121,22 +101,12 @@ const contactoPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaContacto); // Responde con un código 201 (creado) y los datos del contacto
   } catch (err) {
-    console.error("Error en contactoPost:", err);
-
-    if (err.name === "ValidationError") {
-      return res.status(400).json({
-        error: `Datos de contacto no válidos.${err.message}`,
-      }); // Responde con un error 400 si los datos no son válidos
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al crear el contacto.",
-    }); // Responde con un error 500 en caso de un problema interno
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar un contacto existente
-const contactoPut = async (req = request, res = response) => {
+const contactoPut = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del contacto desde los parámetros de la URL
   const { _id, idChequeoCalidad, idChequeoCantidad, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo ciertos campos
 
@@ -163,22 +133,12 @@ const contactoPut = async (req = request, res = response) => {
 
     res.json(contactoActualizada); // Responde con los datos del contacto actualizado
   } catch (err) {
-    console.error("Error en contactoPut:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de contacto no válido.",
-      }); // Responde con un error 400 si el ID no es válido
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar el contacto.",
-    }); // Responde con un error 500 en caso de un problema interno
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un contacto
-const contactoDelete = async (req = request, res = response) => {
+const contactoDelete = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del contacto desde los parámetros de la URL
 
   try {
@@ -200,22 +160,12 @@ const contactoDelete = async (req = request, res = response) => {
 
     res.json(contacto); // Responde con los datos del contacto eliminado
   } catch (err) {
-    console.error("Error en contactoDelete:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de contacto no válido.",
-      }); // Responde con un error 400 si el ID no es válido
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el contacto.",
-    }); // Responde con un error 500 en caso de un problema interno
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH (ejemplo básico)
-const contactoPatch = (req = request, res = response) => {
+const contactoPatch = (req = request, res = response, next) => {
   res.json({
     msg: "patch API - contactoPatch", // Mensaje de prueba
   });

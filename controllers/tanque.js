@@ -22,7 +22,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todos los tanques con paginación y población de referencias
-const tanqueGets = async (req = request, res = response) => {
+const tanqueGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo tanques no eliminados
 
   try {
@@ -43,13 +43,12 @@ const tanqueGets = async (req = request, res = response) => {
       tanques,
     });
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un tanque específico por ID
-const tanqueGet = async (req = request, res = response) => {
+const tanqueGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del tanque desde los parámetros de la URL
 
   try {
@@ -70,13 +69,12 @@ const tanqueGet = async (req = request, res = response) => {
 
     res.json(tanque); // Responde con los datos del tanque
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo tanque
-const tanquePost = async (req = request, res = response) => {
+const tanquePost = async (req = request, res = response, next) => {
   // Extrae los datos del cuerpo de la solicitud
   const {
     nombre,
@@ -111,13 +109,12 @@ const tanquePost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoTanque); // Responde con un código 201 (creado) y los datos del tanque
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar un tanque existente
-const tanquePut = async (req = request, res = response) => {
+const tanquePut = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del tanque desde los parámetros de la URL
   const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
 
@@ -145,13 +142,12 @@ const tanquePut = async (req = request, res = response) => {
 
     res.json(tanqueActualizado); // Responde con los datos del tanque actualizado
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un tanque
-const tanqueDelete = async (req = request, res = response) => {
+const tanqueDelete = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del tanque desde los parámetros de la URL
 
   try {
@@ -174,13 +170,12 @@ const tanqueDelete = async (req = request, res = response) => {
 
     res.json(tanque); // Responde con los datos del tanque eliminado
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH (ejemplo básico)
-const tanquePatch = (req = request, res = response) => {
+const tanquePatch = (req = request, res = response, next) => {
   res.json({
     msg: "patch API - tanquePatch", // Mensaje de prueba
   });

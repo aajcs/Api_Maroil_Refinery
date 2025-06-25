@@ -11,7 +11,7 @@ const populateOptions = [
   }, // Popula historial.modificadoPor en el array
 ];
 // Controlador para obtener todas las refinerías con paginación y población de referencias
-const bunkeringGets = async (req = request, res = response) => {
+const bunkeringGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo refinerías no eliminadas
 
   try {
@@ -34,13 +34,12 @@ const bunkeringGets = async (req = request, res = response) => {
       bunkerings,
     });
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener una refinería específica por ID
-const bunkeringGet = async (req = request, res = response) => {
+const bunkeringGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la refinería desde los parámetros de la URL
 
   try {
@@ -69,13 +68,12 @@ const bunkeringGet = async (req = request, res = response) => {
 
     res.json(bunkering); // Responde con los datos de la refinería
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear una nueva refinería
-const bunkeringPost = async (req = request, res = response) => {
+const bunkeringPost = async (req = request, res = response, next) => {
   // Extrae los datos del cuerpo de la solicitud
   const {
     ubicacion,
@@ -110,13 +108,12 @@ const bunkeringPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaBunkering); // Responde con un código 201 (creado) y los datos de la refinería
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar una refinería existente
-const bunkeringPut = async (req = request, res = response) => {
+const bunkeringPut = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la refinería desde los parámetros de la URL
   const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
   try {
@@ -145,13 +142,12 @@ const bunkeringPut = async (req = request, res = response) => {
     req.io.emit("bunkering-modificada", bunkeringActualizada); // Emite un evento de WebSocket para notificar la modificación
     res.json(bunkeringActualizada); // Responde con los datos de la refinería actualizada
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) una refinería
-const bunkeringDelete = async (req = request, res = response) => {
+const bunkeringDelete = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la refinería desde los parámetros de la URL
 
   try {
@@ -174,13 +170,12 @@ const bunkeringDelete = async (req = request, res = response) => {
 
     res.json(bunkering); // Responde con los datos de la refinería eliminada
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH (ejemplo básico)
-const bunkeringPatch = (req = request, res = response) => {
+const bunkeringPatch = (req = request, res = response, next) => {
   res.json({
     msg: "patch API - bunkeringPatch", // Mensaje de prueba
   });

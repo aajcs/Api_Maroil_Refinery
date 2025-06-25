@@ -43,7 +43,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todas las refinaciones con paginación y población de referencias
-const refinacionGets = async (req = request, res = response) => {
+const refinacionGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo refinaciones no eliminadas
 
   try {
@@ -54,22 +54,12 @@ const refinacionGets = async (req = request, res = response) => {
 
     res.json({ total, refinacions }); // Responde con el total y la lista de refinaciones
   } catch (err) {
-    console.error("Error en refinacionGets:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "Error en las referencias. Verifica que los IDs sean válidos.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener las refinaciones.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener una refinación específica por ID
-const refinacionGet = async (req = request, res = response) => {
+const refinacionGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -85,22 +75,12 @@ const refinacionGet = async (req = request, res = response) => {
 
     res.json(refinacion);
   } catch (err) {
-    console.error("Error en refinacionGet:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de refinación no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear una nueva refinación
-const refinacionPost = async (req = request, res = response) => {
+const refinacionPost = async (req = request, res = response, next) => {
   const {
     idTorre,
     idChequeoCalidad,
@@ -143,22 +123,12 @@ const refinacionPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaRefinacion); // Responde con la refinación creada
   } catch (err) {
-    console.error("Error en refinacionPost:", err);
-
-    if (err.name === "ValidationError") {
-      return res.status(400).json({
-        error: "Datos de refinación no válidos.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al crear la refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar una refinación existente
-const refinacionPut = async (req = request, res = response) => {
+const refinacionPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, idChequeoCalidad, idChequeoCantidad, ...resto } = req.body;
 
@@ -175,22 +145,12 @@ const refinacionPut = async (req = request, res = response) => {
 
     res.json(refinacionActualizada);
   } catch (err) {
-    console.error("Error en refinacionPut:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de refinación no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar la refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) una refinación
-const refinacionDelete = async (req = request, res = response) => {
+const refinacionDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -206,22 +166,12 @@ const refinacionDelete = async (req = request, res = response) => {
 
     res.json(refinacion);
   } catch (err) {
-    console.error("Error en refinacionDelete:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de refinación no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH (ejemplo básico)
-const refinacionPatch = (req = request, res = response) => {
+const refinacionPatch = (req = request, res = response, next) => {
   res.json({
     msg: "patch API - refinacionPatch", // Mensaje de prueba
   });

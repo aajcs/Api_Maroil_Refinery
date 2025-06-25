@@ -1,36 +1,71 @@
 // middleware/errorHandler.js
 const errorHandler = (err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || "Error interno del servidor";
+  console.error("Error:", err);
 
-  // Manejo específico de errores de MongoDB
-  if (err.code === 11000 && err.keyPattern && err.keyPattern.correo) {
+  // Manejo específico de errores
+  if (err.name === "ValidationError") {
+    const errors = Object.values(err.errors).map((val) => val.message);
     return res.status(400).json({
-      success: false,
-      error: {
-        status: 400,
-        message:
-          "El correo ya está registrado. Por favor, use un correo diferente.",
-      },
+      ok: false,
+      message: "Error de validación",
+      errors,
+    });
+  }
+  const duplicateKeyCode =
+    err.code ||
+    (err.errorResponse && err.errorResponse.code) ||
+    (err.cause && err.cause.code);
+  if (duplicateKeyCode === 11000) {
+    const keyPattern =
+      err.keyPattern ||
+      (err.errorResponse && err.errorResponse.keyPattern) ||
+      (err.cause && err.cause.keyPattern);
+    const keyValue =
+      err.keyValue ||
+      (err.errorResponse && err.errorResponse.keyValue) ||
+      (err.cause && err.cause.keyValue);
+
+    let campos = "El valor ya está registrado";
+    if (keyPattern && keyValue) {
+      const detalles = Object.keys(keyPattern)
+        .map((campo) => `${campo}: ${keyValue[campo]}`)
+        .join(", ");
+      campos = `Ya existe un registro con ${detalles}`;
+    }
+
+    return res.status(409).json({
+      ok: false,
+      message: "Valor duplicado",
+      error: campos || err.message,
+      detalles: campos,
     });
   }
 
-  // Formato de respuesta para errores generales
-  const errorResponse = {
-    success: false,
-    error: {
-      status: statusCode,
-      message,
-    },
-  };
-
-  // Desarrollo: incluye detalles adicionales
-  if (process.env.NODE_ENV === "development") {
-    errorResponse.error.stack = err.stack;
-    errorResponse.error.details = err;
+  if (err.name === "CastError") {
+    return res.status(400).json({
+      ok: false,
+      message: "ID inválido",
+      error: `El valor ${err.value} no es válido para ${err.path}`,
+    });
   }
 
-  res.status(statusCode).json(errorResponse);
+  // Manejo de errores personalizados
+  if (err.isOperational) {
+    return res.status(err.statusCode).json({
+      ok: false,
+      message: err.message,
+    });
+  }
+
+  // Error genérico (no manejado específicamente)
+  res.status(500).json({
+    ok: false,
+    message: "Error interno del servidor",
+    error:
+      process.env.NODE_ENV === "development"
+        ? err.message
+        : "Contacte al administrador",
+  });
 };
 
 module.exports = errorHandler;

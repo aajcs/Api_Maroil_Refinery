@@ -30,7 +30,7 @@ const populateOptions = [
 ];
 
 // Obtener todos los inventarios
-const inventarioGets = async (req = request, res = response) => {
+const inventarioGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -41,15 +41,12 @@ const inventarioGets = async (req = request, res = response) => {
 
     res.json({ total, inventarios });
   } catch (err) {
-    console.error("Error en inventarioGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los inventarios.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener un inventario por ID
-const inventarioGet = async (req = request, res = response) => {
+const inventarioGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -64,15 +61,12 @@ const inventarioGet = async (req = request, res = response) => {
 
     res.json(inventario);
   } catch (err) {
-    console.error("Error en inventarioGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el inventario.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Crear un nuevo inventario
-const inventarioPost = async (req = request, res = response) => {
+const inventarioPost = async (req = request, res = response, next) => {
   const {
     idRefineria,
     idContrato,
@@ -100,15 +94,12 @@ const inventarioPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoInventario);
   } catch (err) {
-    console.error("Error en inventarioPost:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al crear el inventario.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Actualizar un inventario existente
-const inventarioPut = async (req = request, res = response) => {
+const inventarioPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, eliminado, ...resto } = req.body;
 
@@ -140,15 +131,12 @@ const inventarioPut = async (req = request, res = response) => {
 
     res.json(inventarioActualizado);
   } catch (err) {
-    console.error("Error en inventarioPut:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar el inventario.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Eliminar (marcar como eliminado) un inventario
-const inventarioDelete = async (req = request, res = response) => {
+const inventarioDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -177,15 +165,12 @@ const inventarioDelete = async (req = request, res = response) => {
       inventarioEliminado,
     });
   } catch (err) {
-    console.error("Error en inventarioDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el inventario.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH
-const inventarioPatch = async (req = request, res = response) => {
+const inventarioPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -202,11 +187,7 @@ const inventarioPatch = async (req = request, res = response) => {
 
     res.json(inventarioActualizado);
   } catch (err) {
-    console.error("Error en inventarioPatch:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente el inventario.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

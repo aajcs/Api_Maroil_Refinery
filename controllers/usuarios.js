@@ -13,7 +13,7 @@ const Usuario = require("../models/usuario"); // Modelo de Usuario para interact
 const { generarJWT } = require("../helpers"); // Función para generar tokens JWT
 
 // Controlador para obtener todos los usuarios no eliminados
-const usuariosGets = async (req = request, res = response) => {
+const usuariosGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo usuarios no eliminados
 
   // Ejecuta ambas consultas en paralelo para optimizar el tiempo de respuesta
@@ -35,7 +35,7 @@ const usuariosGets = async (req = request, res = response) => {
 };
 
 // Controlador para obtener un usuario por su ID
-const usuariosGet = async (req = request, res = response) => {
+const usuariosGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del usuario desde los parámetros de la URL
   const usuario = await Usuario.findById(id).populate(populateOptions); // Busca el usuario por su ID
   // Ordenar historial por fecha ascendente en cada torre
@@ -99,8 +99,7 @@ const usuariosPost = async (req, res = response) => {
       token,
     });
   } catch (err) {
-    // Manejo de errores: responde con un error 400 si algo falla
-    res.status(400).json({ error: err });
+    next(err); // Propaga el error al middleware
   }
 };
 

@@ -29,7 +29,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todos los tipos de producto con paginación y población de referencias
-const tipoProductoGets = async (req = request, res = response) => {
+const tipoProductoGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo tipos de producto activos y no eliminados
 
   try {
@@ -50,13 +50,12 @@ const tipoProductoGets = async (req = request, res = response) => {
       tipoProductos,
     });
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un tipo de producto específico por ID
-const tipoProductoGet = async (req = request, res = response) => {
+const tipoProductoGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del tipo de producto desde los parámetros de la URL
 
   try {
@@ -77,13 +76,12 @@ const tipoProductoGet = async (req = request, res = response) => {
 
     res.json(tipoProducto); // Responde con los datos del tipo de producto
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo tipo de producto
-const tipoProductoPost = async (req = request, res = response) => {
+const tipoProductoPost = async (req = request, res = response, next) => {
   // Extrae los datos del cuerpo de la solicitud
   console.log("aqui?");
 
@@ -135,13 +133,12 @@ const tipoProductoPost = async (req = request, res = response) => {
     await nuevoTipoProducto.populate(populateOptions); // Población de referencias para la respuesta
     res.status(201).json(nuevoTipoProducto); // Responde con un código 201 (creado) y los datos del tipo de producto
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar un tipo de producto existente
-const tipoProductoPut = async (req = request, res = response) => {
+const tipoProductoPut = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del tipo de producto desde los parámetros de la URL
   const { idProducto, datosProducto, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, incluyendo datos para actualizar en idProducto
 
@@ -179,13 +176,12 @@ const tipoProductoPut = async (req = request, res = response) => {
 
     res.json(tipoProductoActualizado); // Responde con los datos del tipo de producto actualizado
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un tipo de producto
-const tipoProductoDelete = async (req = request, res = response) => {
+const tipoProductoDelete = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del tipo de producto desde los parámetros de la URL
   try {
     // Auditoría: captura estado antes de eliminar
@@ -213,13 +209,12 @@ const tipoProductoDelete = async (req = request, res = response) => {
 
     res.json(tipoProducto); // Responde con los datos del tipo de producto eliminado
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH (ejemplo básico)
-const tipoProductoPatch = (req = request, res = response) => {
+const tipoProductoPatch = (req = request, res = response, next) => {
   res.json({
     msg: "patch API - tipoProductoPatch", // Mensaje de prueba
   });

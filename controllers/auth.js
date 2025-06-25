@@ -46,11 +46,8 @@ const login = async (req, res = response) => {
       usuario,
       token,
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      msg: "Hable con el administrador", // Error genérico del servidor
-    });
+  } catch (err) {
+    next(err); // Propaga el error al middleware
   }
 };
 
@@ -93,10 +90,8 @@ const googleSignin = async (req, res = response) => {
       usuario,
       token,
     });
-  } catch (error) {
-    res.status(400).json({
-      msg: "Token de Google no es válido", // Error si el token de Google no es válido
-    });
+  } catch (err) {
+    next(err); // Propaga el error al middleware
   }
 };
 

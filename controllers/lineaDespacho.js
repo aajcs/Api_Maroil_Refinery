@@ -17,7 +17,7 @@ const populateOptions = [
 ]; // Relación con el modelo Refineria, seleccionando solo el campo "nombre"
 
 // Controlador para obtener todas las líneas de carga con población de referencias
-const lineaDespachoGets = async (req = request, res = response) => {
+const lineaDespachoGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo líneas de carga no eliminadas
 
   try {
@@ -35,13 +35,12 @@ const lineaDespachoGets = async (req = request, res = response) => {
       lineaDespachos,
     });
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener una línea de carga específica por ID
-const lineaDespachoGet = async (req = request, res = response) => {
+const lineaDespachoGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la línea de carga desde los parámetros de la URL
 
   try {
@@ -60,13 +59,12 @@ const lineaDespachoGet = async (req = request, res = response) => {
 
     res.json(lineaDespacho); // Responde con los datos de la línea de carga
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear una nueva línea de carga
-const lineaDespachoPost = async (req = request, res = response) => {
+const lineaDespachoPost = async (req = request, res = response, next) => {
   const { ubicacion, nombre, idRefineria, tipoLinea, estado, idProducto } =
     req.body; // Extrae los datos del cuerpo de la solicitud
   try {
@@ -86,13 +84,12 @@ const lineaDespachoPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaLineaDespacho); // Responde con un código 201 (creado) y los datos de la línea de carga
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar una línea de carga existente
-const lineaDespachoPut = async (req = request, res = response) => {
+const lineaDespachoPut = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la línea de carga desde los parámetros de la URL
   const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
 
@@ -119,13 +116,12 @@ const lineaDespachoPut = async (req = request, res = response) => {
 
     res.json(lineaDespachoActualizada); // Responde con los datos de la línea de carga actualizada
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(400).json({ error: err.message }); // Responde con un error 400 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) una línea de carga
-const lineaDespachoDelete = async (req = request, res = response) => {
+const lineaDespachoDelete = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la línea de carga desde los parámetros de la URL
 
   try {
@@ -147,13 +143,12 @@ const lineaDespachoDelete = async (req = request, res = response) => {
 
     res.json(lineaDespacho); // Responde con los datos de la línea de carga eliminada
   } catch (err) {
-    console.error(err); // Muestra el error en la consola
-    res.status(500).json({ error: err.message }); // Responde con un error 500 y el mensaje del error
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH (ejemplo básico)
-const lineaDespachoPatch = (req = request, res = response) => {
+const lineaDespachoPatch = (req = request, res = response, next) => {
   res.json({
     msg: "patch API - lineaDespachoPatch", // Mensaje de prueba
   });

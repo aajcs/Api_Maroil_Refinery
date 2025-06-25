@@ -40,7 +40,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todas las refinaciones de salida
-const refinacionSalidaGets = async (req = request, res = response) => {
+const refinacionSalidaGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo refinaciones no eliminadas
 
   try {
@@ -51,23 +51,12 @@ const refinacionSalidaGets = async (req = request, res = response) => {
 
     res.json({ total, refinacionSalidas }); // Responde con el total y la lista de refinaciones
   } catch (err) {
-    console.error("Error en refinacionSalidaGets:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "Error en las referencias. Verifica que los IDs sean válidos.",
-      });
-    }
-
-    res.status(500).json({
-      error:
-        "Error interno del servidor al obtener las refinaciones de salida.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener una refinación específica por ID
-const refinacionSalidaGet = async (req = request, res = response) => {
+const refinacionSalidaGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -83,22 +72,12 @@ const refinacionSalidaGet = async (req = request, res = response) => {
 
     res.json(refinacionSalida);
   } catch (err) {
-    console.error("Error en refinacionSalidaGet:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de refinación no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear una nueva refinación de salida
-const refinacionSalidaPost = async (req = request, res = response) => {
+const refinacionSalidaPost = async (req = request, res = response, next) => {
   const {
     idRefineria,
     idRefinacion,
@@ -139,22 +118,12 @@ const refinacionSalidaPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevaRefinacionSalida); // Responde con la refinación creada
   } catch (err) {
-    console.error("Error en refinacionSalidaPost:", err);
-
-    if (err.name === "ValidationError") {
-      return res.status(400).json({
-        error: "Datos de refinación no válidos.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al crear la refinación de salida.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar una refinación existente
-const refinacionSalidaPut = async (req = request, res = response) => {
+const refinacionSalidaPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { idRefinacion, ...resto } = req.body;
 
@@ -185,22 +154,12 @@ const refinacionSalidaPut = async (req = request, res = response) => {
 
     res.json(refinacionSalidaActualizada); // Responde con la refinación actualizada
   } catch (err) {
-    console.error("Error en refinacionSalidaPut:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de refinación no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar la refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) una refinación
-const refinacionSalidaDelete = async (req = request, res = response) => {
+const refinacionSalidaDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -222,22 +181,12 @@ const refinacionSalidaDelete = async (req = request, res = response) => {
 
     res.json(refinacionSalida); // Responde con la refinación eliminada
   } catch (err) {
-    console.error("Error en refinacionSalidaDelete:", err);
-
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        error: "ID de refinación no válido.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la refinación.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH (ejemplo básico)
-const refinacionSalidaPatch = (req = request, res = response) => {
+const refinacionSalidaPatch = (req = request, res = response, next) => {
   res.json({
     msg: "patch API - refinacionSalidaPatch", // Mensaje de prueba
   });

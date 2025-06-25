@@ -31,7 +31,7 @@ const populateOptions = [
 ];
 
 // Obtener todas las recepcions con historial ordenado
-const recepcionBKGets = async (req = request, res = response) => {
+const recepcionBKGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
   try {
@@ -49,15 +49,12 @@ const recepcionBKGets = async (req = request, res = response) => {
 
     res.json({ total, recepcions });
   } catch (err) {
-    console.error("Error en recepcionBKGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener las recepcions.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Obtener una recepción específica por ID
-const recepcionBKGet = async (req = request, res = response) => {
+const recepcionBKGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -77,15 +74,12 @@ const recepcionBKGet = async (req = request, res = response) => {
 
     res.json(recepcion);
   } catch (err) {
-    console.error("Error en recepcionBKGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la recepción.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Crear una nueva recepción
-const recepcionBKPost = async (req = request, res = response) => {
+const recepcionBKPost = async (req = request, res = response, next) => {
   const {
     idContrato,
     idContratoItems,
@@ -156,15 +150,12 @@ const recepcionBKPost = async (req = request, res = response) => {
     await nuevaRecepcion.populate(populateOptions);
     res.status(201).json({ recepcion: nuevaRecepcion }); // Responde con la recepción creada
   } catch (err) {
-    console.error("Error en recepcionBKPost:", err);
-    res.status(400).json({
-      error: "Error al crear la recepción. Verifica los datos proporcionados.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Actualizar una recepción existente con historial de modificaciones
-const recepcionBKPut = async (req = request, res = response) => {
+const recepcionBKPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -196,16 +187,12 @@ const recepcionBKPut = async (req = request, res = response) => {
 
     res.json(recepcionActualizada);
   } catch (err) {
-    console.error("Error en recepcionBKPut:", err);
-    res.status(400).json({
-      error:
-        "Error al actualizar la recepción. Verifica los datos proporcionados.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Eliminar (marcar como eliminado) una recepción con historial de auditoría
-const recepcionBKDelete = async (req = request, res = response) => {
+const recepcionBKDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -231,15 +218,12 @@ const recepcionBKDelete = async (req = request, res = response) => {
 
     res.json(recepcionEliminada);
   } catch (err) {
-    console.error("Error en recepcionBKDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la recepción.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar actualizaciones parciales (PATCH)
-const recepcionBKPatch = async (req = request, res = response) => {
+const recepcionBKPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -256,11 +240,7 @@ const recepcionBKPatch = async (req = request, res = response) => {
 
     res.json(recepcionActualizada);
   } catch (err) {
-    console.error("Error en recepcionBKPatch:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente la recepción.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

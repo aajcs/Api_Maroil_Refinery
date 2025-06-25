@@ -8,7 +8,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todos los operadores
-const operadorBKGets = async (req = request, res = response) => {
+const operadorBKGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para operadores no eliminados
 
   try {
@@ -19,15 +19,12 @@ const operadorBKGets = async (req = request, res = response) => {
 
     res.json({ total, operadores }); // Responde con el total y la lista de operadores
   } catch (err) {
-    console.error("Error en operadorGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener los operadores.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener un operador específico por ID
-const operadorBKGet = async (req = request, res = response) => {
+const operadorBKGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -42,15 +39,12 @@ const operadorBKGet = async (req = request, res = response) => {
 
     res.json(operador);
   } catch (err) {
-    console.error("Error en operadorGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener el operador.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear un nuevo operador
-const operadorBKPost = async (req = request, res = response) => {
+const operadorBKPost = async (req = request, res = response, next) => {
   const { nombre, cargo, turno, idBunkering } = req.body;
 
   try {
@@ -67,15 +61,12 @@ const operadorBKPost = async (req = request, res = response) => {
 
     res.status(201).json(nuevoOperador);
   } catch (err) {
-    console.error("Error en operadorPost:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al crear el operador.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar un operador existente
-const operadorBKPut = async (req = request, res = response) => {
+const operadorBKPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -92,15 +83,12 @@ const operadorBKPut = async (req = request, res = response) => {
 
     res.json(operadorActualizado);
   } catch (err) {
-    console.error("Error en operadorPut:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar el operador.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) un operador
-const operadorBKDelete = async (req = request, res = response) => {
+const operadorBKDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -121,15 +109,12 @@ const operadorBKDelete = async (req = request, res = response) => {
 
     res.json(operadorEliminado);
   } catch (err) {
-    console.error("Error en operadorDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar el operador.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para manejar solicitudes PATCH
-const operadorBKPatch = async (req = request, res = response) => {
+const operadorBKPatch = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
@@ -146,11 +131,7 @@ const operadorBKPatch = async (req = request, res = response) => {
 
     res.json(operadorActualizado);
   } catch (err) {
-    console.error("Error en operadorPatch:", err);
-    res.status(500).json({
-      error:
-        "Error interno del servidor al actualizar parcialmente el operador.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 

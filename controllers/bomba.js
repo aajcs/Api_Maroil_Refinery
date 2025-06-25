@@ -6,7 +6,7 @@ const Bomba = require("../models/bomba"); // Modelo Bomba para interactuar con l
 const populateOptions = [{ path: "idRefineria", select: "nombre" }]; // Relación con el modelo Refineria, seleccionando solo el campo "nombre"
 
 // Controlador para obtener todas las bombas
-const bombaGets = async (req = request, res = response) => {
+const bombaGets = async (req = request, res = response, next) => {
   const query = { eliminado: false }; // Filtro para obtener solo bombas no eliminadas
 
   const [total, bombas] = await Promise.all([
@@ -21,7 +21,7 @@ const bombaGets = async (req = request, res = response) => {
 };
 
 // Controlador para obtener una bomba específica por ID
-const bombaGet = async (req = request, res = response) => {
+const bombaGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la bomba desde los parámetros de la URL
   const bomba = await Bomba.findById(id).populate("idRefineria", "nombre"); // Busca la bomba por ID y popula el campo "idRefineria"
 
@@ -54,7 +54,7 @@ const bombaPost = async (req, res = response) => {
       bomba, // Responde con los datos de la bomba creada
     });
   } catch (err) {
-    res.status(400).json({ error: err }); // Responde con un error 400 si ocurre un problema
+    next(err); // Propaga el error al middleware
   }
 };
 

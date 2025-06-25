@@ -17,7 +17,7 @@ const populateOptions = [
 ];
 
 // Controlador para obtener todas las cuentas
-const cuentaGets = async (req = request, res = response) => {
+const cuentaGets = async (req = request, res = response, next) => {
   const query = {}; // Filtro para obtener solo cuentas no eliminadas
 
   try {
@@ -28,15 +28,12 @@ const cuentaGets = async (req = request, res = response) => {
 
     res.json({ total, cuentas });
   } catch (err) {
-    console.error("Error en cuentaGets:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener las cuentas.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para obtener una cuenta específica por ID
-const cuentaGet = async (req = request, res = response) => {
+const cuentaGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -50,15 +47,12 @@ const cuentaGet = async (req = request, res = response) => {
 
     res.json(cuenta);
   } catch (err) {
-    console.error("Error en cuentaGet:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al obtener la cuenta.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para crear una nueva cuenta desde un contrato
-const cuentaPostFromContrato = async (req = request, res = response) => {
+const cuentaPostFromContrato = async (req = request, res = response, next) => {
   const { idContrato } = req.body;
 
   try {
@@ -100,15 +94,12 @@ const cuentaPostFromContrato = async (req = request, res = response) => {
       cuenta: nuevaCuenta,
     });
   } catch (err) {
-    console.error("Error en cuentaPostFromContrato:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al crear la cuenta desde el contrato.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para actualizar una cuenta existente
-const cuentaPut = async (req = request, res = response) => {
+const cuentaPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -136,15 +127,12 @@ const cuentaPut = async (req = request, res = response) => {
 
     res.json(cuentaActualizada);
   } catch (err) {
-    console.error("Error en cuentaPut:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al actualizar la cuenta.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para eliminar (marcar como eliminado) una cuenta
-const cuentaDelete = async (req = request, res = response) => {
+const cuentaDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -169,15 +157,12 @@ const cuentaDelete = async (req = request, res = response) => {
       cuenta: cuentaEliminada,
     });
   } catch (err) {
-    console.error("Error en cuentaDelete:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al eliminar la cuenta.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
 // Controlador para sincronizar una cuenta desde un contrato
-const cuentaSyncFromContrato = async (req = request, res = response) => {
+const cuentaSyncFromContrato = async (req = request, res = response, next) => {
   const { contratoId } = req.params;
 
   try {
@@ -217,10 +202,7 @@ const cuentaSyncFromContrato = async (req = request, res = response) => {
       cuenta: cuentaSincronizada,
     });
   } catch (err) {
-    console.error("Error en cuentaSyncFromContrato:", err);
-    res.status(500).json({
-      error: "Error interno del servidor al sincronizar la cuenta.",
-    });
+    next(err); // Propaga el error al middleware
   }
 };
 
