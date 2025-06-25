@@ -20,7 +20,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["email", "push", "in-app", "sms"],
+      enum: ["email", "push", "in-app", "sms", "webhook"],
       default: "in-app",
     },
     read: {
