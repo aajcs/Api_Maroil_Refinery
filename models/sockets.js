@@ -16,12 +16,7 @@ class Sockets {
   socketEvents() {
     // On connection
     this.io.on("connection", async (socket) => {
-      console.log(
-        "Intentando conectar socket:",
-        socket.handshake.query["x-token"]
-      );
       const [valido, id] = comprobarJWT(socket.handshake.query["x-token"]);
-      console.log("Resultado de validación JWT:", valido, id);
       if (!valido) {
         console.log("socket no identificado");
         return socket.disconnect();

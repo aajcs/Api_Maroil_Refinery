@@ -85,7 +85,7 @@ const notificationsPost = async (req = request, res = response, next) => {
     await newNotification.save();
     await newNotification.populate(populateOptions); // Poblar referencias después de guardar
 
-    req.io.emit("new-notification", newNotification); // Emite un evento de WebSocket para notificar la modificación
+    req.io.to(`user-${userId}`).emit("new-notification", newNotification); // Emite un evento de WebSocket para notificar la modificación
     res.status(201).json(newNotification);
   } catch (err) {
     next(err);

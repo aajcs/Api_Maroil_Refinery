@@ -3,12 +3,22 @@ const http = require("http");
 const socketio = require("socket.io");
 const cors = require("cors");
 const fileUpload = require("express-fileupload");
+const admin = require("firebase-admin");
 
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
 const errorHandler = require("../middlewares/error-handler");
 // const tipoProductoBK = require("./bunkering/tipoProductoBK");
 // const productoBK = require("./bunkering/productoBK");
+
+// Inicializa Firebase Admin solo si no está inicializado
+if (!admin.apps.length) {
+  // const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  const serviceAccount = require("../serviceAccountKey.json");
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 
 class Server {
   constructor() {
@@ -256,6 +266,33 @@ class Server {
       require("../routes/bunkering/chequeoCalidadBK")
     );
     this.app.use(this.paths.notification, require("../routes/notification"));
+
+    // Rutas FCM
+    this.app.post("/api/send-notification", async (req, res) => {
+      try {
+        const { token, title, body } = req.body;
+        const message = {
+          token,
+          notification: { title, body },
+          webpush: {
+            fcmOptions: {
+              link: "https://tudominio.com",
+            },
+          },
+        };
+        await admin.messaging().send(message);
+        res.status(200).json({ success: true });
+      } catch (error) {
+        console.error("Error sending notification:", error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+    this.app.post("/api/save-token", (req, res) => {
+      const { token } = req.body;
+      // Aquí deberías guardar el token en tu base de datos
+      console.log("Token recibido:", token);
+      res.status(200).send("Token guardado");
+    });
 
     // Rutas específicas del módulo Bunker
     // const bunkerRoutes = "../routes/bunker";

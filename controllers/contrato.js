@@ -242,7 +242,12 @@ const contratoPost = async (req, res = response, next) => {
       }));
 
       await notification.insertMany(notificaciones); // Bulk insert notifications
-
+      // Emitir notificación en tiempo real a cada usuario
+      notificaciones.forEach((newNotification) => {
+        req.io
+          .to(`user-${newNotification.userId}`)
+          .emit("new-notification", newNotification);
+      });
       console.log("Notificaciones creadas:", notificaciones);
     }
 
