@@ -36,7 +36,7 @@ const lineaDespachoSchema = Schema(
     idProducto: {
       type: Schema.Types.ObjectId,
       ref: "Producto", // Relación con el modelo Producto
-      required: [false, "El ID del Producto del derivado es obligatorio"], // Campo opcional
+      required: [true, "El ID del Producto del derivado es obligatorio"], // Campo opcional
     },
     // Estado de la línea (activo o inactivo)
     estado: {
