@@ -3,6 +3,7 @@ const admin = require("firebase-admin");
 const usuario = require("../models/usuario");
 const { notification } = require("../models");
 const { sendEmail } = require("../utils/resend");
+// const pLimit = require("p-limit");
 
 class NotificationService {
   constructor(io) {
@@ -31,7 +32,7 @@ class NotificationService {
       );
 
       // 3. Enviar notificaciones por email
-      await this.sendEmailNotifications(
+      this.sendEmailNotifications(
         usuariosFinanzas,
         "Tienes una nueva notificación",
         `Hola {nombre},<br><br>
@@ -41,7 +42,7 @@ class NotificationService {
       );
 
       // 4. Enviar notificaciones push
-      await this.sendPushNotifications(
+      this.sendPushNotifications(
         usuariosFinanzas,
         "Nuevo contrato creado",
         `Contrato ${nuevoContrato.numeroContrato} creado exitosamente.`,
@@ -113,29 +114,29 @@ class NotificationService {
    * @param {String} entityId - ID de la entidad relacionada
    */
   async sendEmailNotifications(users, subject, htmlTemplate, entityId) {
-    const emailPromises = users
-      .filter((user) => user.correo)
-      .map(async (user) => {
-        try {
-          // Personalizar el email
-          const personalizedHtml = htmlTemplate
-            .replace(/{nombre}/g, user.nombre)
-            .replace(/{entityId}/g, entityId);
+    const results = [];
+    const usersWithEmail = users.filter((user) => user.correo);
 
-          const result = await sendEmail(
-            user.correo,
-            subject,
-            personalizedHtml
-          );
+    for (const user of usersWithEmail) {
+      try {
+        // Personalizar y enviar el email
+        console.log(`Enviando email a ${user.correo}...`);
+        const personalizedHtml = htmlTemplate
+          .replace(/{nombre}/g, user.nombre)
+          .replace(/{entityId}/g, entityId);
 
-          return { email: user.correo, success: true, result };
-        } catch (error) {
-          console.error(`Error al enviar email a ${user.correo}:`, error);
-          return { email: user.correo, success: false, error };
-        }
-      });
+        const result = await sendEmail(user.correo, subject, personalizedHtml);
+        results.push({ email: user.correo, success: true, result });
+      } catch (error) {
+        console.error(`Error al enviar email a ${user.correo}:`, error);
+        results.push({ email: user.correo, success: false, error });
+      }
 
-    return Promise.all(emailPromises);
+      // Pausa de 500ms para no exceder el límite de 2 req/s
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    return results;
   }
 
   /**
@@ -171,8 +172,7 @@ class NotificationService {
       );
       return results;
     } catch (error) {
-      console.error("Error enviando notificaciones push:", error);
-      throw error;
+      console.error("Error enviando notificaciones push:");
     }
   }
 }
