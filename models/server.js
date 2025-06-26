@@ -9,7 +9,7 @@ const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
 const errorHandler = require("../middlewares/error-handler");
 // const tipoProductoBK = require("./bunkering/tipoProductoBK");
-// const productoBK = require("./bunkering/productoBK");
+// const productoBK = require("./bunkering/productoBK");asdas
 
 // Inicializa Firebase Admin solo si no está inicializado
 if (!admin.apps.length) {
