@@ -287,13 +287,14 @@ class Server {
         res.status(500).json({ error: error.message });
       }
     });
-    this.app.post("/api/save-token", (req, res) => {
-      const { token } = req.body;
-      // Aquí deberías guardar el token en tu base de datos
-      console.log("Token recibido:", token);
-      res.status(200).send("Token guardado");
-    });
-
+    // this.app.post("/api/save-token", (req, res) => {
+    //   const { token } = req.body;
+    //   // Aquí deberías guardar el token en tu base de datos
+    //   console.log("Token recibido:", token);
+    //   res.status(200).send("Token guardado");
+    // });
+    // this.app.use("/api/send-notification", require("../routes/fcm")); // Asume que tienes un router para FCM
+    this.app.use("/api/save-token", require("../routes/notificationToken")); // Router dedicado para guardar tokens
     // Rutas específicas del módulo Bunker
     // const bunkerRoutes = "../routes/bunker";
     // this.app.use(this.paths.bunker, require(`${bunkerRoutes}/bunker`));

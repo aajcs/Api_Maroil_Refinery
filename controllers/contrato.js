@@ -4,7 +4,9 @@ const contratoItems = require("../models/contratoItems");
 const Cuenta = require("../models/cuenta"); // Importar el modelo Cuenta
 const usuario = require("../models/usuario");
 const notification = require("../models/notification");
-
+const admin = require("firebase-admin"); // Add import for Firebase Admin
+const { sendEmail } = require("../utils/resend");
+const NotificationService = require("../services/notificationService");
 // Opciones de población reutilizables para consultas
 const populateOptions = [
   {
@@ -219,38 +221,93 @@ const contratoPost = async (req, res = response, next) => {
     //   });
     //   console.log("noti", notificacionNewContrato);
     // }
+    // if (nuevoContrato) {
+    //   // Fetch users based on access type and refinery association
+    //   const usuariosFinanzas = await usuario.find({
+    //     departamento: { $in: ["Finanzas"] },
+
+    //     eliminado: false,
+    //     $or: [
+    //       { acceso: "completo" }, // Include users with complete access
+    //       { acceso: "limitado", idRefineria: nuevoContrato.idRefineria }, // Include users with limited access and matching refinery
+    //     ],
+    //   });
+    //   console.log("usuariosFinanzas", usuariosFinanzas);
+    //   // Create notifications for each user
+    //   const notificaciones = usuariosFinanzas.map((usuario) => ({
+    //     title: "Nuevo contrato creado",
+    //     message: `Se ha creado un nuevo contrato (${nuevoContrato.numeroContrato}) para la refinería ${nuevoContrato.idRefineria.nombre} y el contacto ${nuevoContrato.idContacto.nombre}.`,
+    //     type: "in-app",
+    //     createdBy: req.usuario._id,
+    //     read: false,
+    //     userId: usuario._id,
+    //   }));
+
+    //   await notification.insertMany(notificaciones); // Bulk insert notifications
+    //   // Emitir notificación en tiempo real a cada usuario
+    //   notificaciones.forEach((newNotification) => {
+    //     req.io
+    //       .to(`user-${newNotification.userId}`)
+    //       .emit("new-notification", newNotification);
+    //   });
+    //   // Enviar correo a cada usuario de finanzas
+    //   for (const usuarioFinanza of usuariosFinanzas) {
+    //     if (usuarioFinanza.correo) {
+    //       try {
+    //         const result = await sendEmail(
+    //           usuarioFinanza.correo,
+    //           "Tienes una nueva notificación",
+    //           `<p>Hola ${usuarioFinanza.nombre},</p>
+    //            <p>Se ha creado un nuevo contrato ${nuevoContrato.numeroContrato}.</p>
+    //            <a href="https://tudominio.com/contratos/${nuevoContrato._id}">Ver detalle</a>`
+    //         );
+    //         console.log("Email enviado con ID:", result.id);
+    //         // Si quieres inspeccionar todo el payload devuelto:
+    //         console.log("Respuesta cruda de Resend:", result.raw);
+    //       } catch (err) {
+    //         console.error(
+    //           `Error al enviar email a ${usuarioFinanza.correo}:`,
+    //           err
+    //         );
+    //       }
+    //     }
+    //   }
+    //   // Enviar push via FCM a cada dispositivo individualmente
+    //   const tokens = usuariosFinanzas.flatMap((u) => u.fcmTokens || []);
+    //   if (tokens.length > 0) {
+    //     const sendPromises = tokens.map((token) => {
+    //       const message = {
+    //         token,
+    //         notification: {
+    //           title: "Nuevo contrato creado",
+    //           body: `Contrato ${nuevoContrato.numeroContrato} creado exitosamente.`,
+    //         },
+    //         webpush: {
+    //           fcmOptions: {
+    //             link: `https://tudominio.com/contratos/${nuevoContrato._id}`,
+    //           },
+    //         },
+    //         data: {
+    //           contractId: nuevoContrato._id.toString(),
+    //         },
+    //       };
+    //       return admin.messaging().send(message);
+    //     });
+    //     const results = await Promise.all(sendPromises);
+    //     console.log("FCM results:", results);
+    //   }
+    // }
     if (nuevoContrato) {
-      // Fetch users based on access type and refinery association
-      const usuariosFinanzas = await usuario.find({
-        departamento: { $in: ["Finanzas"] },
-
-        eliminado: false,
-        $or: [
-          { acceso: "completo" }, // Include users with complete access
-          { acceso: "limitado", idRefineria: nuevoContrato.idRefineria }, // Include users with limited access and matching refinery
-        ],
-      });
-      console.log("usuariosFinanzas", usuariosFinanzas);
-      // Create notifications for each user
-      const notificaciones = usuariosFinanzas.map((usuario) => ({
-        title: "Nuevo contrato creado",
-        message: `Se ha creado un nuevo contrato (${nuevoContrato.numeroContrato}) para la refinería ${nuevoContrato.idRefineria.nombre} y el contacto ${nuevoContrato.idContacto.nombre}.`,
-        type: "in-app",
-        createdBy: req.usuario._id,
-        read: false,
-        userId: usuario._id,
-      }));
-
-      await notification.insertMany(notificaciones); // Bulk insert notifications
-      // Emitir notificación en tiempo real a cada usuario
-      notificaciones.forEach((newNotification) => {
-        req.io
-          .to(`user-${newNotification.userId}`)
-          .emit("new-notification", newNotification);
-      });
-      console.log("Notificaciones creadas:", notificaciones);
+      // Enviar notificaciones
+      // Instancia el servicio con Socket.IO
+      const notificationService = new NotificationService(req.io);
+      // Lanza las notificaciones para el nuevo contrato
+      const result = await notificationService.sendContractNotifications(
+        nuevoContrato,
+        req.usuario
+      );
+      console.log("Notificaciones enviadas:", result);
     }
-
     res.status(201).json(nuevoContrato);
   } catch (err) {
     // Si ocurre un error, eliminar el contrato creado

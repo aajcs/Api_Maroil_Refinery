@@ -54,6 +54,11 @@ const UsuarioSchema = Schema(
       type: Boolean,
       default: false,
     },
+    // Tokens de notificaciones push para FCM
+    fcmTokens: {
+      type: [String],
+      default: [],
+    },
     /* google: {
         type: Boolean,
         default: false
