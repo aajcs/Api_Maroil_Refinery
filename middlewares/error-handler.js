@@ -28,9 +28,12 @@ const errorHandler = (err, req, res, next) => {
     let campos = "El valor ya está registrado";
     if (keyPattern && keyValue) {
       const detalles = Object.keys(keyPattern)
+        .filter((campo) => campo !== "idRefineria") // Excluye idRefineria
         .map((campo) => `${campo}: ${keyValue[campo]}`)
         .join(", ");
-      campos = `Ya existe un registro con ${detalles}`;
+      campos = detalles
+        ? `Ya existe un registro con ${detalles}`
+        : "El valor ya está registrado";
     }
 
     return res.status(409).json({
