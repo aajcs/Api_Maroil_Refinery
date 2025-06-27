@@ -312,7 +312,7 @@ const contratoPost = async (req, res = response, next) => {
     if (nuevoContrato) {
       // 1. Definir QUIÉN recibe la notificación
       const usuariosANotificar = await usuario.find({
-        departamento: { $in: ["Finanzas", "Logistica"] },
+        departamento: { $in: ["Finanzas", "Logistica", "Gerencia"] },
         eliminado: false,
         $or: [
           { acceso: "completo" },
@@ -615,7 +615,7 @@ const contratoDelete = async (req, res = response, next) => {
     if (contrato && contrato.eliminado === true) {
       // 1. Definir QUIÉN recibe la notificación
       const usuariosANotificar = await usuario.find({
-        departamento: { $in: ["Finanzas"] },
+        departamento: { $in: ["Finanzas", "Gerencia"] },
         eliminado: false,
         $or: [
           { acceso: "completo" },

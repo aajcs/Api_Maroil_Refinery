@@ -5,6 +5,8 @@ const Recepcion = require("../models/recepcion");
 const Despacho = require("../models/despacho");
 const Tanque = require("../models/tanque");
 const mongoose = require("mongoose"); // Importar mongoose
+const NotificationService = require("../services/notificationService");
+const usuario = require("../models/usuario");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
@@ -151,7 +153,68 @@ const chequeoCantidadPost = async (req = request, res = response, next) => {
         idChequeoCantidad: nuevoChequeo._id, // Cambiado a idChequeoCantidad
       });
     }
+    if (nuevoChequeo) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Operaciones", "Logistica"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          { acceso: "limitado", idRefineria: nuevoChequeo.idRefineria._id },
+        ],
+      });
 
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      // Obtener nombre del tanque y idGuia según el tipo de aplicar
+      let nombreTanque = "";
+      let idGuia = "";
+
+      if (
+        nuevoChequeo.aplicar &&
+        nuevoChequeo.aplicar.idReferencia &&
+        nuevoChequeo.aplicar.tipo
+      ) {
+        if (
+          nuevoChequeo.aplicar.tipo === "Tanque" &&
+          nuevoChequeo.aplicar.idReferencia.nombre
+        ) {
+          nombreTanque = nuevoChequeo.aplicar.idReferencia.nombre;
+        }
+        if (
+          (nuevoChequeo.aplicar.tipo === "Recepcion" ||
+            nuevoChequeo.aplicar.tipo === "Despacho") &&
+          nuevoChequeo.aplicar.idReferencia.idGuia
+        ) {
+          idGuia = nuevoChequeo.aplicar.idReferencia.idGuia;
+        }
+      }
+
+      // Formatear la cantidad en formato decimal, sin ceros, con el punto como separador de miles
+      const cantidadFormateada = Number(nuevoChequeo.cantidad)
+        .toLocaleString("es-ES", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        })
+        .replace(/\./g, "."); // Asegura el punto como separador de miles
+
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Nuevo Chequeo de Cantidad Creado",
+            message: `Se creó el chequeo ${nuevoChequeo.numeroChequeoCantidad} para la refinería ${nuevoChequeo.idRefineria.nombre}. Realizado a ${nuevoChequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""} con una cantidad de ${cantidadFormateada} bbl de ${nuevoChequeo.idProducto.nombre}.`,
+            link: `/chequeos/${nuevoChequeo._id}`,
+          },
+          push: {
+            title: "Nuevo Chequeo Creado",
+            body: `Se creó el chequeo ${nuevoChequeo.numeroChequeoCantidad} para la refinería ${nuevoChequeo.idRefineria.nombre}. Realizado a ${nuevoChequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""} con una cantidad de ${cantidadFormateada} bbl de ${nuevoChequeo.idProducto.nombre}.`,
+            link: `/chequeos/${nuevoChequeo._id}`,
+          },
+        },
+      });
+    }
     res.status(201).json(nuevoChequeo); // Responde con un código 201 (creado) y los datos del chequeo
   } catch (err) {
     next(err); // Propaga el error al middleware
@@ -204,6 +267,72 @@ const chequeoCantidadPut = async (req = request, res = response, next) => {
       });
     }
 
+    if (chequeoActualizado) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Operaciones", "Logistica"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          {
+            acceso: "limitado",
+            idRefineria: chequeoActualizado.idRefineria._id,
+          },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      // Obtener nombre del tanque y idGuia según el tipo de aplicar
+      let nombreTanque = "";
+      let idGuia = "";
+
+      if (
+        chequeoActualizado.aplicar &&
+        chequeoActualizado.aplicar.idReferencia &&
+        chequeoActualizado.aplicar.tipo
+      ) {
+        if (
+          chequeoActualizado.aplicar.tipo === "Tanque" &&
+          chequeoActualizado.aplicar.idReferencia.nombre
+        ) {
+          nombreTanque = chequeoActualizado.aplicar.idReferencia.nombre;
+        }
+        if (
+          (chequeoActualizado.aplicar.tipo === "Recepcion" ||
+            chequeoActualizado.aplicar.tipo === "Despacho") &&
+          chequeoActualizado.aplicar.idReferencia.idGuia
+        ) {
+          idGuia = chequeoActualizado.aplicar.idReferencia.idGuia;
+        }
+      }
+
+      // Formatear la cantidad en formato decimal, sin ceros, con el punto como separador de miles
+      const cantidadFormateada = Number(chequeoActualizado.cantidad)
+        .toLocaleString("es-ES", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        })
+        .replace(/\./g, "."); // Asegura el punto como separador de miles
+
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Se modificó un Chequeo de Cantidad",
+            message: `El chequeo ${chequeoActualizado.numeroChequeoCantidad} para la refinería ${chequeoActualizado.idRefineria.nombre}. Se modifico en ${chequeoActualizado.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""} con una cantidad de ${cantidadFormateada} bbl de ${chequeoActualizado.idProducto.nombre}.`,
+            link: `/chequeos/${chequeoActualizado._id}`,
+          },
+          push: {
+            title: "Chequeo de Cantidad Modificado",
+            body: `El chequeo ${chequeoActualizado.numeroChequeoCantidad} para la refinería ${chequeoActualizado.idRefineria.nombre}. Se modifico en ${chequeoActualizado.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""} con una cantidad de ${cantidadFormateada} bbl de ${chequeoActualizado.idProducto.nombre}.`,
+            link: `/chequeos/${chequeoActualizado._id}`,
+          },
+        },
+      });
+    }
+
     res.json(chequeoActualizado); // Responde con los datos del chequeo actualizado
   } catch (err) {
     next(err); // Propaga el error al middleware
@@ -245,6 +374,71 @@ const chequeoCantidadDelete = async (req = request, res = response, next) => {
       );
     }
 
+    if (chequeo) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Operaciones", "Logistica"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          {
+            acceso: "limitado",
+            idRefineria: chequeo.idRefineria._id,
+          },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      // Obtener nombre del tanque y idGuia según el tipo de aplicar
+      let nombreTanque = "";
+      let idGuia = "";
+
+      if (
+        chequeo.aplicar &&
+        chequeo.aplicar.idReferencia &&
+        chequeo.aplicar.tipo
+      ) {
+        if (
+          chequeo.aplicar.tipo === "Tanque" &&
+          chequeo.aplicar.idReferencia.nombre
+        ) {
+          nombreTanque = chequeo.aplicar.idReferencia.nombre;
+        }
+        if (
+          (chequeo.aplicar.tipo === "Recepcion" ||
+            chequeo.aplicar.tipo === "Despacho") &&
+          chequeo.aplicar.idReferencia.idGuia
+        ) {
+          idGuia = chequeo.aplicar.idReferencia.idGuia;
+        }
+      }
+
+      // Formatear la cantidad en formato decimal, sin ceros, con el punto como separador de miles
+      const cantidadFormateada = Number(chequeo.cantidad)
+        .toLocaleString("es-ES", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        })
+        .replace(/\./g, "."); // Asegura el punto como separador de miles
+
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Se eliminó un Chequeo de Cantidad",
+            message: `El chequeo ${chequeo.numeroChequeoCantidad} para la refinería ${chequeo.idRefineria.nombre}. Realizado en ${chequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""} con una cantidad de ${cantidadFormateada} bbl de ${chequeo.idProducto.nombre}. Se ha elminado.`,
+            link: `/chequeos/${chequeo._id}`,
+          },
+          push: {
+            title: "Se eliminó un Chequeo de Cantidad",
+            body: `El chequeo ${chequeo.numeroChequeoCantidad} para la refinería ${chequeo.idRefineria.nombre}. Realizado en ${chequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""} con una cantidad de ${cantidadFormateada} bbl de ${chequeo.idProducto.nombre}. Se ha elminado.`,
+            link: `/chequeos/${chequeo._id}`,
+          },
+        },
+      });
+    }
     res.json(chequeo); // Responde con los datos del chequeo eliminado
   } catch (err) {
     next(err); // Propaga el error al middleware

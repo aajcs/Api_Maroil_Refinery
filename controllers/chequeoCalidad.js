@@ -5,6 +5,8 @@ const ChequeoCalidad = require("../models/chequeoCalidad");
 const Recepcion = require("../models/recepcion");
 const Despacho = require("../models/despacho");
 const Tanque = require("../models/tanque");
+const NotificationService = require("../services/notificationService");
+const usuario = require("../models/usuario");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
@@ -42,10 +44,10 @@ const actualizarModeloRelacionado = async (idReferencia, tipo, datos) => {
       tipo === "Recepcion"
         ? Recepcion
         : tipo === "Despacho"
-        ? Despacho
-        : tipo === "Tanque"
-        ? Tanque
-        : null;
+          ? Despacho
+          : tipo === "Tanque"
+            ? Tanque
+            : null;
 
     if (!modelo) {
       throw new Error(`Tipo de modelo no válido: ${tipo}`);
@@ -169,6 +171,61 @@ const chequeoCalidadPost = async (req = request, res = response, next) => {
       });
     }
 
+    if (nuevoChequeo) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Operaciones", "Logistica"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          { acceso: "limitado", idRefineria: nuevoChequeo.idRefineria._id },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      // Obtener nombre del tanque y idGuia según el tipo de aplicar
+      let nombreTanque = "";
+      let idGuia = "";
+
+      if (
+        nuevoChequeo.aplicar &&
+        nuevoChequeo.aplicar.idReferencia &&
+        nuevoChequeo.aplicar.tipo
+      ) {
+        if (
+          nuevoChequeo.aplicar.tipo === "Tanque" &&
+          nuevoChequeo.aplicar.idReferencia.nombre
+        ) {
+          nombreTanque = nuevoChequeo.aplicar.idReferencia.nombre;
+        }
+        if (
+          (nuevoChequeo.aplicar.tipo === "Recepcion" ||
+            nuevoChequeo.aplicar.tipo === "Despacho") &&
+          nuevoChequeo.aplicar.idReferencia.idGuia
+        ) {
+          idGuia = nuevoChequeo.aplicar.idReferencia.idGuia;
+        }
+      }
+
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Nuevo Chequeo de Calidad Creado",
+            message: `El chequeo de calidad ${nuevoChequeo.numeroChequeoCalidad} para la refinería ${nuevoChequeo.idRefineria.nombre}. Realizado a ${nuevoChequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""} ha sido ${nuevoChequeo.estado}.`,
+            link: `/chequeos/${nuevoChequeo._id}`,
+          },
+          push: {
+            title: "Nuevo Chequeo Calidad Creado",
+            body: `El chequeo de calidad ${nuevoChequeo.numeroChequeoCalidad} para la refinería ${nuevoChequeo.idRefineria.nombre}. Realizado a ${nuevoChequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""}  ha sido ${nuevoChequeo.estado}.`,
+            link: `/chequeos/${nuevoChequeo._id}`,
+          },
+        },
+      });
+    }
+
     res.status(201).json(nuevoChequeo);
   } catch (err) {
     next(err); // Propaga el error al middleware
@@ -217,6 +274,64 @@ const chequeoCalidadPut = async (req = request, res = response, next) => {
     if (aplicar && aplicar.idReferencia && aplicar.tipo) {
       await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
         idChequeoCalidad: chequeoActualizado._id,
+      });
+    }
+
+    if (chequeoActualizado) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Operaciones", "Logistica"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          {
+            acceso: "limitado",
+            idRefineria: chequeoActualizado.idRefineria._id,
+          },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      // Obtener nombre del tanque y idGuia según el tipo de aplicar
+      let nombreTanque = "";
+      let idGuia = "";
+
+      if (
+        chequeoActualizado.aplicar &&
+        chequeoActualizado.aplicar.idReferencia &&
+        chequeoActualizado.aplicar.tipo
+      ) {
+        if (
+          chequeoActualizado.aplicar.tipo === "Tanque" &&
+          chequeoActualizado.aplicar.idReferencia.nombre
+        ) {
+          nombreTanque = chequeoActualizado.aplicar.idReferencia.nombre;
+        }
+        if (
+          (chequeoActualizado.aplicar.tipo === "Recepcion" ||
+            chequeoActualizado.aplicar.tipo === "Despacho") &&
+          chequeoActualizado.aplicar.idReferencia.idGuia
+        ) {
+          idGuia = chequeoActualizado.aplicar.idReferencia.idGuia;
+        }
+      }
+
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Nuevo Chequeo de Calidad Creado",
+            message: `El chequeo de calidad ${chequeoActualizado.numeroChequeoCalidad} para la refinería ${chequeoActualizado.idRefineria.nombre}. Realizado a ${chequeoActualizado.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""} ha sido modificado.`,
+            link: `/chequeos/${chequeoActualizado._id}`,
+          },
+          push: {
+            title: "Nuevo Chequeo Calidad Creado",
+            body: `El chequeo de calidad ${chequeoActualizado.numeroChequeoCalidad} para la refinería ${chequeoActualizado.idRefineria.nombre}. Realizado a ${chequeoActualizado.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""}  ha sido modificado.`,
+            link: `/chequeos/${chequeoActualizado._id}`,
+          },
+        },
       });
     }
 
@@ -289,6 +404,64 @@ const chequeoCalidadDelete = async (req = request, res = response, next) => {
           chequeoCalidad: null, // Eliminar la referencia al chequeo
         }
       );
+    }
+
+    if (chequeo) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Operaciones", "Logistica"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          {
+            acceso: "limitado",
+            idRefineria: chequeo.idRefineria._id,
+          },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      // Obtener nombre del tanque y idGuia según el tipo de aplicar
+      let nombreTanque = "";
+      let idGuia = "";
+
+      if (
+        chequeo.aplicar &&
+        chequeo.aplicar.idReferencia &&
+        chequeo.aplicar.tipo
+      ) {
+        if (
+          chequeo.aplicar.tipo === "Tanque" &&
+          chequeo.aplicar.idReferencia.nombre
+        ) {
+          nombreTanque = chequeo.aplicar.idReferencia.nombre;
+        }
+        if (
+          (chequeo.aplicar.tipo === "Recepcion" ||
+            chequeo.aplicar.tipo === "Despacho") &&
+          chequeo.aplicar.idReferencia.idGuia
+        ) {
+          idGuia = chequeo.aplicar.idReferencia.idGuia;
+        }
+      }
+
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Nuevo Chequeo de Calidad Creado",
+            message: `El chequeo de calidad ${chequeo.numeroChequeoCalidad} para la refinería ${chequeo.idRefineria.nombre}. Realizado a ${chequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""} ha sido eliminado.`,
+            link: `/chequeos/${chequeo._id}`,
+          },
+          push: {
+            title: "Nuevo Chequeo Calidad Creado",
+            body: `El chequeo de calidad ${chequeo.numeroChequeoCalidad} para la refinería ${chequeo.idRefineria.nombre}. Realizado a ${chequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""}  ha sido eliminado.`,
+            link: `/chequeos/${chequeo._id}`,
+          },
+        },
+      });
     }
 
     res.json(chequeo);

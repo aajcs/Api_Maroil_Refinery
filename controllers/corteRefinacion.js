@@ -1,6 +1,8 @@
 const { response, request } = require("express");
 const CorteRefinacion = require("../models/corteRefinacion");
 const Tanque = require("../models/tanque"); // Importar el modelo Tanque
+const NotificationService = require("../services/notificationService");
+const usuario = require("../models/usuario");
 
 // Opciones de población reutilizables
 const populateOptions = [
@@ -110,6 +112,49 @@ const corteRefinacionPost = async (req = request, res = response, next) => {
     // Poblar referencias después de guardar
     await nuevoCorte.populate(populateOptions);
 
+    if (nuevoCorte) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Operaciones", "Gerencia"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          { acceso: "limitado", idRefineria: nuevoCorte.idRefineria._id },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Nuevo Corte Creado",
+            message: `Se creó el corte ${nuevoCorte.numeroCorteRefinacion} para la refinería ${nuevoCorte.idRefineria.nombre}.`,
+            link: `/cortes/${nuevoCorte._id}`,
+          },
+          // email: {
+          //   subject: `Nuevo Corte Creado: ${nuevoCorte.numeroCorteRefinacion}`,
+          //   templateName: "contractNotification", // Especificar el nombre de la plantilla
+          //   context: {
+          //     // Enviar todos los datos que la plantilla necesita
+          //     numeroCorteRefinacion: nuevoCorte.numeroCorteRefinacion,
+          //     nombreRefineria: nuevoCorte.idRefineria.nombre,
+          //     nombreContacto: nuevoCorte.idContacto.nombre,
+          //     creadoPor: req.usuario.nombre,
+          //     enlaceDetalle: `https://maroil-refinery.vercel.app/cortes/${nuevoCorte._id}`,
+          //   },
+          // },
+          push: {
+            title: "Nuevo Corte Creado",
+            body: `Corte ${nuevoCorte.numeroCorteRefinacion} listo para revisar.`,
+            link: `/cortes/${nuevoCorte._id}`,
+          },
+        },
+      });
+    }
+
     res.status(201).json(nuevoCorte);
   } catch (err) {
     next(err); // Propaga el error al middleware
@@ -142,6 +187,49 @@ const corteRefinacionPut = async (req = request, res = response, next) => {
       return res.status(404).json({ msg: "Corte de refinación no encontrado" });
     }
 
+    if (corteActualizado) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Operaciones", "Gerencia"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          { acceso: "limitado", idRefineria: corteActualizado.idRefineria._id },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Se ha modificado un corte",
+            message: `El corte número ${corteActualizado.numeroCorteRefinacion} ha sido modficado para la refinería ${corteActualizado.idRefineria.nombre}.`,
+            link: `/cortes/${corteActualizado._id}`,
+          },
+          email: {
+            subject: `Modificación de Corte de Refinación: ${corteActualizado.numeroCorteRefinacion}`,
+            templateName: "corteModificado", // Especificar el nombre de la plantilla
+            context: {
+              // Enviar todos los datos que la plantilla necesita
+              numeroCorteRefinacion: corteActualizado.numeroCorteRefinacion,
+              nombreRefineria: corteActualizado.idRefineria.nombre,
+              observacion: corteActualizado.observacion,
+              creadoPor: req.usuario.nombre,
+              fecha: corteActualizado.fechaCorte,
+              enlaceDetalle: `https://maroil-refinery.vercel.app/cortes/${corteActualizado._id}`,
+            },
+          },
+          push: {
+            title: "Modificación de Corte",
+            body: `Corte ${corteActualizado.numeroCorteRefinacion} listo para revisar.`,
+            link: `/cortes/${corteActualizado._id}`,
+          },
+        },
+      });
+    }
     res.json(corteActualizado);
   } catch (err) {
     next(err); // Propaga el error al middleware

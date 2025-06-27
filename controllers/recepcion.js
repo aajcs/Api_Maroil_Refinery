@@ -2,6 +2,8 @@
 const { response, request } = require("express"); // Objetos de Express para manejar solicitudes y respuestas
 const Recepcion = require("../models/recepcion"); // Modelo Recepcion para interactuar con la base de datos
 const Contrato = require("../models/contrato"); // Modelo Contrato para manejar relaciones
+const NotificationService = require("../services/notificationService");
+const usuario = require("../models/usuario");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
@@ -64,9 +66,8 @@ const recepcionGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la recepción desde los parámetros de la URL
 
   try {
-    const recepcionActualizada = await Recepcion.findById(id).populate(
-      populateOptions
-    ); // Busca la recepción por ID y la popula
+    const recepcionActualizada =
+      await Recepcion.findById(id).populate(populateOptions); // Busca la recepción por ID y la popula
     // Ordenar historial por fecha ascendente en cada torre
     recepcionActualizada.forEach((t) => {
       if (Array.isArray(t.historial)) {
@@ -180,6 +181,162 @@ const recepcionPut = async (req, res = response, next) => {
         msg: "Recepción no encontrada", // Responde con un error 404 si no se encuentra la recepción
       });
     }
+    if (
+      typeof cambios.estadoRecepcion !== "undefined" &&
+      cambios.estadoRecepcion.to === "EN_REFINERIA" &&
+      recepcionActualizada
+    ) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Logistica", "Operaciones", "Laboratorio"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          {
+            acceso: "limitado",
+            idRefineria: recepcionActualizada.idRefineria._id,
+          },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Nueva Recepción en Refinería",
+            message: `La recepción con la guía número ${recepcionActualizada.idGuia} ha llegado a la refinería ${recepcionActualizada.idRefineria.nombre}.`,
+            link: `/recepcion/${recepcionActualizada._id}`,
+          },
+
+          push: {
+            title: "Nueva Recepción en Refinería",
+            body: `La recepción ${recepcionActualizada.idGuia} ha llegado a la refineria ${recepcionActualizada.idRefineria.nombre}.`,
+            link: `/recepcion/${recepcionActualizada._id}`,
+          },
+          email: {
+            subject: `Nuevo Recepcion en Refineria: ${recepcionActualizada.idGuia}`,
+            templateName: "recepcionRefineria", // Especificar el nombre de la plantilla
+            context: {
+              // Enviar todos los datos que la plantilla necesita
+              idGuia: recepcionActualizada.idGuia,
+              nombreRefineria: recepcionActualizada.idRefineria.nombre,
+              numeroContrato: recepcionActualizada.idContrato.numeroContrato,
+              creadoPor: req.usuario.nombre,
+              fecha: recepcionActualizada.fechaLlegada,
+              enlaceDetalle: `https://maroil-refinery.vercel.app/contratos/${recepcionActualizada._id}`,
+            },
+          },
+        },
+      });
+    }
+
+    if (
+      typeof cambios.estadoRecepcion !== "undefined" &&
+      cambios.estadoRecepcion.to === "COMPLETADO" &&
+      recepcionActualizada
+    ) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Logistica", "Operaciones"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          {
+            acceso: "limitado",
+            idRefineria: recepcionActualizada.idRefineria._id,
+          },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Ha finalizado una recepción",
+            message: `La recepción con la guía número ${recepcionActualizada.idGuia} ha finalizado ${recepcionActualizada.idRefineria.nombre}.`,
+            link: `/recepcion/${recepcionActualizada._id}`,
+          },
+
+          push: {
+            title: "Ha finalizado una recepción",
+            body: `La recepción ${recepcionActualizada.idGuia} ha finalizado ${recepcionActualizada.idRefineria.nombre}.`,
+            link: `/recepcion/${recepcionActualizada._id}`,
+          },
+          // email: {
+          //   subject: `Nuevo Recepcion en Refineria: ${recepcionActualizada.idGuia}`,
+          //   templateName: "recepcionRefineria", // Especificar el nombre de la plantilla
+          //   context: {
+          //     // Enviar todos los datos que la plantilla necesita
+          //     idGuia: recepcionActualizada.idGuia,
+          //     nombreRefineria: recepcionActualizada.idRefineria.nombre,
+          //     numeroContrato: recepcionActualizada.idContrato.numeroContrato,
+          //     creadoPor: req.usuario.nombre,
+          //     fecha: recepcionActualizada.fechaLlegada,
+          //     enlaceDetalle: `https://maroil-refinery.vercel.app/contratos/${recepcionActualizada._id}`,
+          //   },
+          // },
+        },
+      });
+    }
+
+    if (
+      typeof cambios.estadoRecepcion !== "undefined" &&
+      cambios.estadoRecepcion.to === "CANCELADO" &&
+      recepcionActualizada
+    ) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Logistica", "Operaciones", "Laboratorio"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          {
+            acceso: "limitado",
+            idRefineria: recepcionActualizada.idRefineria._id,
+          },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Se ha cancelado una recepción",
+            message: `La recepción con la guía número ${recepcionActualizada.idGuia} ha sido cancelada ${recepcionActualizada.idRefineria.nombre}.`,
+            link: `/recepcion/${recepcionActualizada._id}`,
+          },
+
+          push: {
+            title: "Se ha cancelado una recepción",
+            body: `La recepción ${recepcionActualizada.idGuia} ha sido cancelada ${recepcionActualizada.idRefineria.nombre}.`,
+            link: `/recepcion/${recepcionActualizada._id}`,
+          },
+          email: {
+            subject: `Recepción Cancelada: ${recepcionActualizada.idGuia}`,
+            templateName: "recepcionCancelada", // Especificar el nombre de la plantilla
+            context: {
+              // Enviar todos los datos que la plantilla necesita
+              idGuia: recepcionActualizada.idGuia,
+              nombreRefineria: recepcionActualizada.idRefineria.nombre,
+              numeroContrato: recepcionActualizada.idContrato.numeroContrato,
+              creadoPor: req.usuario.nombre,
+              fecha: recepcionActualizada.fechaLlegada,
+              enlaceDetalle: `https://maroil-refinery.vercel.app/contratos/${recepcionActualizada._id}`,
+            },
+          },
+        },
+      });
+    }
+
     req.io.emit("recepcion-modificada", recepcionActualizada); // Emite un evento de WebSocket para notificar la modificación
     res.json(recepcionActualizada); // Responde con los datos de la recepción actualizada
   } catch (err) {
@@ -210,6 +367,50 @@ const recepcionDelete = async (req, res = response, next) => {
       });
     }
 
+    // Notificar solo si el recepcion fue marcado como eliminado (eliminado: true)
+    if (recepcion && recepcion.eliminado === true) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Logistica", "Operaciones", "Laboratorio"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          { acceso: "limitado", idRefineria: recepcion.idRefineria._id },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Recepcion Eliminado",
+            message: `Se eliminó el recepcion ${recepcion.idGuia} para la refinería ${recepcion.idRefineria.nombre}.`,
+            link: `/recepcions/${recepcion._id}`,
+          },
+          email: {
+            subject: `Recepcion Eliminado: ${recepcion.idGuia}`,
+            templateName: "recepcionElminado", // Especificar el nombre de la plantilla
+            context: {
+              // Enviar todos los datos que la plantilla necesita
+              idGuia: recepcion.idGuia,
+              nombreRefineria: recepcion.idRefineria.nombre,
+              numeroContrato: recepcion.idContrato.numeroContrato,
+              creadoPor: req.usuario.nombre,
+              fecha: recepcion.fechaLlegada,
+              enlaceDetalle: `https://maroil-refinery.vercel.app/contratos/${recepcion._id}`,
+            },
+          },
+          push: {
+            title: "Se ha eliminado un recepcion",
+            body: `Número de Guía: ${recepcion.idGuia}.`,
+            link: `/recepcion/${recepcion._id}`,
+          },
+        },
+      });
+    }
     res.json(recepcion); // Responde con los datos de la recepción eliminada
   } catch (err) {
     next(err); // Propaga el error al middleware
