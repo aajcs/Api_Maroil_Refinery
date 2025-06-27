@@ -74,7 +74,7 @@ module.exports = {
         <div class="container">
           <div class="header">
             <img src="${process.env.BACKEND_URL}/images/logoMaroil.png" alt="Logo Maroil">
-            <h2>Nuevo Contrato Creado</h2>
+            <h2>Se ha eliminado un contrato</h2>
           </div>
           <div class="content">
             <p>Hola <strong>${data.nombreUsuario}</strong>,</p>
