@@ -158,7 +158,7 @@ class NotificationService {
       notification: {
         title,
         body,
-        imageUrl: `${process.env.BACKEND_URL}/images/logo.png`, // URL dinámica
+        imageUrl: `${process.env.BACKEND_URL}/images/logoMaroil.png`, // URL dinámica
       },
       webpush: {
         fcmOptions: {
