@@ -611,6 +611,50 @@ const contratoDelete = async (req, res = response, next) => {
       return res.status(404).json({ msg: "Contrato no encontrado" });
     }
 
+    // Notificar solo si el contrato fue marcado como eliminado (eliminado: true)
+    if (contrato && contrato.eliminado === true) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Finanzas"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          { acceso: "limitado", idRefineria: nuevoContrato.idRefineria._id },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Contrato Eliminado",
+            message: `Se eliminó el contrato ${contrato.numeroContrato} para la refinería ${contrato.idRefineria.nombre}.`,
+            link: `/contratos/${contrato._id}`,
+          },
+          email: {
+            subject: `Contrato Eliminado: ${contrato.numeroContrato}`,
+            templateName: "contractElminado", // Especificar el nombre de la plantilla
+            context: {
+              // Enviar todos los datos que la plantilla necesita
+              numeroContrato: contrato.numeroContrato,
+              nombreRefineria: contrato.idRefineria.nombre,
+              nombreContacto: contrato.idContacto.nombre,
+              creadoPor: req.usuario.nombre,
+              enlaceDetalle: `https://maroil-refinery.vercel.app/contratos/${contrato._id}`,
+            },
+          },
+          push: {
+            title: "Se ha eliminado un contrato",
+            body: `Contrato ${contrato.numeroContrato}.`,
+            link: `/contratos/${contrato._id}`,
+          },
+        },
+      });
+    }
+
     res.json(contrato);
   } catch (err) {
     next(err); // Propaga el error al middleware
