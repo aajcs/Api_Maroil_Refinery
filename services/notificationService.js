@@ -275,16 +275,16 @@ class NotificationService {
    * @param {String} body - Cuerpo del mensaje
    * @param {String} link - Enlace relacionado
    */
-  async sendPushNotifications(users, { title, body, link }) {
-    // Aquí va la lógica completa de tu método sendPushNotifications,
-    // incluyendo la auditoría y limpieza de tokens.
-    // (Se omite por brevedad, pero es el mismo código que ya tienes)
-    console.log(
-      `[Push] Enviando a ${users.length} usuarios: ${title} - ${body}`
-    );
-  }
+  // async sendPushNotifications(users, { title, body, link }) {
+  //   // Aquí va la lógica completa de tu método sendPushNotifications,
+  //   // incluyendo la auditoría y limpieza de tokens.
+  //   // (Se omite por brevedad, pero es el mismo código que ya tienes)
+  //   console.log(
+  //     `[Push] Enviando a ${users.length} usuarios: ${title} - ${body}`
+  //   );
+  // }
 
-  async _sendPush(users, title, body, link = null) {
+  async _sendPush(users, { title, body, link }) {
     // --- Auditoría y Deduplicación ---
     console.log(
       `[Push Audit] Iniciando envío. Recibidos ${users.length} usuarios.`
