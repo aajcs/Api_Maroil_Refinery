@@ -619,7 +619,7 @@ const contratoDelete = async (req, res = response, next) => {
         eliminado: false,
         $or: [
           { acceso: "completo" },
-          { acceso: "limitado", idRefineria: nuevoContrato.idRefineria._id },
+          { acceso: "limitado", idRefineria: nContrato.idRefineria._id },
         ],
       });
 
