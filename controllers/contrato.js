@@ -562,6 +562,12 @@ const contratoPut = async (req, res = response, next) => {
             message: `Se modificó el contrato ${contratoActualizado.numeroContrato} de ${cambios.estadoEntrega.from} a ${cambios.estadoEntrega.to} en ${contratoActualizado.idRefineria.nombre}.`,
             link: `/contratos/${contratoActualizado._id}`,
           },
+
+          push: {
+            title: "Modificación de Contrato",
+            body: `Contrato ${contratoActualizado.numeroContrato} modificado de ${cambios.estadoEntrega.from} a ${cambios.estadoEntrega.to}.`,
+            link: `/contratos/${contratoActualizado._id}`,
+          },
           // email: {
           //   subject: `Nuevo Contrato Creado: ${contratoActualizado.numeroContrato}`,
           //   templateName: "contractNotification", // Especificar el nombre de la plantilla
@@ -573,12 +579,6 @@ const contratoPut = async (req, res = response, next) => {
           //     creadoPor: req.usuario.nombre,
           //     enlaceDetalle: `https://maroil-refinery.vercel.app/contratos/${contratoActualizado._id}`,
           //   },
-        },
-
-        push: {
-          title: "Modificación de Contrato",
-          body: `Contrato ${contratoActualizado.numeroContrato} modificado de ${cambios.estadoEntrega.from} a ${cambios.estadoEntrega.to}.`,
-          link: `/contratos/${contratoActualizado._id}`,
         },
       });
     }
