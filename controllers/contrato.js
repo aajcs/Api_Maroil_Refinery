@@ -308,10 +308,11 @@ const contratoPost = async (req, res = response, next) => {
     //   );
     //   console.log("Notificaciones enviadas:", result);
     // }
+
     if (nuevoContrato) {
       // 1. Definir QUIÉN recibe la notificación
       const usuariosANotificar = await usuario.find({
-        departamento: { $in: ["Finanzas"] },
+        departamento: { $in: ["Finanzas", "Logistica"] },
         eliminado: false,
         $or: [
           { acceso: "completo" },
