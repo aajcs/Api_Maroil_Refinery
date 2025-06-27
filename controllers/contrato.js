@@ -297,16 +297,54 @@ const contratoPost = async (req, res = response, next) => {
     //     console.log("FCM results:", results);
     //   }
     // }
+    // if (nuevoContrato) {
+    //   // Enviar notificaciones
+    //   // Instancia el servicio con Socket.IO
+    //   const notificationService = new NotificationService(req.io);
+    //   // Lanza las notificaciones para el nuevo contrato
+    //   const result = await notificationService.sendContractNotifications(
+    //     nuevoContrato,
+    //     req.usuario
+    //   );
+    //   console.log("Notificaciones enviadas:", result);
+    // }
     if (nuevoContrato) {
-      // Enviar notificaciones
-      // Instancia el servicio con Socket.IO
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Finanzas"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          { acceso: "limitado", idRefineria: nuevoContrato.idRefineria._id },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
       const notificationService = new NotificationService(req.io);
-      // Lanza las notificaciones para el nuevo contrato
-      const result = await notificationService.sendContractNotifications(
-        nuevoContrato,
-        req.usuario
-      );
-      console.log("Notificaciones enviadas:", result);
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Nuevo Contrato Creado",
+            message: `Se creó el contrato ${nuevoContrato.numeroContrato} para la refinería ${nuevoContrato.idRefineria.nombre}.`,
+            link: `/contratos/${nuevoContrato._id}`,
+          },
+          email: {
+            subject: `Nuevo Contrato: ${nuevoContrato.numeroContrato}`,
+            htmlTemplate: `<p>Hola {nombre},</p><p>Se ha creado un nuevo contrato ({numeroContrato}).</p><a href="https://tudominio.com/contratos/{id}">Ver detalle</a>`,
+            context: {
+              numeroContrato: nuevoContrato.numeroContrato,
+              id: nuevoContrato._id,
+            },
+          },
+          push: {
+            title: "Nuevo Contrato Creado",
+            body: `Contrato ${nuevoContrato.numeroContrato} listo para revisar.`,
+            link: `/contratos/${nuevoContrato._id}`,
+          },
+        },
+      });
     }
     res.status(201).json(nuevoContrato);
   } catch (err) {
