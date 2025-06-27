@@ -31,15 +31,15 @@ class NotificationService {
         `/contratos/${nuevoContrato._id}`
       );
 
-      // 3. Enviar notificaciones por email
-      this.sendEmailNotifications(
-        usuariosFinanzas,
-        "Tienes una nueva notificación",
-        `Hola {nombre},<br><br>
-         Se ha creado un nuevo contrato ${nuevoContrato.numeroContrato}.<br><br>
-         <a href="https://tudominio.com/contratos/${nuevoContrato._id}">Ver detalle</a>`,
-        nuevoContrato._id
-      );
+      // // 3. Enviar notificaciones por email
+      // this.sendEmailNotifications(
+      //   usuariosFinanzas,
+      //   "Tienes una nueva notificación",
+      //   `Hola {nombre},<br><br>
+      //    Se ha creado un nuevo contrato ${nuevoContrato.numeroContrato}.<br><br>
+      //    <a href="https://tudominio.com/contratos/${nuevoContrato._id}">Ver detalle</a>`,
+      //   nuevoContrato._id
+      // );
 
       // 4. Enviar notificaciones push
       this.sendPushNotifications(
@@ -155,9 +155,27 @@ class NotificationService {
 
     const messages = tokens.map(({ token, userId }) => ({
       token,
-      notification: { title, body },
+      notification: {
+        title,
+        body,
+        imageUrl: `${process.env.BACKEND_URL}/images/logo.png`, // URL dinámica
+      },
       webpush: {
-        fcmOptions: { link: `https://tudominio.com${link}` },
+        fcmOptions: {
+          link: `https://tudominio.com${link}`,
+        },
+        notification: {
+          icon: "https://tudominio.com/path/to/your/icon.png", // Icono para web
+          badge: "https://tudominio.com/path/to/your/badge.png", // Badge para móvil
+          vibrate: [200, 100, 200], // Patrón de vibración
+          actions: [
+            // Acciones rápidas
+            {
+              action: "open_link",
+              title: "Ver más",
+            },
+          ],
+        },
       },
       data: {
         userId: userId.toString(),
