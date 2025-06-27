@@ -331,11 +331,15 @@ const contratoPost = async (req, res = response, next) => {
             link: `/contratos/${nuevoContrato._id}`,
           },
           email: {
-            subject: `Nuevo Contrato: ${nuevoContrato.numeroContrato}`,
-            htmlTemplate: `<p>Hola {nombre},</p><p>Se ha creado un nuevo contrato ({numeroContrato}).</p><a href="https://tudominio.com/contratos/{id}">Ver detalle</a>`,
+            subject: `Nuevo Contrato Creado: ${nuevoContrato.numeroContrato}`,
+            templateName: "contractNotification", // Especificar el nombre de la plantilla
             context: {
+              // Enviar todos los datos que la plantilla necesita
               numeroContrato: nuevoContrato.numeroContrato,
-              id: nuevoContrato._id,
+              nombreRefineria: nuevoContrato.idRefineria.nombre,
+              nombreContacto: nuevoContrato.idContacto.nombre,
+              creadoPor: req.usuario.nombre,
+              enlaceDetalle: `https://maroil-refinery.vercel.app/contratos/${nuevoContrato._id}`,
             },
           },
           push: {

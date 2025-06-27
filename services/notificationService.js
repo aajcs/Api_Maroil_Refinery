@@ -3,6 +3,7 @@ const admin = require("firebase-admin");
 const usuario = require("../models/usuario");
 const { notification } = require("../models");
 const { sendEmail } = require("../utils/resend");
+const contractNotification = require("../utils/plantillasMail/contractNotification");
 // const pLimit = require("p-limit");
 
 class NotificationService {
@@ -165,10 +166,10 @@ class NotificationService {
    * Envía notificaciones por email
    * @param {Array} users - Usuarios a notificar
    * @param {String} subject - Asunto del email
-   * @param {String} htmlTemplate - Plantilla HTML con marcadores {nombre}
+   * @param {String} templateName - Plantilla HTML con marcadores {nombre}
    * @param {String} entityId - ID de la entidad relacionada
    */
-  // async sendEmailNotifications(users, subject, htmlTemplate, entityId) {
+  // async sendEmailNotifications(users, subject, templateName, entityId) {
   //   const results = [];
   //   const usersWithEmail = users.filter((user) => user.correo);
 
@@ -176,7 +177,7 @@ class NotificationService {
   //     try {
   //       // Personalizar y enviar el email
   //       console.log(`Enviando email a ${user.correo}...`);
-  //       const personalizedHtml = htmlTemplate
+  //       const personalizedHtml = templateName
   //         .replace(/{nombre}/g, user.nombre)
   //         .replace(/{entityId}/g, entityId);
 
@@ -248,19 +249,33 @@ class NotificationService {
   //     console.error("Error enviando notificaciones push:");
   //   }
   // }
-  async _sendEmails(users, { subject, htmlTemplate, context = {} }) {
+  async _sendEmails(users, { subject, templateName, context = {} }) {
+    const templateFunction = contractNotification[templateName];
+    if (typeof templateFunction !== "function") {
+      console.error(
+        `[Email Service] La plantilla "${templateName}" no existe o no es una función.`
+      );
+      return;
+    }
+
     for (const user of users) {
       if (user.correo) {
         try {
-          let personalizedHtml = htmlTemplate.replace(/{nombre}/g, user.nombre);
+          // let personalizedHtml = htmlTemplate.replace(/{nombre}/g, user.nombre);
           // Reemplazar otros placeholders del contexto
-          for (const key in context) {
-            personalizedHtml = personalizedHtml.replace(
-              new RegExp(`{${key}}`, "g"),
-              context[key]
-            );
-          }
-          await sendEmail(user.correo, subject, personalizedHtml);
+          // for (const key in context) {
+          //   personalizedHtml = personalizedHtml.replace(
+          //     new RegExp(`{${key}}`, "g"),
+          //     context[key]
+          //   );
+          // }
+          const templateData = {
+            ...context,
+            nombreUsuario: user.nombre,
+          };
+          // Generar el HTML final llamando a la función de la plantilla
+          const finalHtml = templateFunction(templateData);
+          await sendEmail(user.correo, subject, finalHtml);
         } catch (error) {
           console.error(`Error enviando email a ${user.correo}:`, error);
         }
