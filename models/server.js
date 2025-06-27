@@ -267,26 +267,26 @@ class Server {
     );
     this.app.use(this.paths.notification, require("../routes/notification"));
 
-    // Rutas FCM
-    this.app.post("/api/send-notification", async (req, res) => {
-      try {
-        const { token, title, body } = req.body;
-        const message = {
-          token,
-          notification: { title, body },
-          webpush: {
-            fcmOptions: {
-              link: "https://tudominio.com",
-            },
-          },
-        };
-        await admin.messaging().send(message);
-        res.status(200).json({ success: true });
-      } catch (error) {
-        console.error("Error sending notification:", error);
-        res.status(500).json({ error: error.message });
-      }
-    });
+    // // Rutas FCM
+    // this.app.post("/api/send-notification", async (req, res) => {
+    //   try {
+    //     const { token, title, body } = req.body;
+    //     const message = {
+    //       token,
+    //       notification: { title, body },
+    //       webpush: {
+    //         fcmOptions: {
+    //           link: "https://tudominio.com",
+    //         },
+    //       },
+    //     };
+    //     await admin.messaging().send(message);
+    //     res.status(200).json({ success: true });
+    //   } catch (error) {
+    //     console.error("Error sending notification:", error);
+    //     res.status(500).json({ error: error.message });
+    //   }
+    // });
     // this.app.post("/api/save-token", (req, res) => {
     //   const { token } = req.body;
     //   // Aquí deberías guardar el token en tu base de datos
