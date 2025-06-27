@@ -532,6 +532,57 @@ const contratoPut = async (req, res = response, next) => {
 
     // Poblar referencias y responder con el contrato actualizado
     await contratoActualizado.populate(populateOptions);
+
+    if (
+      typeof cambios.estadoEntrega !== "undefined" &&
+      cambios.estadoEntrega.from !== cambios.estadoEntrega.to &&
+      contratoActualizado
+    ) {
+      // 1. Definir QUIÉN recibe la notificación
+      const usuariosANotificar = await usuario.find({
+        departamento: { $in: ["Finanzas"] },
+        eliminado: false,
+        $or: [
+          { acceso: "completo" },
+          {
+            acceso: "limitado",
+            idRefineria: contratoActualizado.idRefineria._id,
+          },
+        ],
+      });
+
+      // 2. Instanciar el servicio y definir QUÉ se notifica
+      const notificationService = new NotificationService(req.io);
+      notificationService.dispatch({
+        users: usuariosANotificar,
+        triggeringUser: req.usuario,
+        channels: {
+          inApp: {
+            title: "Contrato Modificado",
+            message: `Se modificó el contrato ${contratoActualizado.numeroContrato} de ${cambios.estadoEntrega.from} a ${cambios.estadoEntrega.to} en ${contratoActualizado.idRefineria.nombre}.`,
+            link: `/contratos/${contratoActualizado._id}`,
+          },
+          // email: {
+          //   subject: `Nuevo Contrato Creado: ${contratoActualizado.numeroContrato}`,
+          //   templateName: "contractNotification", // Especificar el nombre de la plantilla
+          //   context: {
+          //     // Enviar todos los datos que la plantilla necesita
+          //     numeroContrato: contratoActualizado.numeroContrato,
+          //     nombreRefineria: contratoActualizado.idRefineria.nombre,
+          //     nombreContacto: contratoActualizado.idContacto.nombre,
+          //     creadoPor: req.usuario.nombre,
+          //     enlaceDetalle: `https://maroil-refinery.vercel.app/contratos/${contratoActualizado._id}`,
+          //   },
+        },
+
+        push: {
+          title: "Modificación de Contrato",
+          body: `Contrato ${contratoActualizado.numeroContrato} modificado de ${cambios.estadoEntrega.from} a ${cambios.estadoEntrega.to}.`,
+          link: `/contratos/${contratoActualizado._id}`,
+        },
+      });
+    }
+
     res.json(contratoActualizado);
   } catch (err) {
     next(err); // Propaga el error al middleware

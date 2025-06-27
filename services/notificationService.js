@@ -3,7 +3,7 @@ const admin = require("firebase-admin");
 const usuario = require("../models/usuario");
 const { notification } = require("../models");
 const { sendEmail } = require("../utils/resend");
-const contractNotification = require("../utils/plantillasMail/contractNotification");
+const templateMails = require("../utils/plantillasMail/templateMails");
 // const pLimit = require("p-limit");
 
 class NotificationService {
@@ -21,55 +21,8 @@ class NotificationService {
    * @param {Object} [config.channels.email] - Configuración para emails.
    * @param {Object} [config.channels.push] - Configuración para notificaciones push.
    */
-  /**
-  //  * Envía notificaciones relacionadas con un nuevo contrato
-  //  * @param {Object} nuevoContrato - El contrato recién creado
-  //  * @param {Object} user - Usuario que creó el contrato
-  //  */
-  // async sendContractNotifications(nuevoContrato, user) {
-  //   try {
-  //     // 1. Obtener usuarios relevantes
-  //     const usuariosFinanzas = await this.getRelevantUsers(
-  //       nuevoContrato.idRefineria
-  //     );
+  //
 
-  //     // 2. Enviar notificaciones in-app
-  //     const notifications = await this.sendInAppNotifications(
-  //       usuariosFinanzas,
-  //       "Nuevo contrato creado",
-  //       `Se ha creado un nuevo contrato (${nuevoContrato.numeroContrato}) para la refinería ${nuevoContrato.idRefineria.nombre} y el contacto ${nuevoContrato.idContacto.nombre}.`,
-  //       user._id,
-  //       `/contratos/${nuevoContrato._id}`
-  //     );
-
-  //     // // 3. Enviar notificaciones por email
-  //     // this.sendEmailNotifications(
-  //     //   usuariosFinanzas,
-  //     //   "Tienes una nueva notificación",
-  //     //   `Hola {nombre},<br><br>
-  //     //    Se ha creado un nuevo contrato ${nuevoContrato.numeroContrato}.<br><br>
-  //     //    <a href="https://tudominio.com/contratos/${nuevoContrato._id}">Ver detalle</a>`,
-  //     //   nuevoContrato._id
-  //     // );
-
-  //     // 4. Enviar notificaciones push
-  //     this.sendPushNotifications(
-  //       usuariosFinanzas,
-  //       "Nuevo contrato creado",
-  //       `Contrato ${nuevoContrato.numeroContrato} creado exitosamente.`,
-  //       `/refineria/finanzas/contrato-compra`
-  //     );
-
-  //     return {
-  //       inApp: notifications.length,
-  //       email: usuariosFinanzas.filter((u) => u.correo).length,
-  //       push: usuariosFinanzas.flatMap((u) => u.fcmTokens || []).length,
-  //     };
-  //   } catch (error) {
-  //     console.error("Error en notificaciones de contrato:", error);
-  //     throw error;
-  //   }
-  // }
   dispatch({ users, triggeringUser, channels = {} }) {
     // "Fire-and-forget": Ejecuta todo en segundo plano.
     (async () => {
@@ -124,28 +77,7 @@ class NotificationService {
    * @param {String} createdBy - ID del usuario creador
    * @param {String} link - Enlace relacionado
    */
-  // async sendInAppNotifications(users, title, message, createdBy, link = null) {
-  //   const notifications = users.map((user) => ({
-  //     title,
-  //     message,
-  //     type: "in-app",
-  //     createdBy,
-  //     read: false,
-  //     userId: user._id,
-  //     link,
-  //   }));
 
-  //   const savedNotifications = await notification.insertMany(notifications);
-
-  //   // Emitir notificaciones en tiempo real
-  //   savedNotifications.forEach((notification) => {
-  //     this.io
-  //       .to(`user-${notification.userId}`)
-  //       .emit("new-notification", notification);
-  //   });
-
-  //   return savedNotifications;
-  // }
   async _sendInApp(users, triggeringUser, { title, message, link }) {
     const notifications = users.map((user) => ({
       title,
@@ -169,88 +101,9 @@ class NotificationService {
    * @param {String} templateName - Plantilla HTML con marcadores {nombre}
    * @param {String} entityId - ID de la entidad relacionada
    */
-  // async sendEmailNotifications(users, subject, templateName, entityId) {
-  //   const results = [];
-  //   const usersWithEmail = users.filter((user) => user.correo);
 
-  //   for (const user of usersWithEmail) {
-  //     try {
-  //       // Personalizar y enviar el email
-  //       console.log(`Enviando email a ${user.correo}...`);
-  //       const personalizedHtml = templateName
-  //         .replace(/{nombre}/g, user.nombre)
-  //         .replace(/{entityId}/g, entityId);
-
-  //       const result = await sendEmail(user.correo, subject, personalizedHtml);
-  //       results.push({ email: user.correo, success: true, result });
-  //     } catch (error) {
-  //       console.error(`Error al enviar email a ${user.correo}:`, error);
-  //       results.push({ email: user.correo, success: false, error });
-  //     }
-
-  //     // Pausa de 500ms para no exceder el límite de 2 req/s
-  //     await new Promise((resolve) => setTimeout(resolve, 500));
-  //   }
-
-  //   return results;
-  // }
-
-  // /**
-  //  * Envía notificaciones push
-  //  * @param {Array} users - Usuarios a notificar
-  //  * @param {String} title - Título de la notificación
-  //  * @param {String} body - Cuerpo del mensaje
-  //  * @param {String} link - Enlace relacionado
-  //  */
-  // async sendPushNotifications(users, title, body, link = null) {
-  //   const tokens = users.flatMap((user) =>
-  //     (user.fcmTokens || []).map((token) => ({ token, userId: user._id }))
-  //   );
-
-  //   if (tokens.length === 0) return [];
-
-  //   const messages = tokens.map(({ token, userId }) => ({
-  //     token,
-  //     notification: {
-  //       title,
-  //       body,
-  //       imageUrl: `${process.env.BACKEND_URL}/images/logoMaroil.png`, // URL dinámica
-  //     },
-  //     webpush: {
-  //       fcmOptions: {
-  //         link: `https://maroil-refinery.vercel.app${link}`,
-  //       },
-  //       notification: {
-  //         icon: `${process.env.BACKEND_URL}/images/logoMaroil.png`, // Icono para web
-  //         badge: `${process.env.BACKEND_URL}/images/logoMaroil.png`, // Badge para móvil
-  //         vibrate: [200, 100, 200], // Patrón de vibración
-  //         actions: [
-  //           // Acciones rápidas
-  //           {
-  //             action: "open_link",
-  //             title: "Ver más",
-  //           },
-  //         ],
-  //       },
-  //     },
-  //     data: {
-  //       userId: userId.toString(),
-  //       link,
-  //       type: "contract-notification",
-  //     },
-  //   }));
-
-  //   try {
-  //     const results = await Promise.all(
-  //       messages.map((msg) => admin.messaging().send(msg))
-  //     );
-  //     return results;
-  //   } catch (error) {
-  //     console.error("Error enviando notificaciones push:");
-  //   }
-  // }
   async _sendEmails(users, { subject, templateName, context = {} }) {
-    const templateFunction = contractNotification[templateName];
+    const templateFunction = templateMails[templateName];
     if (typeof templateFunction !== "function") {
       console.error(
         `[Email Service] La plantilla "${templateName}" no existe o no es una función.`
@@ -261,14 +114,6 @@ class NotificationService {
     for (const user of users) {
       if (user.correo) {
         try {
-          // let personalizedHtml = htmlTemplate.replace(/{nombre}/g, user.nombre);
-          // Reemplazar otros placeholders del contexto
-          // for (const key in context) {
-          //   personalizedHtml = personalizedHtml.replace(
-          //     new RegExp(`{${key}}`, "g"),
-          //     context[key]
-          //   );
-          // }
           const templateData = {
             ...context,
             nombreUsuario: user.nombre,
@@ -290,14 +135,6 @@ class NotificationService {
    * @param {String} body - Cuerpo del mensaje
    * @param {String} link - Enlace relacionado
    */
-  // async sendPushNotifications(users, { title, body, link }) {
-  //   // Aquí va la lógica completa de tu método sendPushNotifications,
-  //   // incluyendo la auditoría y limpieza de tokens.
-  //   // (Se omite por brevedad, pero es el mismo código que ya tienes)
-  //   console.log(
-  //     `[Push] Enviando a ${users.length} usuarios: ${title} - ${body}`
-  //   );
-  // }
 
   async _sendPush(users, { title, body, link }) {
     // --- Auditoría y Deduplicación ---
