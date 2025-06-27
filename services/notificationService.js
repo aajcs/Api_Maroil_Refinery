@@ -46,7 +46,7 @@ class NotificationService {
         usuariosFinanzas,
         "Nuevo contrato creado",
         `Contrato ${nuevoContrato.numeroContrato} creado exitosamente.`,
-        `/contratos/${nuevoContrato._id}`
+        `/refineria/finanzas/contrato-compra`
       );
 
       return {
@@ -162,11 +162,11 @@ class NotificationService {
       },
       webpush: {
         fcmOptions: {
-          link: `https://tudominio.com${link}`,
+          link: `https://maroil-refinery.vercel.app${link}`,
         },
         notification: {
-          icon: "https://tudominio.com/path/to/your/icon.png", // Icono para web
-          badge: "https://tudominio.com/path/to/your/badge.png", // Badge para móvil
+          icon: `${process.env.BACKEND_URL}/images/logoMaroil.png`, // Icono para web
+          badge: `${process.env.BACKEND_URL}/images/logoMaroil.png`, // Badge para móvil
           vibrate: [200, 100, 200], // Patrón de vibración
           actions: [
             // Acciones rápidas
