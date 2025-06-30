@@ -10,7 +10,7 @@ const usuario = require("../models/usuario");
 
 // Opciones de población reutilizables para consultas
 const populateOptions = [
-  { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
+  { path: "idRefineria", select: "nombre nit img" }, // Relación con el modelo Refineria
   {
     path: "aplicar.idReferencia",
     select: {
@@ -21,6 +21,7 @@ const populateOptions = [
       numeroRecepcion: 1, // Campo para el modelo Recepcion
       cantidadEnviada: 1, // Agregado para Recepcion
       cantidadRecibida: 1, // Agregado para Recepcion
+      numeroDespacho: 1, // Campo para el modelo Despacho
     },
   },
   { path: "idProducto", select: "nombre" }, // Relación con el modelo Producto
