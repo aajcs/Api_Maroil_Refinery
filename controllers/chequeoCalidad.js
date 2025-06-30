@@ -164,66 +164,151 @@ const chequeoCalidadPost = async (req = request, res = response, next) => {
     await nuevoChequeo.save();
     await nuevoChequeo.populate(populateOptions);
 
-    // Actualizar el modelo relacionado
-    if (aplicar && aplicar.idReferencia && aplicar.tipo) {
-      await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
-        idChequeoCalidad: nuevoChequeo._id, // Cambiado a idChequeoCalidad
-      });
-    }
-
-    if (nuevoChequeo) {
-      // 1. Definir QUIÉN recibe la notificación
-      const usuariosANotificar = await usuario.find({
-        departamento: { $in: ["Operaciones", "Logistica"] },
-        eliminado: false,
-        $or: [
-          { acceso: "completo" },
-          { acceso: "limitado", idRefineria: nuevoChequeo.idRefineria._id },
-        ],
-      });
-
-      // 2. Instanciar el servicio y definir QUÉ se notifica
-      const notificationService = new NotificationService(req.io);
-      // Obtener nombre del tanque y idGuia según el tipo de aplicar
-      let nombreTanque = "";
-      let idGuia = "";
-
-      if (
-        nuevoChequeo.aplicar &&
-        nuevoChequeo.aplicar.idReferencia &&
-        nuevoChequeo.aplicar.tipo
-      ) {
-        if (
-          nuevoChequeo.aplicar.tipo === "Tanque" &&
-          nuevoChequeo.aplicar.idReferencia.nombre
-        ) {
-          nombreTanque = nuevoChequeo.aplicar.idReferencia.nombre;
-        }
-        if (
-          (nuevoChequeo.aplicar.tipo === "Recepcion" ||
-            nuevoChequeo.aplicar.tipo === "Despacho") &&
-          nuevoChequeo.aplicar.idReferencia.idGuia
-        ) {
-          idGuia = nuevoChequeo.aplicar.idReferencia.idGuia;
-        }
+    // Solo ejecutar si el chequeo tiene estado "aprobado"
+    if (nuevoChequeo.estado === "aprobado") {
+      // Actualizar el modelo relacionado
+      if (aplicar && aplicar.idReferencia && aplicar.tipo) {
+        await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
+          idChequeoCalidad: nuevoChequeo._id, // Cambiado a idChequeoCalidad
+        });
       }
 
-      notificationService.dispatch({
-        users: usuariosANotificar,
-        triggeringUser: req.usuario,
-        channels: {
-          inApp: {
-            title: "Nuevo Chequeo de Calidad Creado",
-            message: `El chequeo de calidad ${nuevoChequeo.numeroChequeoCalidad} para la refinería ${nuevoChequeo.idRefineria.nombre}. Realizado a ${nuevoChequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""} ha sido ${nuevoChequeo.estado}.`,
-            link: `/chequeos/${nuevoChequeo._id}`,
+      if (nuevoChequeo) {
+        // 1. Definir QUIÉN recibe la notificación
+        const usuariosANotificar = await usuario.find({
+          departamento: { $in: ["Operaciones", "Logistica"] },
+          eliminado: false,
+          $or: [
+            { acceso: "completo" },
+            { acceso: "limitado", idRefineria: nuevoChequeo.idRefineria._id },
+          ],
+        });
+
+        // 2. Instanciar el servicio y definir QUÉ se notifica
+        const notificationService = new NotificationService(req.io);
+        // Obtener nombre del tanque y idGuia según el tipo de aplicar
+        let nombreTanque = "";
+        let idGuia = "";
+
+        if (
+          nuevoChequeo.aplicar &&
+          nuevoChequeo.aplicar.idReferencia &&
+          nuevoChequeo.aplicar.tipo
+        ) {
+          if (
+            nuevoChequeo.aplicar.tipo === "Tanque" &&
+            nuevoChequeo.aplicar.idReferencia.nombre
+          ) {
+            nombreTanque = nuevoChequeo.aplicar.idReferencia.nombre;
+          }
+          if (
+            (nuevoChequeo.aplicar.tipo === "Recepcion" ||
+              nuevoChequeo.aplicar.tipo === "Despacho") &&
+            nuevoChequeo.aplicar.idReferencia.idGuia
+          ) {
+            idGuia = nuevoChequeo.aplicar.idReferencia.idGuia;
+          }
+        }
+
+        notificationService.dispatch({
+          users: usuariosANotificar,
+          triggeringUser: req.usuario,
+          channels: {
+            inApp: {
+              title: "Nuevo Chequeo de Calidad Creado",
+              message: `El chequeo de calidad ${nuevoChequeo.numeroChequeoCalidad} para la refinería ${nuevoChequeo.idRefineria.nombre}. Realizado a ${nuevoChequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""} ha sido ${nuevoChequeo.estado}.`,
+              link: `/chequeos/${nuevoChequeo._id}`,
+            },
+            push: {
+              title: "Nuevo Chequeo Calidad Creado",
+              body: `El chequeo de calidad ${nuevoChequeo.numeroChequeoCalidad} para la refinería ${nuevoChequeo.idRefineria.nombre}. Realizado a ${nuevoChequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""}  ha sido ${nuevoChequeo.estado}.`,
+              link: `/chequeos/${nuevoChequeo._id}`,
+            },
           },
-          push: {
-            title: "Nuevo Chequeo Calidad Creado",
-            body: `El chequeo de calidad ${nuevoChequeo.numeroChequeoCalidad} para la refinería ${nuevoChequeo.idRefineria.nombre}. Realizado a ${nuevoChequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""}  ha sido ${nuevoChequeo.estado}.`,
-            link: `/chequeos/${nuevoChequeo._id}`,
+        });
+      }
+    }
+
+    // Solo ejecutar si el chequeo tiene estado "rechazado"
+    if (nuevoChequeo.estado === "rechazado") {
+      // Actualizar el modelo relacionado
+      if (aplicar && aplicar.idReferencia && aplicar.tipo) {
+        await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
+          idChequeoCalidad: nuevoChequeo._id, // Cambiado a idChequeoCalidad
+        });
+      }
+
+      if (nuevoChequeo) {
+        // 1. Definir QUIÉN recibe la notificación
+        const usuariosANotificar = await usuario.find({
+          departamento: { $in: ["Operaciones", "Logistica"] },
+          eliminado: false,
+          $or: [
+            { acceso: "completo" },
+            { acceso: "limitado", idRefineria: nuevoChequeo.idRefineria._id },
+          ],
+        });
+
+        // 2. Instanciar el servicio y definir QUÉ se notifica
+        const notificationService = new NotificationService(req.io);
+        // Obtener nombre del tanque y idGuia según el tipo de aplicar
+        let nombreTanque = "";
+        let idGuia = "";
+
+        if (
+          nuevoChequeo.aplicar &&
+          nuevoChequeo.aplicar.idReferencia &&
+          nuevoChequeo.aplicar.tipo
+        ) {
+          if (
+            nuevoChequeo.aplicar.tipo === "Tanque" &&
+            nuevoChequeo.aplicar.idReferencia.nombre
+          ) {
+            nombreTanque = nuevoChequeo.aplicar.idReferencia.nombre;
+          }
+          if (
+            (nuevoChequeo.aplicar.tipo === "Recepcion" ||
+              nuevoChequeo.aplicar.tipo === "Despacho") &&
+            nuevoChequeo.aplicar.idReferencia.idGuia
+          ) {
+            idGuia = nuevoChequeo.aplicar.idReferencia.idGuia;
+          }
+        }
+
+        notificationService.dispatch({
+          users: usuariosANotificar,
+          triggeringUser: req.usuario,
+          channels: {
+            inApp: {
+              title: "Nuevo Chequeo de Calidad Creado",
+              message: `El chequeo de calidad ${nuevoChequeo.numeroChequeoCalidad} para la refinería ${nuevoChequeo.idRefineria.nombre}. Realizado a ${nuevoChequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""} ha sido ${nuevoChequeo.estado}.`,
+              link: `/chequeos/${nuevoChequeo._id}`,
+            },
+            email: {
+              subject: `Ha sido rechazado un chequeo de Calidad: ${nuevoChequeo.numeroChequeoCalidad}`,
+              templateName: "chequeoRechazado",
+              context: {
+                numeroChequeoCalidad: nuevoChequeo.numeroChequeoCalidad,
+                nombreRefineria: nuevoChequeo.idRefineria.nombre,
+                idReferencia:
+                  nuevoChequeo.aplicar.tipo === "Tanque"
+                    ? nuevoChequeo.aplicar.idReferencia.nombre
+                    : nuevoChequeo.aplicar.idReferencia.idGuia || "",
+                creadoPor: req.usuario.nombre,
+                fecha: nuevoChequeo.fechaChequeo,
+                estado: nuevoChequeo.estado,
+                operacion: nuevoChequeo.aplicar.tipo,
+                enlaceDetalle: `https://maroil-refinery.vercel.app/chequeo-calidad/${nuevoChequeo._id}`,
+              },
+            },
+            push: {
+              title: "Nuevo Chequeo Calidad Creado",
+              body: `El chequeo de calidad ${nuevoChequeo.numeroChequeoCalidad} para la refinería ${nuevoChequeo.idRefineria.nombre}. Realizado a ${nuevoChequeo.aplicar.tipo}${nombreTanque ? `: ${nombreTanque}` : ""}${idGuia ? ` (Guía: ${idGuia})` : ""}  ha sido ${nuevoChequeo.estado}.`,
+              link: `/chequeos/${nuevoChequeo._id}`,
+            },
           },
-        },
-      });
+        });
+      }
     }
 
     res.status(201).json(nuevoChequeo);
