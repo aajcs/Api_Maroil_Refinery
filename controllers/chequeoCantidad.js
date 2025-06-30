@@ -18,6 +18,9 @@ const populateOptions = [
       idGuia: 1, // Campo para el modelo Recepcion y Despacho
       nombreChofer: 1, // Campo para el modelo Recepcion y Despacho
       placa: 1, // Campo para el modelo Recepcion y Despacho
+      numeroRecepcion: 1, // Campo para el modelo Recepcion
+      cantidadEnviada: 1, // Agregado para Recepcion
+      cantidadRecibida: 1, // Agregado para Recepcion
     },
   },
   { path: "idProducto", select: "nombre" }, // Relación con el modelo Producto
