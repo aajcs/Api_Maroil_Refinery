@@ -14,16 +14,15 @@ const populateOptions = [
   {
     path: "aplicar.idReferencia",
     select: {
-      // Selección condicional basada en el tipo
       nombre: 1, // Campo para el modelo Tanque
-      idGuia: 1, // Campo para el modelo Recepcion
-      idGuia: 1, // Campo para el modelo Despacho
+      idGuia: 1, // Campo para el modelo Recepcion y Despacho
+      nombreChofer: 1, // Campo para el modelo Recepcion y Despacho
+      placa: 1, // Campo para el modelo Recepcion y Despacho
     },
   },
   { path: "idProducto", select: "nombre" }, // Relación con el modelo Producto
   { path: "idOperador", select: "nombre" }, // Relación con el modelo Operador
   { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
-
   {
     path: "historial",
     populate: { path: "modificadoPor", select: "nombre correo" },
