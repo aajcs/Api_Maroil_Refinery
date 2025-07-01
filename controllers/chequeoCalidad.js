@@ -1,41 +1,58 @@
-// Importaciones necesarias
 const { response, request } = require("express");
-const mongoose = require("mongoose"); // Importa mongoose
+const mongoose = require("mongoose");
 const ChequeoCalidad = require("../models/chequeoCalidad");
 const Recepcion = require("../models/recepcion");
 const Despacho = require("../models/despacho");
 const Tanque = require("../models/tanque");
 const NotificationService = require("../services/notificationService");
 const usuario = require("../models/usuario");
+const Producto = require("../models/producto");
 
-// Opciones de población reutilizables para consultas
+// Opciones de población reutilizables para consultas (sin populate anidado)
 const populateOptions = [
-  { path: "idRefineria", select: "nombre" },
+  { path: "idRefineria", select: "nombre img nit" },
   {
     path: "aplicar.idReferencia",
     select: {
       nombre: 1,
       idGuia: 1,
-      idGuia: 1,
+      numeroRecepcion: 1,
+      nombreChofer: 1,
+      placa: 1,
+      idContratoItems: 1,
+      idTipoProducto: 1,
     },
+    // No uses populate anidado aquí
   },
   { path: "idProducto", select: "nombre" },
   { path: "idOperador", select: "nombre" },
-  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
-
+  { path: "createdBy", select: "nombre correo" },
   {
     path: "historial",
     populate: { path: "modificadoPor", select: "nombre correo" },
-  }, // Popula historial.modificadoPor en el array
+  },
 ];
+
+// Función auxiliar para popular idTipoProducto manualmente si existe
+async function populateIdTipoProducto(chequeos) {
+  for (const chequeo of Array.isArray(chequeos) ? chequeos : [chequeos]) {
+    const ref = chequeo.aplicar?.idReferencia;
+    if (
+      ref &&
+      ref.idTipoProducto &&
+      mongoose.Types.ObjectId.isValid(ref.idTipoProducto) &&
+      !ref.idTipoProducto.nombre // Solo si no está ya populado
+    ) {
+      ref.idTipoProducto = await Producto.findById(ref.idTipoProducto).select(
+        "nombre"
+      );
+    }
+  }
+}
 
 // Función auxiliar para actualizar el modelo relacionado
 const actualizarModeloRelacionado = async (idReferencia, tipo, datos) => {
   try {
-    console.log(`Actualizando modelo relacionado: ${tipo}`);
-    console.log(`ID de referencia: ${idReferencia}`);
-    console.log(`Datos enviados para la actualización:`, datos);
-
     if (!mongoose.Types.ObjectId.isValid(idReferencia)) {
       throw new Error(`El ID de referencia no es válido: ${idReferencia}`);
     }
@@ -66,8 +83,6 @@ const actualizarModeloRelacionado = async (idReferencia, tipo, datos) => {
       { new: true }
     );
 
-    console.log("Resultado de la actualización:", resultado);
-
     if (!resultado) {
       throw new Error(
         `No se pudo actualizar el modelo ${tipo} con ID: ${idReferencia}`
@@ -76,30 +91,33 @@ const actualizarModeloRelacionado = async (idReferencia, tipo, datos) => {
 
     return resultado;
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    throw err;
   }
 };
 
 // Controlador para obtener todos los chequeos de calidad
 const chequeoCalidadGets = async (req = request, res = response, next) => {
-  const query = { eliminado: false }; // Filtro para obtener solo chequeos activos y no eliminados
+  const query = { eliminado: false };
 
   try {
     const [total, chequeoCalidads] = await Promise.all([
-      ChequeoCalidad.countDocuments(query), // Cuenta el total de chequeos
-      ChequeoCalidad.find(query).populate(populateOptions), // Obtiene los chequeos con IdReferencia pobladas
+      ChequeoCalidad.countDocuments(query),
+      ChequeoCalidad.find(query).populate(populateOptions),
     ]);
 
-    // Ordenar historial por fecha ascendente en cada torre
+    // Popular idTipoProducto manualmente si existe
+    await populateIdTipoProducto(chequeoCalidads);
+
+    // Ordenar historial por fecha descendente en cada chequeo
     chequeoCalidads.forEach((t) => {
       if (Array.isArray(t.historial)) {
         t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
 
-    res.json({ total, chequeoCalidads }); // Responde con el total y la lista de chequeos
+    res.json({ total, chequeoCalidads });
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
@@ -110,22 +128,24 @@ const chequeoCalidadGet = async (req = request, res = response, next) => {
   try {
     const chequeoCalidad = await ChequeoCalidad.findOne({
       _id: id,
-      estado: "true",
       eliminado: false,
     }).populate(populateOptions);
-    // Ordenar historial por fecha ascendente en cada torre
-    chequeoCalidad.forEach((t) => {
-      if (Array.isArray(t.historial)) {
-        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      }
-    });
+
     if (!chequeoCalidad) {
       return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
     }
 
+    await populateIdTipoProducto(chequeoCalidad);
+
+    if (Array.isArray(chequeoCalidad.historial)) {
+      chequeoCalidad.historial.sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+      );
+    }
+
     res.json(chequeoCalidad);
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
@@ -158,23 +178,22 @@ const chequeoCalidadPost = async (req = request, res = response, next) => {
       cetano,
       idOperador,
       estado,
-      createdBy: req.usuario._id, // ID del usuario que creó el tanque
+      createdBy: req.usuario._id,
     });
 
     await nuevoChequeo.save();
     await nuevoChequeo.populate(populateOptions);
+    await populateIdTipoProducto(nuevoChequeo);
 
     // Solo ejecutar si el chequeo tiene estado "aprobado"
     if (nuevoChequeo.estado === "aprobado") {
-      // Actualizar el modelo relacionado
       if (aplicar && aplicar.idReferencia && aplicar.tipo) {
         await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
-          idChequeoCalidad: nuevoChequeo._id, // Cambiado a idChequeoCalidad
+          idChequeoCalidad: nuevoChequeo._id,
         });
       }
 
       if (nuevoChequeo) {
-        // 1. Definir QUIÉN recibe la notificación
         const usuariosANotificar = await usuario.find({
           departamento: { $in: ["Operaciones", "Logistica"] },
           eliminado: false,
@@ -184,9 +203,7 @@ const chequeoCalidadPost = async (req = request, res = response, next) => {
           ],
         });
 
-        // 2. Instanciar el servicio y definir QUÉ se notifica
         const notificationService = new NotificationService(req.io);
-        // Obtener nombre del tanque y idGuia según el tipo de aplicar
         let nombreTanque = "";
         let idGuia = "";
 
@@ -231,15 +248,13 @@ const chequeoCalidadPost = async (req = request, res = response, next) => {
 
     // Solo ejecutar si el chequeo tiene estado "rechazado"
     if (nuevoChequeo.estado === "rechazado") {
-      // Actualizar el modelo relacionado
       if (aplicar && aplicar.idReferencia && aplicar.tipo) {
         await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
-          idChequeoCalidad: nuevoChequeo._id, // Cambiado a idChequeoCalidad
+          idChequeoCalidad: nuevoChequeo._id,
         });
       }
 
       if (nuevoChequeo) {
-        // 1. Definir QUIÉN recibe la notificación
         const usuariosANotificar = await usuario.find({
           departamento: { $in: ["Operaciones", "Logistica"] },
           eliminado: false,
@@ -249,9 +264,7 @@ const chequeoCalidadPost = async (req = request, res = response, next) => {
           ],
         });
 
-        // 2. Instanciar el servicio y definir QUÉ se notifica
         const notificationService = new NotificationService(req.io);
-        // Obtener nombre del tanque y idGuia según el tipo de aplicar
         let nombreTanque = "";
         let idGuia = "";
 
@@ -313,7 +326,7 @@ const chequeoCalidadPost = async (req = request, res = response, next) => {
 
     res.status(201).json(nuevoChequeo);
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
@@ -323,7 +336,6 @@ const chequeoCalidadPut = async (req = request, res = response, next) => {
   const { _id, aplicar, ...resto } = req.body;
 
   try {
-    // Validar que idReferencia sea un ObjectId válido
     if (
       aplicar &&
       aplicar.idReferencia &&
@@ -339,7 +351,7 @@ const chequeoCalidadPut = async (req = request, res = response, next) => {
       if (String(antes[key]) !== String(resto[key])) {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
-    } // Actualiza el tipo de producto en la base de datos y devuelve el tipo de producto actualizado
+    }
 
     const chequeoActualizado = await ChequeoCalidad.findOneAndUpdate(
       { _id: id, eliminado: false },
@@ -347,7 +359,7 @@ const chequeoCalidadPut = async (req = request, res = response, next) => {
         ...resto,
         aplicar,
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
-      }, // Datos a actualizar
+      },
       { new: true }
     ).populate(populateOptions);
 
@@ -355,7 +367,8 @@ const chequeoCalidadPut = async (req = request, res = response, next) => {
       return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
     }
 
-    // Actualizar el modelo relacionado
+    await populateIdTipoProducto(chequeoActualizado);
+
     if (aplicar && aplicar.idReferencia && aplicar.tipo) {
       await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
         idChequeoCalidad: chequeoActualizado._id,
@@ -363,7 +376,6 @@ const chequeoCalidadPut = async (req = request, res = response, next) => {
     }
 
     if (chequeoActualizado) {
-      // 1. Definir QUIÉN recibe la notificación
       const usuariosANotificar = await usuario.find({
         departamento: { $in: ["Operaciones", "Logistica"] },
         eliminado: false,
@@ -376,9 +388,7 @@ const chequeoCalidadPut = async (req = request, res = response, next) => {
         ],
       });
 
-      // 2. Instanciar el servicio y definir QUÉ se notifica
       const notificationService = new NotificationService(req.io);
-      // Obtener nombre del tanque y idGuia según el tipo de aplicar
       let nombreTanque = "";
       let idGuia = "";
 
@@ -422,7 +432,7 @@ const chequeoCalidadPut = async (req = request, res = response, next) => {
 
     res.json(chequeoActualizado);
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
@@ -438,11 +448,12 @@ const chequeoCalidadPatch = async (req = request, res = response, next) => {
       { new: true }
     ).populate(populateOptions);
 
+    await populateIdTipoProducto(chequeoActualizado);
+
     if (!chequeoActualizado) {
       return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
     }
 
-    // Actualizar el modelo relacionado
     if (aplicar && aplicar.idReferencia && aplicar.tipo) {
       await actualizarModeloRelacionado(aplicar.idReferencia, aplicar.tipo, {
         chequeoCalidad: chequeoActualizado._id,
@@ -451,7 +462,7 @@ const chequeoCalidadPatch = async (req = request, res = response, next) => {
 
     res.json(chequeoActualizado);
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
@@ -460,7 +471,6 @@ const chequeoCalidadDelete = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
-    // Auditoría: captura estado antes de eliminar
     const antes = await ChequeoCalidad.findById(id);
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
     const chequeo = await ChequeoCalidad.findOneAndUpdate(
@@ -472,11 +482,12 @@ const chequeoCalidadDelete = async (req = request, res = response, next) => {
       { new: true }
     ).populate(populateOptions);
 
+    await populateIdTipoProducto(chequeo);
+
     if (!chequeo) {
       return res.status(404).json({ msg: "Chequeo de calidad no encontrado" });
     }
 
-    // Actualizar el modelo relacionado
     if (
       chequeo.aplicar &&
       chequeo.aplicar.idReferencia &&
@@ -486,13 +497,12 @@ const chequeoCalidadDelete = async (req = request, res = response, next) => {
         chequeo.aplicar.idReferencia,
         chequeo.aplicar.tipo,
         {
-          chequeoCalidad: null, // Eliminar la referencia al chequeo
+          chequeoCalidad: null,
         }
       );
     }
 
     if (chequeo) {
-      // 1. Definir QUIÉN recibe la notificación
       const usuariosANotificar = await usuario.find({
         departamento: { $in: ["Operaciones", "Logistica"] },
         eliminado: false,
@@ -505,9 +515,7 @@ const chequeoCalidadDelete = async (req = request, res = response, next) => {
         ],
       });
 
-      // 2. Instanciar el servicio y definir QUÉ se notifica
       const notificationService = new NotificationService(req.io);
-      // Obtener nombre del tanque y idGuia según el tipo de aplicar
       let nombreTanque = "";
       let idGuia = "";
 
@@ -551,16 +559,15 @@ const chequeoCalidadDelete = async (req = request, res = response, next) => {
 
     res.json(chequeo);
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
-// Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
-  chequeoCalidadGets, // Obtener todos los chequeos de calidad
-  chequeoCalidadGet, // Obtener un chequeo de calidad específico por ID
-  chequeoCalidadPost, // Crear un nuevo chequeo de calidad
-  chequeoCalidadPut, // Actualizar un chequeo de calidad existente
-  chequeoCalidadPatch, // Actualizar parcialmente un chequeo de calidad
-  chequeoCalidadDelete, // Eliminar (marcar como eliminado) un chequeo de calidad
+  chequeoCalidadGets,
+  chequeoCalidadGet,
+  chequeoCalidadPost,
+  chequeoCalidadPut,
+  chequeoCalidadPatch,
+  chequeoCalidadDelete,
 };
