@@ -20,7 +20,7 @@ const populateOptions = [
   },
   { path: "idChequeoCalidad" }, // Población del chequeo de calidad
   { path: "idChequeoCantidad" }, // Población del chequeo de cantidad
-  { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
+  { path: "idRefineria", select: "nombre img direccion " }, // Relación con el modelo Refineria
   { path: "idTanque", select: "nombre" }, // Relación con el modelo Tanque
   { path: "idLinea", select: "nombre" }, // Relación con el modelo Linea
   {
