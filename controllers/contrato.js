@@ -11,7 +11,7 @@ const NotificationService = require("../services/notificationService");
 const populateOptions = [
   {
     path: "idRefineria",
-    select: "nombre",
+    select: "nombre img direccion telefono correo",
   },
   {
     path: "idContacto",
