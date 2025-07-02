@@ -15,7 +15,7 @@ const populateOptions = [
   },
   {
     path: "idContacto",
-    select: "nombre",
+    select: "nombre cuidad identificacionFiscal telefono correo direccion representanteLegal",
   },
   {
     path: "idItems",

@@ -16,11 +16,13 @@ const populateOptions = [
     select: {
       nombre: 1,
       idGuia: 1,
+      numeroDespacho: 1,
       numeroRecepcion: 1,
       nombreChofer: 1,
       placa: 1,
       idContratoItems: 1,
       idTipoProducto: 1,
+      
     },
     // No uses populate anidado aquí
   },
