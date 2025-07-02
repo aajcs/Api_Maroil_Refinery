@@ -72,6 +72,11 @@ const ChequeoCalidadSchema = Schema(
       minlength: [1, "El Indice de cetano debe tener al menos 1 caracter"],
     },
 
+    observaciones: {
+      type: String, 
+      required: [false, "Las observaciones son obligatorias"],
+    },
+
     // Nombre del operador
     idOperador: {
       type: Schema.Types.ObjectId,

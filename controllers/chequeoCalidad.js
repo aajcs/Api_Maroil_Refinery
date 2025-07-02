@@ -165,6 +165,7 @@ const chequeoCalidadPost = async (req = request, res = response, next) => {
     cetano,
     idOperador,
     estado,
+    observaciones,
   } = req.body;
 
   try {
@@ -181,6 +182,7 @@ const chequeoCalidadPost = async (req = request, res = response, next) => {
       idOperador,
       estado,
       createdBy: req.usuario._id,
+      observaciones,
     });
 
     await nuevoChequeo.save();
