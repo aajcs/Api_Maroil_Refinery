@@ -9,7 +9,7 @@ const populateOptions = [
     select:
       "numeroContrato descripcion montoTotal montoPagado montoPendiente abono",
   },
-  { path: "idRefineria", select: "nombre" },
+  { path: "idRefineria", select: "nombre img direccion" },
   { path: "createdBy", select: "nombre correo" },
   {
     path: "historial",
