@@ -7,7 +7,11 @@ const populateOptions = [
   {
     path: "idContrato",
     select:
-      "numeroContrato descripcion montoTotal montoPagado montoPendiente abono",
+      "numeroContrato descripcion montoTotal montoPagado montoPendiente abono idContacto",
+    populate: {
+      path: "idContacto",
+      select: "nombre telefono direccion correo representanteLegal",
+    },
   },
   { path: "idRefineria", select: "nombre img direccion" },
   { path: "createdBy", select: "nombre correo" },
