@@ -18,6 +18,10 @@ const populateOptions = [
     select: "nombre cuidad identificacionFiscal telefono correo direccion representanteLegal",
   },
   {
+  path: "abonos",
+ select: "monto fecha tipoOperacion referencia",
+},
+  {
     path: "idItems",
     populate: [
       { path: "producto", select: "nombre" },
