@@ -8,7 +8,7 @@ const { generarJWT } = require("../helpers/generar-jwt"); // Helper para generar
 const { googleVerify } = require("../helpers/google-verify"); // Helper para verificar tokens de Google
 
 // Controlador para el inicio de sesión
-const login = async (req, res = response) => {
+const login = async (req, res = response, next) => {
   const { correo, password } = req.body; // Extrae el correo y la contraseña del cuerpo de la solicitud
 
   try {
@@ -52,15 +52,20 @@ const login = async (req, res = response) => {
 };
 
 // Controlador para el inicio de sesión con Google
-const googleSignin = async (req, res = response) => {
+const googleSignin = async (req, res = response, next) => {
   const { id_token } = req.body; // Extrae el token de Google del cuerpo de la solicitud
 
   try {
     // Verificar el token de Google y obtener los datos del usuario
     const { correo, nombre, img } = await googleVerify(id_token);
+    // Si el usuario existe pero no tiene imagen, actualizamos con la de Google
 
     let usuario = await Usuario.findOne({ correo });
 
+    if (usuario && (!usuario.img || usuario.img.trim() === "")) {
+      usuario.img = img;
+      await usuario.save();
+    }
     // Si el usuario no existe, se crea uno nuevo
     if (!usuario) {
       const data = {

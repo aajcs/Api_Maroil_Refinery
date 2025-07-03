@@ -9,6 +9,9 @@ const UsuarioSchema = Schema(
         ref: "Refineria",
       },
     ],
+    img: {
+      type: String,
+    },
     nombre: {
       type: String,
       required: [true, "El nombre es obligatorio"],
@@ -59,10 +62,10 @@ const UsuarioSchema = Schema(
       type: [String],
       default: [],
     },
-    /* google: {
-        type: Boolean,
-        default: false
-    },*/
+    google: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
