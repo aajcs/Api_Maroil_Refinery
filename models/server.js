@@ -128,7 +128,12 @@ class Server {
 
   middlewares() {
     // CORS
-    this.app.use(cors());
+    this.app.use(
+      cors({
+        origin: "*", // o el dominio de tu front
+        exposedHeaders: ["X-New-Token"],
+      })
+    );
 
     // Lectura y parseo del body
     this.app.use(express.json());
