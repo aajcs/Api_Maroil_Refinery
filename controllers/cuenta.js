@@ -37,10 +37,8 @@ const cuentaGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
   try {
-    // Usar findById para buscar por _id directamente
     const cuenta = await Cuenta.findById(id).populate(populateOptions);
 
-    // Si quieres filtrar solo cuentas no eliminadas, agrega este chequeo:
     if (!cuenta || cuenta.eliminado) {
       return res.status(404).json({ msg: "Cuenta no encontrada" });
     }
@@ -89,9 +87,12 @@ const cuentaPostFromContrato = async (req = request, res = response, next) => {
 
     await nuevaCuenta.save();
 
+    // Devuelve la cuenta populada
+    const cuentaPopulada = await Cuenta.findById(nuevaCuenta._id).populate(populateOptions);
+
     res.status(201).json({
       msg: "Cuenta creada correctamente desde el contrato.",
-      cuenta: nuevaCuenta,
+      cuenta: cuentaPopulada,
     });
   } catch (err) {
     next(err); // Propaga el error al middleware
@@ -206,6 +207,49 @@ const cuentaSyncFromContrato = async (req = request, res = response, next) => {
   }
 };
 
+const cuentaSaldosPendientes = async (req = request, res = response, next) => {
+  try {
+    const { idRefineria } = req.query;
+    const filtro = {};
+    if (idRefineria) {
+      filtro.idRefineria = idRefineria;
+    }
+
+    const cuentas = await Cuenta.find(filtro).populate(populateOptions);
+
+    let totalPorCobrar = 0;
+    let totalPorPagar = 0;
+    const porCobrar = [];
+    const porPagar = [];
+
+    cuentas.forEach((cuenta) => {
+      const info = {
+        numeroContrato: cuenta.idContrato?.numeroContrato || "",
+        balancePendiente: Number(cuenta.balancePendiente || 0),
+        nombreContacto: cuenta.idContacto?.nombre || "",
+      };
+
+      if (cuenta.tipoCuenta === "Cuentas por Cobrar") {
+        totalPorCobrar += info.balancePendiente;
+        porCobrar.push(info);
+      }
+      if (cuenta.tipoCuenta === "Cuentas por Pagar") {
+        totalPorPagar += info.balancePendiente;
+        porPagar.push(info);
+      }
+    });
+
+    res.json({
+      totalPorCobrar,
+      totalPorPagar,
+      porCobrar,
+      porPagar,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   cuentaGets,
   cuentaGet,
@@ -213,4 +257,5 @@ module.exports = {
   cuentaPut,
   cuentaDelete,
   cuentaSyncFromContrato,
+  cuentaSaldosPendientes,
 };

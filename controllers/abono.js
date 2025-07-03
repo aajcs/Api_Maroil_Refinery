@@ -134,24 +134,7 @@ const abonoPost = async (req = request, res = response, next) => {
     // // Agregar el abono al array de la cuenta (array de IDs)
     cuenta.abonos.push(nuevoAbono._id);
 
-    // // Recalcular totalAbonado y balancePendiente usando los abonos activos
-    // const abonosActivos = await Abono.find({
-    //   _id: { $in: cuenta.abonos },
-    //   eliminado: false,
-    // });
-    // console.log("Abonos activos:", abonosActivos);
-    // const totalAbonado = abonosActivos.reduce(
-    //   (sum, a) => sum + (a.monto || 0),
-    //   0
-    // );
-    // console.log("Total abonado:", totalAbonado);
-    // cuenta.totalAbonado = 5000;
-    // cuenta.balancePendiente = Math.max(
-    //   (cuenta.montoTotalContrato || 0) - totalAbonado,
-    //   0
-    // );
-
-    // await cuenta.save();
+  
 
     // CORRECCIÓN PRINCIPAL: Usar el valor calculado en lugar de 5000
     const abonosActivos = await Abono.find({
@@ -180,81 +163,7 @@ const abonoPost = async (req = request, res = response, next) => {
   }
 };
 
-// Actualizar un abono existente, sincronizar el contrato y la cuenta
-// const abonoPut = async (req = request, res = response, next) => {
-//   const { id } = req.params;
-//   const { monto, fecha, tipoOperacion, referencia } = req.body;
 
-//   try {
-//     const abonoAntes = await Abono.findById(id);
-//     if (!abonoAntes) {
-//       return res.status(404).json({ msg: "Abono no encontrado" });
-//     }
-
-//     // Guardar cambios para auditoría
-//     const cambios = {};
-//     ["monto", "fecha", "tipoOperacion", "referencia"].forEach((key) => {
-//       if (String(abonoAntes[key]) !== String(req.body[key])) {
-//         cambios[key] = { from: abonoAntes[key], to: req.body[key] };
-//       }
-//     });
-
-//     // Actualizar el abono
-//     const abonoActualizado = await Abono.findOneAndUpdate(
-//       { _id: id, eliminado: false },
-//       {
-//         monto,
-//         fecha,
-//         tipoOperacion,
-//         referencia,
-//         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
-//       },
-//       { new: true }
-//     ).populate(populateOptions);
-
-//     if (!abonoActualizado) {
-//       return res.status(404).json({ msg: "Abono no encontrado" });
-//     }
-
-//     const cuenta = await Cuenta.findOne({ idContrato: abonoAntes.idContrato });
-//     if (cuenta) {
-//       // Asegúrate de que cuenta.abonos esté actualizado
-//       if (!cuenta.abonos.includes(abonoAntes._id)) {
-//         cuenta.abonos.push(abonoAntes._id);
-//       }
-
-//       const abonosCuenta = await Abono.find({
-//         _id: { $in: cuenta.abonos },
-//         eliminado: false,
-//       });
-
-//       // Convierte monto a número para evitar problemas de tipo
-//       const totalAbonado = abonosCuenta.reduce(
-//         (sum, a) => sum + parseFloat(a.monto || 0),
-//         0
-//       );
-//       console.log("Total abonado recalculado:", totalAbonado);
-
-//       cuenta.totalAbonado = totalAbonado;
-//       cuenta.balancePendiente = Math.max(
-//         parseFloat(cuenta.montoTotalContrato || 0) - totalAbonado,
-//         0
-//       );
-//       console.log("cuenta antes de guardar: ", cuenta);
-
-//       try {
-//         const que = await cuenta.save();
-//         console.log("Cuenta actualizada:", que);
-//       } catch (err) {
-//         console.error("Error guardando cuenta:", err);
-//       }
-//     }
-//     res.json(abonoActualizado);
-//   } catch (err) {
-//     console.error("Error en abonoPut:", err);
-//     res.status(400).json({ error: err.message });
-//   }
-// };
 const abonoPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { monto, fecha, tipoOperacion, referencia } = req.body;
@@ -433,6 +342,34 @@ const abonoPatch = (req, res = response) => {
   });
 };
 
+const sumarAbonosPorTipoYFecha = async (req, res, next) => {
+  try {
+    const { tipoAbono, mes, anio } = req.query;
+    const fechaInicio = new Date(anio, mes - 1, 1);
+    const fechaFin = new Date(anio, mes, 1);
+
+    // Busca los abonos filtrados y popula la info relacionada
+    const abonos = await Abono.find({
+      tipoAbono,
+      fecha: { $gte: fechaInicio, $lt: fechaFin },
+      eliminado: false,
+    }).populate(populateOptions);
+
+    // Suma los montos
+    const totalMonto = abonos.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0);
+
+    res.json({
+      tipoAbono,
+      totalMonto,
+      cantidad: abonos.length,
+      abonos, // Incluye la información populada
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
 module.exports = {
   abonoGets,
   abonoGet,
@@ -440,4 +377,6 @@ module.exports = {
   abonoPut,
   abonoDelete,
   abonoPatch,
+  sumarAbonosPorTipoYFecha, // <-- exporta la función
+
 };

@@ -23,9 +23,12 @@ const {
   abonoDelete,
   abonoPatch,
   abonoGets,
+  sumarAbonosPorTipoYFecha,
 } = require("../controllers/abono");
 
 const router = Router();
+
+router.get("/sumar", sumarAbonosPorTipoYFecha); // <-- agrega la ruta
 
 router.get("/", [validarJWT], abonoGets);
 router.get(
@@ -80,5 +83,8 @@ router.delete(
 );
 
 router.patch("/", abonoPatch);
+
+
+
 
 module.exports = router;
