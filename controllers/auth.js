@@ -99,7 +99,56 @@ const googleSignin = async (req, res = response, next) => {
     next(err); // Propaga el error al middleware
   }
 };
+// Controlador para crear un nuevo usuario
+const register = async (req, res = response, next) => {
+  // Extrae los datos del cuerpo de la solicitud
+  const {
+    nombre,
+    correo,
+    password,
+    rol,
+    estado,
+    acceso,
+    idRefineria,
+    departamento,
+    telefono,
+  } = req.body;
 
+  // Crea una nueva instancia del modelo Usuario con los datos proporcionados
+  const usuario = new Usuario({
+    idRefineria,
+    nombre,
+    correo,
+    password,
+    rol,
+    acceso,
+    estado,
+    departamento,
+    telefono,
+    // createdBy: req.usuario._id, // ID del usuario que creó el tanque
+  });
+
+  try {
+    // Encripta la contraseña antes de guardarla en la base de datos
+    const salt = bcryptjs.genSaltSync(); // Genera un "salt" para la encriptación
+    usuario.password = bcryptjs.hashSync(password, salt); // Encripta la contraseña
+
+    // Guarda el usuario en la base de datos
+    await usuario.save();
+    // await usuario.populate(populateOptions);
+    // Genera un token JWT para el usuario recién creado
+    const token = await generarJWT(usuario.id);
+
+    // Responde con los datos del usuario y el token generado
+    res.json({
+      usuario,
+      token,
+    });
+  } catch (err) {
+    console.log("Error al registrar usuario:", err); // Muestra el error en la consola
+    next(err); // Propaga el error al middleware
+  }
+};
 // Controlador para validar y renovar el token de un usuario
 const validarTokenUsuario = async (req, res = response) => {
   // Generar un nuevo JWT
@@ -117,4 +166,5 @@ module.exports = {
   login, // Inicio de sesión
   googleSignin, // Inicio de sesión con Google
   validarTokenUsuario, // Validar y renovar el token de un usuario
+  register, // Registro de un nuevo usuario
 };

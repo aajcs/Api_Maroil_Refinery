@@ -74,6 +74,7 @@ const usuariosPost = async (req, res = response) => {
     acceso,
     idRefineria,
     departamento,
+    telefono,
   } = req.body;
 
   // Crea una nueva instancia del modelo Usuario con los datos proporcionados
@@ -86,6 +87,7 @@ const usuariosPost = async (req, res = response) => {
     acceso,
     estado,
     departamento,
+    telefono,
     createdBy: req.usuario._id, // ID del usuario que creó el tanque
   });
 
