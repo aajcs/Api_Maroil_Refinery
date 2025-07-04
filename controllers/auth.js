@@ -129,6 +129,14 @@ const register = async (req, res = response, next) => {
   });
 
   try {
+    const correoLower = correo.toLowerCase();
+    const existeCorreo = await Usuario.findOne({ correo: correoLower });
+    usuario.correo = correoLower;
+    if (existeCorreo) {
+      const error = new Error("El correo ya está registrado");
+      error.status = 409;
+      return next(error);
+    }
     // Encripta la contraseña antes de guardarla en la base de datos
     const salt = bcryptjs.genSaltSync(); // Genera un "salt" para la encriptación
     usuario.password = bcryptjs.hashSync(password, salt); // Encripta la contraseña

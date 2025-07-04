@@ -59,7 +59,12 @@ const errorHandler = (err, req, res, next) => {
       message: err.message,
     });
   }
-
+  if (err.status) {
+    return res.status(err.status).json({
+      ok: false,
+      message: err.message,
+    });
+  }
   // Error genérico (no manejado específicamente)
   res.status(500).json({
     ok: false,
