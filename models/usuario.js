@@ -23,7 +23,7 @@ const UsuarioSchema = Schema(
     },
     telefono: {
       type: String,
-      required: [true, "El teléfono es obligatorio"],
+      // required: [true, "El teléfono es obligatorio"],
     },
     password: {
       type: String,
