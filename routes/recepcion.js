@@ -23,9 +23,14 @@ const {
   recepcionDelete,
   recepcionPatch,
   recepcionGets,
+  recepcionAgruparPorStatus,
+  recepcionPorRangoFechas,
 } = require("../controllers/recepcion");
 
 const router = Router();
+
+router.get("/agrupar-status", recepcionAgruparPorStatus);
+router.get("/rango-fechas", recepcionPorRangoFechas);
 
 router.get("/", [validarJWT], recepcionGets);
 router.get(

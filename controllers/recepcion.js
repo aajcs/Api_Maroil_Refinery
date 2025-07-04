@@ -424,6 +424,54 @@ const recepcionPatch = (req, res = response, next) => {
   });
 };
 
+const recepcionAgruparPorStatus = async (req = request, res = response, next) => {
+  try {
+    // Puedes filtrar por refinería si lo necesitas agregando { idRefineria: ... }
+    const pipeline = [
+      { $match: { eliminado: false } },
+      {
+        $group: {
+          _id: "$estadoRecepcion",
+          total: { $sum: 1 },
+          recepciones: { $push: "$$ROOT" }
+        }
+      }
+    ];
+
+    const resultado = await Recepcion.aggregate(pipeline);
+    res.json(resultado);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const recepcionPorRangoFechas = async (req = request, res = response, next) => {
+  try {
+    const { fechaInicio, fechaFin, estadoRecepcion } = req.query;
+    console.log("fechaInicio", req.query);
+    if (!fechaInicio || !fechaFin) {
+      return res.status(400).json({ msg: "Debe enviar fechaInicio y fechaFin en el query" });
+    }
+
+    const query = {
+      eliminado: false,
+      fechaLlegada: {
+        $gte: new Date(fechaInicio),
+        $lte: new Date(fechaFin)
+      }
+    };
+
+    if (estadoRecepcion && estadoRecepcion !== "TODOS") {
+      query.estadoRecepcion = estadoRecepcion;
+    }
+
+    const recepciones = await Recepcion.find(query).populate(populateOptions);
+    res.json(recepciones);
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
   recepcionPost, // Crear una nueva recepción
@@ -431,5 +479,7 @@ module.exports = {
   recepcionGets, // Obtener todas las recepciones
   recepcionPut, // Actualizar una recepción existente
   recepcionDelete, // Eliminar (marcar como eliminado) una recepción
-  recepcionPatch, // Manejar solicitudes PATCH
+  recepcionPatch,
+  recepcionAgruparPorStatus,
+  recepcionPorRangoFechas,
 };
