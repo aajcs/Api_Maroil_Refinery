@@ -30,6 +30,7 @@ const {
 const router = Router();
 
 router.get("/agrupar-status", recepcionAgruparPorStatus);
+// Recibe los parámetros de fecha por query string, por ejemplo: /rango-fechas?fechaInicio=2024-01-01&fechaFin=2024-01-31
 router.get("/rango-fechas", recepcionPorRangoFechas);
 
 router.get("/", [validarJWT], recepcionGets);

@@ -424,7 +424,11 @@ const recepcionPatch = (req, res = response, next) => {
   });
 };
 
-const recepcionAgruparPorStatus = async (req = request, res = response, next) => {
+const recepcionAgruparPorStatus = async (
+  req = request,
+  res = response,
+  next
+) => {
   try {
     // Puedes filtrar por refinería si lo necesitas agregando { idRefineria: ... }
     const pipeline = [
@@ -433,9 +437,9 @@ const recepcionAgruparPorStatus = async (req = request, res = response, next) =>
         $group: {
           _id: "$estadoRecepcion",
           total: { $sum: 1 },
-          recepciones: { $push: "$$ROOT" }
-        }
-      }
+          recepciones: { $push: "$$ROOT" },
+        },
+      },
     ];
 
     const resultado = await Recepcion.aggregate(pipeline);
@@ -448,17 +452,19 @@ const recepcionAgruparPorStatus = async (req = request, res = response, next) =>
 const recepcionPorRangoFechas = async (req = request, res = response, next) => {
   try {
     const { fechaInicio, fechaFin, estadoRecepcion } = req.query;
-    console.log("fechaInicio", req.query);
+    console.log("fechaInicio", req.params);
     if (!fechaInicio || !fechaFin) {
-      return res.status(400).json({ msg: "Debe enviar fechaInicio y fechaFin en el query" });
+      return res
+        .status(400)
+        .json({ msg: "Debe enviar fechaInicio y fechaFin en el query" });
     }
 
     const query = {
       eliminado: false,
       fechaLlegada: {
         $gte: new Date(fechaInicio),
-        $lte: new Date(fechaFin)
-      }
+        $lte: new Date(fechaFin),
+      },
     };
 
     if (estadoRecepcion && estadoRecepcion !== "TODOS") {
