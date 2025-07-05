@@ -163,7 +163,7 @@ const usuariosPatch = (req, res = response) => {
 const usuariosDelete = async (req, res = response) => {
   const { id } = req.params; // Obtiene el ID del usuario desde los parámetros de la URL
   // Auditoría: captura estado antes de eliminar
-  const antes = await Producto.findById(id);
+  const antes = await Usuario.findById(id);
   const cambios = { eliminado: { from: antes.eliminado, to: true } };
   // Marca el usuario como eliminado (eliminación lógica)
   const usuario = await Usuario.findByIdAndUpdate(
