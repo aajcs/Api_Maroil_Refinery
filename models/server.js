@@ -8,7 +8,6 @@ const admin = require("firebase-admin");
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
 const errorHandler = require("../middlewares/error-handler");
-const lineaFactura = require("./lineaFactura");
 // const tipoProductoBK = require("./bunkering/tipoProductoBK");
 // const productoBK = require("./bunkering/productoBK");asdas
 
@@ -132,7 +131,7 @@ class Server {
     // CORS
     this.app.use(
       cors({
-        origin: "*", // o el dominio de tu front
+        origin: "*", // o el dominio de tu frontss
         exposedHeaders: ["X-New-Token"],
       })
     );
@@ -169,7 +168,7 @@ class Server {
     this.app.use(this.paths.simulacion, require("../routes/simulacion"));
     this.app.use(this.paths.inventario, require("../routes/inventario"));
     this.app.use(this.paths.partida, require("../routes/partida"));
-    this.app.use(this.paths.subPartida, require("../routes/subpartida"));
+    this.app.use(this.paths.subPartida, require("../routes/subPartida"));
     this.app.use(this.paths.cuenta, require("../routes/cuenta"));
 
     // Rutas relacionadas con el módulo de cuentas
