@@ -4,12 +4,16 @@ const auditPlugin = require("./plugins/audit");
 // Esquema principal de refinación
 const SubPartidaSchema = new Schema(
   {
-    // Relación con el modelo Refinería
+   // Relación con el modelo Refinería
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria", // Relación con el modelo Refineria
-      required: [true, "El ID de la refinería es obligatorio"], // Campo obligatorio
+      required: [
+        true,
+        "El ID de la Refinería asociada a la recepción es obligatorio",
+      ], // Campo obligatorio
     },
+
 
     idPartida: {
       type: Schema.Types.ObjectId,

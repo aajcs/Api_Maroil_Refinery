@@ -39,6 +39,7 @@ const {
   RecepcionBK,
   LineaCargaBK,
   DespachoBK,
+  LineaFactura,
 } = require("../models");
 
 const esRoleValido = async (rol = "USER_ROLE") => {
@@ -299,6 +300,15 @@ const existeFacturaPorId = async (id) => {
   }
 };
 
+const existeLineaFacturaPorId = async (id) => {
+  // Verificar si la simulacion existe
+
+  const existeLineaFactura = await LineaFactura.findById(id);
+  if (!existeLineaFactura) {
+    throw new Error(`LineaFactura no existe ${id}`);
+  }
+};
+
 const existePartidaPorId = async (id) => {
   // Verificar si la simulacion existe
 
@@ -438,6 +448,7 @@ module.exports = {
   existePartidaPorId,
   existeSubPartidaPorId,
   existeFacturaPorId,
+  existeLineaFacturaPorId,
   existeCorteRefinacionPorId,
   existeBalancePorId,
   existeMuellePorId,

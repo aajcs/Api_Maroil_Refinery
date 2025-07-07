@@ -2,50 +2,23 @@ const { Schema, model } = require("mongoose");
 const auditPlugin = require("./plugins/audit");
 const Counter = require("./counter");
 
-// Esquema para las líneas de facturación
-const LineaFacturaSchema = new Schema(
-  {
-    descripcion: {
-      type: String,
-      required: [true, "La descripción de la línea es obligatoria"], // Campo obligatorio
-      minlength: [5, "La descripción debe tener al menos 5 caracteres"], // Validación de longitud mínima
-      maxlength: [200, "La descripción no puede exceder los 200 caracteres"], // Validación de longitud máxima
-    },
-    cantidad: {
-      type: Number,
-      min: [0, "La cantidad no puede ser negativa"], // Validación para evitar valores negativos
-      required: [true, "La cantidad es obligatoria"], // Campo obligatorio
-    },
-    precioUnitario: {
-      type: Number,
-      min: [0, "El precio unitario no puede ser negativo"], // Validación para evitar valores negativos
-      required: [true, "El precio unitario es obligatorio"], // Campo obligatorio
-    },
-    subtotal: {
-      type: Number,
-      min: [0, "El subtotal no puede ser negativo"], // Validación para evitar valores negativos
-      required: [true, "El subtotal es obligatorio"], // Campo obligatorio
-    },
-
-    fecha: {
-      type: Date,
-      default: Date.now, // Valor por defecto: fecha actual
-    },
-  },
-  {
-    _id: false, // No se generará un _id para cada línea
-  }
-);
-
 // Esquema principal de facturación
 const FacturaSchema = new Schema(
   {
-    // Relación con el modelo Refinería
-    idRefineria: {
-      type: Schema.Types.ObjectId,
-      ref: "Refineria", // Relación con el modelo Refineria
-      required: [true, "El ID de la refinería es obligatorio"], // Campo obligatorio
-    },
+   idRefinerias: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Refineria",
+      },
+    ],
+
+   idLineasFactura: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "LineaFactura", // Referencia al modelo LineaFactura
+        required: [true, "El ID de la línea de factura es obligatorio"], // Campo
+      },
+    ],
 
     concepto: {
       type: String,
@@ -54,20 +27,12 @@ const FacturaSchema = new Schema(
       maxlength: [50, "El concepto no puede exceder los 50 caracteres"], // Validación de longitud máxima
     },
 
-    // Líneas de facturación
-    lineas: {
-      type: [LineaFacturaSchema], // Array de subdocumentos
-      validate: {
-        validator: (v) => v.length > 0,
-        message: "La factura debe tener al menos una línea de facturación",
-      },
-    },
-
+    
     // Monto total de la factura
     total: {
       type: Number,
       min: [0, "El total no puede ser negativo"], // Validación para evitar valores negativos
-      required: [true, "El total de la factura es obligatorio"], // Campo obligatorio
+      required: [false, "El total de la factura es obligatorio"], // Campo obligatorio
     },
 
     aprobada: {
@@ -76,18 +41,13 @@ const FacturaSchema = new Schema(
       default: "pendiente", // Valor por defecto
     },
 
-    idPartida: {
-      type: Schema.Types.ObjectId,
-      ref: "Partida", // Relación con el modelo Partida
-      required: [true, "El ID de la partida es obligatorio"], // Campo obligatorio
-    },
+    // idPartida: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "Partida", // Relación con el modelo Partida
+    //   required: [false, "El ID de la partida es obligatorio"], // Campo obligatorio
+    // },
 
-    idSubPartida: {
-      type: Schema.Types.ObjectId,
-      ref: "SubPartida", // Relación con el modelo SubPartida
-      required: [false, "El ID de la subpartida es obligatorio"], // Campo obligatorio
-    },
-
+    
     // Fechas de la factura
     fechaFactura: {
       type: Date,

@@ -82,7 +82,7 @@ const partidaPost = async (req = request, res = response, next) => {
 const partidaPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body; // Excluye el campo _id del cuerpo de la solicitud
-
+  console.log("Datos a actualizar:", resto); // Log para depuración
   try {
     // Obtener la partida antes de la actualización
     const antes = await Partida.findById(id);
@@ -98,15 +98,16 @@ const partidaPut = async (req = request, res = response, next) => {
       }
     }
 
-    // Actualizar la partida y registrar los cambios en el historial
-    const partidaActualizada = await Partida.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar la partida no eliminada
-      {
-        ...resto,
-        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
-      }, // Datos a actualizar
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Aplica las opciones de población
+   const { historial, ...restoSinHistorial } = resto;
+
+const partidaActualizada = await Partida.findOneAndUpdate(
+  { _id: id, eliminado: false },
+  {
+    ...restoSinHistorial,
+    $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+  },
+  { new: true }
+).populate(populateOptions);
 
     if (!partidaActualizada) {
       return res.status(404).json({ msg: "Partida no encontrada" });

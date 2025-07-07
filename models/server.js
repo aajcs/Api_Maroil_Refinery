@@ -8,6 +8,7 @@ const admin = require("firebase-admin");
 const { dbConnection } = require("../database/config");
 const Sockets = require("./sockets");
 const errorHandler = require("../middlewares/error-handler");
+const lineaFactura = require("./lineaFactura");
 // const tipoProductoBK = require("./bunkering/tipoProductoBK");
 // const productoBK = require("./bunkering/productoBK");asdas
 
@@ -61,6 +62,7 @@ class Server {
       corteRefinacion: "/api/corteRefinacion",
       cuenta: "/api/cuenta",
       abono: "/api/abono",
+      lineaFactura: "/api/lineaFactura",
       // bunker: "/api/bunker/bunker",
       // balanceBunker: "/api/bunker/balanceBunker",
       // barcaza: "/api/bunker/barcaza",
@@ -167,7 +169,7 @@ class Server {
     this.app.use(this.paths.simulacion, require("../routes/simulacion"));
     this.app.use(this.paths.inventario, require("../routes/inventario"));
     this.app.use(this.paths.partida, require("../routes/partida"));
-    // this.app.use(this.paths.subPartida, require("../routes/subpartida"));
+    this.app.use(this.paths.subPartida, require("../routes/subpartida"));
     this.app.use(this.paths.cuenta, require("../routes/cuenta"));
 
     // Rutas relacionadas con el módulo de cuentas
@@ -177,6 +179,7 @@ class Server {
     this.app.use(this.paths.factura, require("../routes/factura"));
     this.app.use(this.paths.balance, require("../routes/balance"));
     this.app.use(this.paths.abono, require("../routes/abono"));
+    this.app.use(this.paths.lineaFactura, require("../routes/lineaFactura"));
 
     // Rutas relacionadas con operaciones de calidad y cantidad
     this.app.use(
