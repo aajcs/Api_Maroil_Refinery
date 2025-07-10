@@ -6,6 +6,7 @@ const {
   notificationsPut,
   notificationsDelete,
   notificationsByUser,
+  notificationsMarkRead,
 } = require("../controllers/notification");
 const { validarJWT } = require("../middlewares/validar-jwt");
 const { validarCampos } = require("../middlewares/validar-campos");
@@ -20,6 +21,9 @@ router.get("/:id", [validarJWT], notificationsGet);
 
 // Crear una nueva notificación
 router.post("/", [validarJWT, validarCampos], notificationsPost);
+
+// Ruta para marcar una notificación como leída
+router.put("/:id/marcar-leida", [validarJWT], notificationsMarkRead);
 
 // Actualizar una notificación existente
 router.put("/:id", [validarJWT, validarCampos], notificationsPut);

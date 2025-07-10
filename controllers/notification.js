@@ -112,7 +112,11 @@ const notificationsPut = async (req = request, res = response, next) => {
     if (!notificationUpdated) {
       return res.status(404).json({ msg: "Notificación no encontrada" });
     }
-
+    io.to(`user-${req.usuario._id}`).emit(
+      "new-notification",
+      notificationUpdated
+    );
+    // req.io.emit("recepcion-modificada", recepcionActualizada);
     res.json(notificationUpdated);
   } catch (err) {
     next(err);
@@ -148,6 +152,34 @@ const notificationsDelete = async (req = request, res = response, next) => {
   }
 };
 
+// Controlador para marcar una notificación como leída
+const notificationsMarkRead = async (req = request, res = response, next) => {
+  const { id } = req.params;
+  try {
+    const notificationUpdated = await Notification.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      {
+        read: true,
+        $push: {
+          historial: {
+            modificadoPor: req.usuario._id,
+            cambios: { read: true },
+          },
+        },
+      },
+      { new: true }
+    ).populate(populateOptions);
+
+    if (!notificationUpdated) {
+      return res.status(404).json({ msg: "Notificación no encontrada" });
+    }
+
+    res.json(notificationUpdated);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   notificationsGets,
   notificationsGet,
@@ -155,4 +187,5 @@ module.exports = {
   notificationsPut,
   notificationsDelete,
   notificationsByUser,
+  notificationsMarkRead,
 };
