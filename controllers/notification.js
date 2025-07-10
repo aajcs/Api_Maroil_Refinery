@@ -112,10 +112,7 @@ const notificationsPut = async (req = request, res = response, next) => {
     if (!notificationUpdated) {
       return res.status(404).json({ msg: "Notificación no encontrada" });
     }
-    io.to(`user-${req.usuario._id}`).emit(
-      "new-notification",
-      notificationUpdated
-    );
+
     // req.io.emit("recepcion-modificada", recepcionActualizada);
     res.json(notificationUpdated);
   } catch (err) {
@@ -173,7 +170,9 @@ const notificationsMarkRead = async (req = request, res = response, next) => {
     if (!notificationUpdated) {
       return res.status(404).json({ msg: "Notificación no encontrada" });
     }
-
+    req.io
+      .to(`user-${req.usuario._id}`)
+      .emit("new-notification", notificationUpdated);
     res.json(notificationUpdated);
   } catch (err) {
     next(err);
