@@ -484,14 +484,14 @@ const recepcionByRefineria = async (req = request, res = response, next) => {
   const query = { eliminado: false, idRefineria };
 
   try {
-    const recepciones = await Recepcion.find(query).populate(populateOptions);
-    recepciones.forEach((r) => {
+    const recepcions = await Recepcion.find(query).populate(populateOptions);
+    recepcions.forEach((r) => {
       if (Array.isArray(r.historial)) {
         r.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
 
-    res.json({ total: recepciones.length, recepciones });
+    res.json({ total: recepcions.length, recepcions });
   } catch (err) {
     next(err);
   }

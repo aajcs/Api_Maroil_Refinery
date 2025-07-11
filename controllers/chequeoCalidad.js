@@ -575,14 +575,15 @@ const chequeoCalidadsByRefineria = async (
   const { idRefineria } = req.params;
   const query = { eliminado: false, idRefineria };
   try {
-    const chequeos = await ChequeoCalidad.find(query).populate(populateOptions);
-    await populateIdTipoProducto(chequeos);
-    chequeos.forEach((c) => {
+    const chequeoCalidads =
+      await ChequeoCalidad.find(query).populate(populateOptions);
+    await populateIdTipoProducto(chequeoCalidads);
+    chequeoCalidads.forEach((c) => {
       if (Array.isArray(c.historial)) {
         c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
-    res.json({ total: chequeos.length, chequeos });
+    res.json({ total: chequeoCalidads.length, chequeoCalidads });
   } catch (err) {
     next(err);
   }

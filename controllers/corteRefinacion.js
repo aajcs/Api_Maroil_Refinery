@@ -313,15 +313,15 @@ const corteRefinacionByRefineria = async (
   const { idRefineria } = req.params;
   const query = { eliminado: false, idRefineria };
   try {
-    const cortes = await CorteRefinacion.find(query)
+    const corteRefinacions = await CorteRefinacion.find(query)
       .populate(populateOptions)
       .sort({ fechaCorte: -1 });
-    cortes.forEach((c) => {
+    corteRefinacions.forEach((c) => {
       if (Array.isArray(c.historial)) {
         c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
-    res.json({ total: cortes.length, cortes });
+    res.json({ total: corteRefinacions.length, corteRefinacions });
   } catch (err) {
     next(err);
   }

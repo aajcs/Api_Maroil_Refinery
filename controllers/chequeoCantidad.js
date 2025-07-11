@@ -485,14 +485,14 @@ const chequeoCantidadByRefineria = async (
   const { idRefineria } = req.params;
   const query = { eliminado: false, idRefineria };
   try {
-    const chequeos =
+    const chequeoCantidads =
       await ChequeoCantidad.find(query).populate(populateOptions);
-    chequeos.forEach((c) => {
+    chequeoCantidads.forEach((c) => {
       if (Array.isArray(c.historial)) {
         c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
-    res.json({ total: chequeos.length, chequeos });
+    res.json({ total: chequeoCantidads.length, chequeoCantidads });
   } catch (err) {
     next(err);
   }
