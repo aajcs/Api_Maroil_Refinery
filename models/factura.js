@@ -5,14 +5,12 @@ const Counter = require("./counter");
 // Esquema principal de facturación
 const FacturaSchema = new Schema(
   {
-   idRefineria: 
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Refineria",
-      },
-    
+    idRefineria: {
+      type: Schema.Types.ObjectId,
+      ref: "Refineria",
+    },
 
-   idLineasFactura: [
+    idLineasFactura: [
       {
         type: Schema.Types.ObjectId,
         ref: "LineaFactura", // Referencia al modelo LineaFactura
@@ -27,18 +25,11 @@ const FacturaSchema = new Schema(
       maxlength: [50, "El concepto no puede exceder los 50 caracteres"], // Validación de longitud máxima
     },
 
-    
     // Monto total de la factura
     total: {
       type: Number,
       min: [0, "El total no puede ser negativo"], // Validación para evitar valores negativos
       required: [false, "El total de la factura es obligatorio"], // Campo obligatorio
-    },
-
-    aprobada: {
-      type: String,
-      enum: ["pendiente", "aprobada", "rechazada"], // Valores permitidos
-      default: "pendiente", // Valor por defecto
     },
 
     // idPartida: {
@@ -47,7 +38,6 @@ const FacturaSchema = new Schema(
     //   required: [false, "El ID de la partida es obligatorio"], // Campo obligatorio
     // },
 
-    
     // Fechas de la factura
     fechaFactura: {
       type: Date,
@@ -63,8 +53,6 @@ const FacturaSchema = new Schema(
     // Estado general (activo o inactivo)
     estado: {
       type: String,
-      enum: ["activo", "inactivo"], // Valores permitidos
-      default: "activo", // Valor por defecto
     },
   },
   {

@@ -224,14 +224,17 @@ const tipoProductoPatch = (req = request, res = response, next) => {
 const tipoProductoByRefineria = async (req = request, res = response, next) => {
   const { idRefineria } = req.params;
   const query = { eliminado: false, idRefineria };
+  console.log("query", query);
   try {
-    const tipos = await TipoProducto.find(query).populate(populateOptions);
-    tipos.forEach((t) => {
+    const tipoProductos =
+      await TipoProducto.find(query).populate(populateOptions);
+    console.log("tipoProductos", tipoProductos);
+    tipoProductos.forEach((t) => {
       if (Array.isArray(t.historial)) {
         t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       }
     });
-    res.json({ total: tipos.length, tipos });
+    res.json({ total: tipoProductos.length, tipoProductos });
   } catch (err) {
     next(err);
   }

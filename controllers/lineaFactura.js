@@ -1,22 +1,13 @@
 const { response, request } = require("express");
 const LineaFactura = require("../models/lineaFactura");
 
-// Opciones de población para traer subpartida en cada línea
 const populateOptions = [
-  { 
-    path: "idSubPartida",
-    populate: [
-//  { path: "idRefineria" },
-      { path: "idPartida", select: "descripcion" }
-    ]
-  },
-  { 
+  {
     path: "idFactura",
-    populate: { path: "idRefinerias", select: "nombre" }
-  }
+    populate: { path: "idRefinerias", select: "nombre" },
+  },
 ];
 
-// Obtener todas las líneas de factura con subpartida poblada
 const lineaFacturaGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
@@ -32,7 +23,6 @@ const lineaFacturaGets = async (req = request, res = response, next) => {
   }
 };
 
-// Obtener una línea de factura específica por ID con subpartida poblada
 const lineaFacturaGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 

@@ -6,32 +6,29 @@ const LineaFactura = require("../models/lineaFactura");
 // Opciones de población reutilizables
 const populateOptions = [
   { path: "idRefineria", select: "nombre" },
-  { 
+  {
     path: "idLineasFactura",
-    populate: { path: "idSubPartida" } // <--- Popular idSubPartida dentro de cada línea
+    populate: [{ path: "idPartida", select: "descripcion codigo" }],
   },
-  //{ path: "idPartida", select: "descripcion codigo" },
-  //{ path: "idSubPartida", select: "descripcion codigo" },
 ];
 // Función auxiliar para calcular subtotales y total
 function calcularTotales(lineas = []) {
   let total = 0;
   const nuevasLineas = lineas.map((linea, idx) => {
-    if (
-      linea.cantidad === undefined ||
-      linea.precioUnitario === undefined ||
-      isNaN(Number(linea.cantidad)) ||
-      isNaN(Number(linea.precioUnitario))
-    ) {
-      throw new Error(
-        `La línea ${idx + 1} debe tener los campos 'cantidad' y 'precioUnitario' numéricos.`
-      );
-    }
-    const cantidad = Number(linea.cantidad);
-    const precioUnitario = Number(linea.precioUnitario);
-    const subtotal = cantidad * precioUnitario;
-    total += subtotal;
-    return { ...linea, subtotal };
+    // if (
+    //   linea.cantidad === undefined ||
+    //   linea.precioUnitario === undefined ||
+    //   isNaN(Number(linea.cantidad)) ||
+    //   isNaN(Number(linea.precioUnitario))
+    // ) {
+    //   throw new Error(
+    //     `La línea ${idx + 1} debe tener los campos 'cantidad' y 'precioUnitario' numéricos.`
+    //   );
+    // }
+
+    const subTotal = Number(linea.subTotal);
+    total += subTotal;
+    return { ...linea, subTotal };
   });
   return { nuevasLineas, total };
 }
@@ -73,14 +70,13 @@ const facturaGet = async (req = request, res = response, next) => {
 
 // Controlador para crear una nueva factura
 const facturaPost = async (req = request, res = response, next) => {
-   console.log("Datos recibidos en facturaPost:", req.body);
+  console.log("Datos recibidos en facturaPost:", req.body);
   const {
     concepto,
     idRefineria,
     lineas = [],
-    aprobada,
+    estado,
     idPartida,
-    idSubPartida,
     fechaFactura,
   } = req.body;
   console.log("Datos recibidos en facturaPost:", req.body);
@@ -93,9 +89,8 @@ const facturaPost = async (req = request, res = response, next) => {
       idRefineria,
       lineas: nuevasLineas,
       total,
-      aprobada,
+      estado,
       idPartida,
-      idSubPartida,
       fechaFactura,
     });
 
@@ -151,7 +146,12 @@ const facturaPut = async (req = request, res = response, next) => {
     // Actualiza la factura con los nuevos IDs de líneas
     const facturaActualizada = await Factura.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { ...resto, lineas: nuevasLineas, total, idLineasFactura: lineasCreadas.map(l => l._id) },
+      {
+        ...resto,
+        lineas: nuevasLineas,
+        total,
+        idLineasFactura: lineasCreadas.map((l) => l._id),
+      },
       { new: true }
     ).populate(populateOptions);
 
@@ -206,7 +206,14 @@ const facturaPatch = async (req = request, res = response, next) => {
     // Actualiza la factura con los nuevos IDs de líneas
     const facturaActualizada = await Factura.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { $set: { ...resto, lineas: nuevasLineas, total, idLineasFactura: lineasCreadas.map(l => l._id) } },
+      {
+        $set: {
+          ...resto,
+          lineas: nuevasLineas,
+          total,
+          idLineasFactura: lineasCreadas.map((l) => l._id),
+        },
+      },
       { new: true }
     ).populate(populateOptions);
 

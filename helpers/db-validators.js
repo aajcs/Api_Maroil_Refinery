@@ -25,7 +25,6 @@ const {
   Simulacion,
   Despacho,
   Partida,
-  SubPartida,
   Factura,
   CorteRefinacion,
   Muelle,
@@ -318,15 +317,6 @@ const existePartidaPorId = async (id) => {
   }
 };
 
-const existeSubPartidaPorId = async (id) => {
-  // Verificar si la sub partida existe
-
-  const existeSubPartida = await SubPartida.findById(id);
-  if (!existeSubPartida) {
-    throw new Error(`Sub Partida no existe ${id}`);
-  }
-};
-
 const existeCorteRefinacionPorId = async (id) => {
   // Verificar si la corte existe
   const existeCorteRefinacion = await CorteRefinacion.findById(id);
@@ -446,7 +436,6 @@ module.exports = {
   existeLineaDespachoPorId,
   existeDespachoPorId,
   existePartidaPorId,
-  existeSubPartidaPorId,
   existeFacturaPorId,
   existeLineaFacturaPorId,
   existeCorteRefinacionPorId,

@@ -11,26 +11,11 @@ const LineaFacturaSchema = new Schema(
       minlength: [5, "La descripción debe tener al menos 5 caracteres"], // Validación de longitud mínima
       maxlength: [200, "La descripción no puede exceder los 200 caracteres"], // Validación de longitud máxima
     },
-    cantidad: {
-      type: Number,
-      min: [0, "La cantidad no puede ser negativa"], // Validación para evitar valores negativos
-      required: [false, "La cantidad es obligatoria"], // Campo obligatorio
-    },
-    precioUnitario: {
-      type: Number,
-      min: [0, "El precio unitario no puede ser negativo"], // Validación para evitar valores negativos
-      required: [false, "El precio unitario es obligatorio"], // Campo obligatorio
-    },
-    subtotal: {
+
+    subTotal: {
       type: Number,
       min: [0, "El subtotal no puede ser negativo"], // Validación para evitar valores negativos
       required: [false, "El subtotal es obligatorio"], // Campo obligatorio
-    },
-
-    idSubPartida: {
-      type: Schema.Types.ObjectId, 
-      ref: "SubPartida", // Relación con el modelo SubPartida
-      required: [false, "El ID de la subpartida es obligatorio"], // Campo obligatorio
     },
 
     idFactura: {
@@ -38,17 +23,18 @@ const LineaFacturaSchema = new Schema(
       ref: "Factura", // Relación con el modelo Factura
       required: [true, "El ID de la factura es obligatorio"], // Campo obligatorio
     },
-    
+
+    // Add idPartida field to reference Partida
+    idPartida: {
+      type: Schema.Types.ObjectId,
+      ref: "Partida",
+      required: [false, "El ID de la partida es obligatorio"],
+    },
+
     // Eliminación lógica
     eliminado: {
       type: Boolean,
       default: false, // Valor por defecto
-    },
-    // Estado general (activo o inactivo)
-    estado: {
-      type: String,
-      enum: ["activo", "inactivo"], // Valores permitidos
-      default: "activo", // Valor por defecto
     },
   },
   {

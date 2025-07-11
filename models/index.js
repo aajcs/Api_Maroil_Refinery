@@ -36,7 +36,6 @@ const Torre = require("./torre");
 const Usuario = require("./usuario");
 const Inventario = require("./inventario");
 const Partida = require("./partida");
-const SubPartida = require("./subPartida");
 const Operador = require("./operador");
 const Factura = require("./factura");
 const CorteRefinacion = require("./corteRefinacion");
@@ -103,7 +102,6 @@ module.exports = {
   Usuario,
   Inventario,
   Partida,
-  SubPartida,
   Refineria,
   Operador,
   Factura,
