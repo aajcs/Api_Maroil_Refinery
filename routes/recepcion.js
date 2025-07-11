@@ -25,6 +25,7 @@ const {
   recepcionGets,
   recepcionAgruparPorStatus,
   recepcionPorRangoFechas,
+  recepcionByRefineria,
 } = require("../controllers/recepcion");
 
 const router = Router();
@@ -34,12 +35,23 @@ router.get("/agrupar-status", recepcionAgruparPorStatus);
 router.get("/rango-fechas", recepcionPorRangoFechas);
 
 router.get("/", [validarJWT], recepcionGets);
+
+// Obtener recepciones por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  recepcionByRefineria
+);
+
 router.get(
   "/:id",
   [
     validarJWT,
     check("id", "No es un id de Mongo válido").isMongoId(),
-    // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
   recepcionGet

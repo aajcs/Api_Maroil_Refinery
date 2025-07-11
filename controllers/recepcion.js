@@ -478,6 +478,25 @@ const recepcionPorRangoFechas = async (req = request, res = response, next) => {
   }
 };
 
+// Controlador para obtener recepciones por idRefineria
+const recepcionByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+
+  try {
+    const recepciones = await Recepcion.find(query).populate(populateOptions);
+    recepciones.forEach((r) => {
+      if (Array.isArray(r.historial)) {
+        r.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+
+    res.json({ total: recepciones.length, recepciones });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
   recepcionPost, // Crear una nueva recepción
@@ -488,4 +507,5 @@ module.exports = {
   recepcionPatch,
   recepcionAgruparPorStatus,
   recepcionPorRangoFechas,
+  recepcionByRefineria,
 };

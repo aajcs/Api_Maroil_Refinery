@@ -24,11 +24,24 @@ const {
   chequeoCantidadDelete,
   chequeoCantidadPatch,
   chequeoCantidadGets,
+  chequeoCantidadByRefineria,
 } = require("../controllers/chequeoCantidad");
 
 const router = Router();
 
 router.get("/", [validarJWT], chequeoCantidadGets);
+
+// Obtener chequeos de cantidad por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  chequeoCantidadByRefineria
+);
+
 router.get(
   "/:id",
   [

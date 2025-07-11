@@ -220,6 +220,23 @@ const tipoProductoPatch = (req = request, res = response, next) => {
   });
 };
 
+// Controlador para obtener tipos de producto por idRefineria
+const tipoProductoByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const tipos = await TipoProducto.find(query).populate(populateOptions);
+    tipos.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: tipos.length, tipos });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
   tipoProductoGets, // Obtener todos los tipos de producto
@@ -228,4 +245,5 @@ module.exports = {
   tipoProductoPut, // Actualizar un tipo de producto existente
   tipoProductoDelete, // Eliminar (marcar como eliminado) un tipo de producto
   tipoProductoPatch, // Manejar solicitudes PATCH
+  tipoProductoByRefineria, // Obtener tipos de producto por idRefineria
 };

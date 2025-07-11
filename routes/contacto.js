@@ -24,17 +24,29 @@ const {
   contactoDelete,
   contactoPatch,
   contactoGets,
+  contactoByRefineria,
 } = require("../controllers/contacto");
 
 const router = Router();
 
 router.get("/", [validarJWT], contactoGets);
+
+// Obtener contactos por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  contactoByRefineria
+);
+
 router.get(
   "/:id",
   [
     validarJWT,
     check("id", "No es un id de Mongo válido").isMongoId(),
-    // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
   contactoGet

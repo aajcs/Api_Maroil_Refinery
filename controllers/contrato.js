@@ -15,12 +15,13 @@ const populateOptions = [
   },
   {
     path: "idContacto",
-    select: "nombre cuidad identificacionFiscal telefono correo direccion representanteLegal",
+    select:
+      "nombre cuidad identificacionFiscal telefono correo direccion representanteLegal",
   },
   {
-  path: "abonos",
- select: "monto fecha tipoOperacion referencia",
-},
+    path: "abonos",
+    select: "monto fecha tipoOperacion referencia",
+  },
   {
     path: "idItems",
     populate: [
@@ -672,6 +673,23 @@ const contratoPatch = (req, res = response, next) => {
   });
 };
 
+// Controlador para obtener contratos por idRefineria
+const contratoByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const contratos = await Contrato.find(query).populate(populateOptions);
+    contratos.forEach((c) => {
+      if (Array.isArray(c.historial)) {
+        c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: contratos.length, contratos });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   contratoPost,
   contratoGet,
@@ -679,4 +697,5 @@ module.exports = {
   contratoPut,
   contratoDelete,
   contratoPatch,
+  contratoByRefineria,
 };

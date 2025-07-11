@@ -194,6 +194,26 @@ const productoPatch = (req = request, res = response, next) => {
   });
 };
 
+// Controlador para obtener productos por idRefineria
+const productoByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const productos = await Producto.find(query)
+      .populate(populateOptions)
+      .sort({ posicion: 1 });
+    productos.forEach((p) => {
+      if (Array.isArray(p.historial)) {
+        p.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+
+    res.json({ total: productos.length, productos });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
   productoPost, // Crear un nuevo producto
@@ -202,4 +222,5 @@ module.exports = {
   productoPut, // Actualizar un producto existente
   productoDelete, // Eliminar (marcar como eliminado) un producto
   productoPatch, // Manejar solicitudes PATCH
+  productoByRefineria, // Obtener productos por idRefineria
 };

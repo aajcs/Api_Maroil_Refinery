@@ -98,16 +98,16 @@ const partidaPut = async (req = request, res = response, next) => {
       }
     }
 
-   const { historial, ...restoSinHistorial } = resto;
+    const { historial, ...restoSinHistorial } = resto;
 
-const partidaActualizada = await Partida.findOneAndUpdate(
-  { _id: id, eliminado: false },
-  {
-    ...restoSinHistorial,
-    $push: { historial: { modificadoPor: req.usuario._id, cambios } },
-  },
-  { new: true }
-).populate(populateOptions);
+    const partidaActualizada = await Partida.findOneAndUpdate(
+      { _id: id, eliminado: false },
+      {
+        ...restoSinHistorial,
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+      },
+      { new: true }
+    ).populate(populateOptions);
 
     if (!partidaActualizada) {
       return res.status(404).json({ msg: "Partida no encontrada" });
@@ -182,6 +182,23 @@ const partidaDelete = async (req = request, res = response, next) => {
   }
 };
 
+// Controlador para obtener partidas por idRefineria
+const partidasByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const partidas = await Partida.find(query).populate(populateOptions);
+    partidas.forEach((p) => {
+      if (Array.isArray(p.historial)) {
+        p.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: partidas.length, partidas });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
   partidaGets, // Obtener todas las partidas
@@ -190,4 +207,5 @@ module.exports = {
   partidaPut, // Actualizar una partida existente
   partidaPatch, // Actualizar parcialmente una partida
   partidaDelete, // Eliminar (marcar como eliminada) una partida
+  partidasByRefineria, // Obtener partidas por idRefineria
 };

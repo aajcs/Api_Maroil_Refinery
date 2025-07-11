@@ -476,6 +476,28 @@ const chequeoCantidadPatch = async (req = request, res = response, next) => {
   }
 };
 
+// Controlador para obtener chequeos de cantidad por idRefineria
+const chequeoCantidadByRefineria = async (
+  req = request,
+  res = response,
+  next
+) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const chequeos =
+      await ChequeoCantidad.find(query).populate(populateOptions);
+    chequeos.forEach((c) => {
+      if (Array.isArray(c.historial)) {
+        c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: chequeos.length, chequeos });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
   chequeoCantidadGets, // Obtener todos los chequeos de cantidad
@@ -484,4 +506,5 @@ module.exports = {
   chequeoCantidadPut, // Actualizar un chequeo de cantidad existente
   chequeoCantidadDelete, // Eliminar (marcar como eliminado) un chequeo de cantidad
   chequeoCantidadPatch, // Manejar solicitudes PATCH
+  chequeoCantidadByRefineria, // Obtener chequeos de cantidad por idRefineria
 };

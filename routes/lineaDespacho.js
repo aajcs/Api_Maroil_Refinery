@@ -23,11 +23,24 @@ const {
   lineaDespachoDelete,
   lineaDespachoPatch,
   lineaDespachoGets,
+  lineaDespachoByRefineria,
 } = require("../controllers/lineaDespacho");
 
 const router = Router();
 
 router.get("/", [validarJWT], lineaDespachoGets);
+
+// Obtener líneas de despacho por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  lineaDespachoByRefineria
+);
+
 router.get(
   "/:id",
   [

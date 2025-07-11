@@ -21,14 +21,27 @@ const {
   chequeoCalidadGet,
   chequeoCalidadPut,
   chequeoCalidadPost,
-  chequeoCalidadDelete,
   chequeoCalidadPatch,
+  chequeoCalidadDelete,
   chequeoCalidadGets,
+  chequeoCalidadsByRefineria,
 } = require("../controllers/chequeoCalidad");
 
 const router = Router();
 
 router.get("/", [validarJWT], chequeoCalidadGets);
+
+// Obtener chequeos de calidad por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  chequeoCalidadsByRefineria
+);
+
 router.get(
   "/:id",
   [

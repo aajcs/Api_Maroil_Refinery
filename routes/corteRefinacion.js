@@ -19,11 +19,24 @@ const {
   corteRefinacionDelete,
   corteRefinacionPatch,
   corteRefinacionGets,
+  corteRefinacionByRefineria,
 } = require("../controllers/corteRefinacion");
 
 const router = Router();
 
 router.get("/", [validarJWT], corteRefinacionGets);
+
+// Obtener cortes de refinación por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  corteRefinacionByRefineria
+);
+
 router.get(
   "/:id",
   [

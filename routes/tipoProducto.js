@@ -24,11 +24,24 @@ const {
   tipoProductoDelete,
   tipoProductoPatch,
   tipoProductoGets,
+  tipoProductoByRefineria,
 } = require("../controllers/tipoProducto");
 
 const router = Router();
 
 router.get("/", [validarJWT], tipoProductoGets);
+
+// Obtener tipos de producto por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  tipoProductoByRefineria
+);
+
 router.get(
   "/:id",
   [

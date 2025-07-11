@@ -23,17 +23,30 @@ const {
   tanqueDelete,
   tanquePatch,
   tanqueGets,
+  tanquesByRefineria,
 } = require("../controllers/tanque");
 
 const router = Router();
 
 router.get("/", [validarJWT], tanqueGets);
+
+// Obtener tanques por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  tanquesByRefineria
+);
+
+// Obtener un tanque específico por ID
 router.get(
   "/:id",
   [
     validarJWT,
     check("id", "No es un id de Mongo válido").isMongoId(),
-    // check('id').custom( existeProductoPorId ),
     validarCampos,
   ],
   tanqueGet

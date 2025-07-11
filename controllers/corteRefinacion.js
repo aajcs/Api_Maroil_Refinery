@@ -304,6 +304,29 @@ const corteRefinacionPatch = async (req = request, res = response, next) => {
   }
 };
 
+// Controlador para obtener cortes de refinación por idRefineria
+const corteRefinacionByRefineria = async (
+  req = request,
+  res = response,
+  next
+) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const cortes = await CorteRefinacion.find(query)
+      .populate(populateOptions)
+      .sort({ fechaCorte: -1 });
+    cortes.forEach((c) => {
+      if (Array.isArray(c.historial)) {
+        c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: cortes.length, cortes });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores
 module.exports = {
   corteRefinacionGets,
@@ -312,4 +335,5 @@ module.exports = {
   corteRefinacionPut,
   corteRefinacionDelete,
   corteRefinacionPatch,
+  corteRefinacionByRefineria,
 };

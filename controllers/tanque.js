@@ -181,6 +181,23 @@ const tanquePatch = (req = request, res = response, next) => {
   });
 };
 
+// Controlador para obtener tanques por idRefineria
+const tanquesByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const tanques = await Tanque.find(query).populate(populateOptions);
+    tanques.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: tanques.length, tanques });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
   tanquePost, // Crear un nuevo tanque
@@ -189,4 +206,5 @@ module.exports = {
   tanquePut, // Actualizar un tanque existente
   tanqueDelete, // Eliminar (marcar como eliminado) un tanque
   tanquePatch, // Manejar solicitudes PATCH
+  tanquesByRefineria, // Obtener tanques por idRefineria
 };

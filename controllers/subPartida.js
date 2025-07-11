@@ -165,6 +165,23 @@ const subPartidaPatch = async (req = request, res = response, next) => {
   }
 };
 
+// Controlador para obtener subpartidas por idRefineria
+const subPartidasByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const subPartidas = await SubPartida.find(query).populate(populateOptions);
+    subPartidas.forEach((sp) => {
+      if (Array.isArray(sp.historial)) {
+        sp.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: subPartidas.length, subPartidas });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores
 module.exports = {
   subPartidaGets,
@@ -173,4 +190,5 @@ module.exports = {
   subPartidaPut,
   subPartidaDelete,
   subPartidaPatch,
+  subPartidasByRefineria,
 };

@@ -23,11 +23,24 @@ const {
   partidaDelete,
   partidaPatch,
   partidaGets,
+  partidasByRefineria,
 } = require("../controllers/partida");
 
 const router = Router();
 
 router.get("/", partidaGets);
+
+// Obtener partidas por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  partidasByRefineria
+);
+
 router.get(
   "/:id",
   [

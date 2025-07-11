@@ -22,7 +22,6 @@ const populateOptions = [
       placa: 1,
       idContratoItems: 1,
       idTipoProducto: 1,
-      
     },
     // No uses populate anidado aquí
   },
@@ -567,6 +566,28 @@ const chequeoCalidadDelete = async (req = request, res = response, next) => {
   }
 };
 
+// Controlador para obtener chequeos de calidad por idRefineria
+const chequeoCalidadsByRefineria = async (
+  req = request,
+  res = response,
+  next
+) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const chequeos = await ChequeoCalidad.find(query).populate(populateOptions);
+    await populateIdTipoProducto(chequeos);
+    chequeos.forEach((c) => {
+      if (Array.isArray(c.historial)) {
+        c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: chequeos.length, chequeos });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   chequeoCalidadGets,
   chequeoCalidadGet,
@@ -574,4 +595,5 @@ module.exports = {
   chequeoCalidadPut,
   chequeoCalidadPatch,
   chequeoCalidadDelete,
+  chequeoCalidadsByRefineria,
 };

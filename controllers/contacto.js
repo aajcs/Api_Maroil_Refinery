@@ -171,6 +171,23 @@ const contactoPatch = (req = request, res = response, next) => {
   });
 };
 
+// Controlador para obtener contactos por idRefineria
+const contactoByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const contactos = await Contacto.find(query).populate(populateOptions);
+    contactos.forEach((c) => {
+      if (Array.isArray(c.historial)) {
+        c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: contactos.length, contactos });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
   contactoGets, // Obtener todos los contactos
@@ -179,4 +196,5 @@ module.exports = {
   contactoPut, // Actualizar un contacto existente
   contactoDelete, // Eliminar (marcar como eliminado) un contacto
   contactoPatch, // Manejar solicitudes PATCH
+  contactoByRefineria, // Obtener contactos por idRefineria
 };

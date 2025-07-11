@@ -1,5 +1,6 @@
 // Importación del modelo Torre
 const Torre = require("../models/torre");
+const { request, response } = require("express");
 
 // Opciones de población para referencias en las consultas
 const populateOptions = [
@@ -182,6 +183,25 @@ const torrePatch = async (req = request, res = response, next) => {
   }
 };
 
+// Controlador para obtener torres por idRefineria
+const torreByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+
+  try {
+    const torres = await Torre.find(query).populate(populateOptions);
+    torres.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+
+    res.json({ total: torres.length, torres });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores
 module.exports = {
   torreGets,
@@ -190,4 +210,5 @@ module.exports = {
   torrePut,
   torreDelete,
   torrePatch,
+  torreByRefineria,
 };

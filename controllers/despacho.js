@@ -64,9 +64,8 @@ const despachoGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la recepción desde los parámetros de la URL
 
   try {
-    const despachoActualizada = await Despacho.findById(id).populate(
-      populateOptions
-    ); // Busca la recepción por ID y la popula// Ordenar historial por fecha ascendente en cada torre
+    const despachoActualizada =
+      await Despacho.findById(id).populate(populateOptions); // Busca la recepción por ID y la popula// Ordenar historial por fecha ascendente en cada torre
     despachoActualizada.forEach((t) => {
       if (Array.isArray(t.historial)) {
         t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
@@ -224,6 +223,23 @@ const despachoPatch = (req, res = response) => {
   });
 };
 
+// Controlador para obtener despachos por idRefineria
+const despachoByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const despachos = await Despacho.find(query).populate(populateOptions);
+    despachos.forEach((d) => {
+      if (Array.isArray(d.historial)) {
+        d.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: despachos.length, despachos });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
   despachoPost, // Crear una nueva recepción
@@ -232,4 +248,5 @@ module.exports = {
   despachoPut, // Actualizar una recepción existente
   despachoDelete, // Eliminar (marcar como eliminado) una recepción
   despachoPatch, // Manejar solicitudes PATCH
+  despachoByRefineria, // Obtener despachos por idRefineria
 };

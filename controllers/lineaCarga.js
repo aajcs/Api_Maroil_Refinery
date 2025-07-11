@@ -149,6 +149,23 @@ const lineaCargaPatch = (req = request, res = response, next) => {
   });
 };
 
+// Controlador para obtener líneas de carga por idRefineria
+const lineaCargaByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const lineaCargas = await LineaCarga.find(query).populate(populateOptions);
+    lineaCargas.forEach((t) => {
+      if (Array.isArray(t.historial)) {
+        t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: lineaCargas.length, lineaCargas });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Exporta los controladores para que puedan ser utilizados en las rutas
 module.exports = {
   lineaCargaPost, // Crear una nueva línea de carga
@@ -157,4 +174,5 @@ module.exports = {
   lineaCargaPut, // Actualizar una línea de carga existente
   lineaCargaDelete, // Eliminar (marcar como eliminado) una línea de carga
   lineaCargaPatch, // Manejar solicitudes PATCH
+  lineaCargaByRefineria, // Obtener líneas de carga por idRefineria
 };

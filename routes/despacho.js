@@ -23,11 +23,24 @@ const {
   despachoDelete,
   despachoPatch,
   despachoGets,
+  despachoByRefineria,
 } = require("../controllers/despacho");
 
 const router = Router();
 
 router.get("/", [validarJWT], despachoGets);
+
+// Obtener despachos por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  despachoByRefineria
+);
+
 router.get(
   "/:id",
   [

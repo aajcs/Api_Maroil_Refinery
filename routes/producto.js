@@ -24,11 +24,24 @@ const {
   productoDelete,
   productoPatch,
   productoGets,
+  productoByRefineria,
 } = require("../controllers/producto");
 
 const router = Router();
 
 router.get("/", [validarJWT], productoGets);
+
+// Obtener productos por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  productoByRefineria
+);
+
 router.get(
   "/:id",
   [

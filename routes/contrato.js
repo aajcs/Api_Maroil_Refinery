@@ -23,11 +23,24 @@ const {
   contratoDelete,
   contratoPatch,
   contratoGets,
+  contratoByRefineria,
 } = require("../controllers/contrato");
 
 const router = Router();
 
 router.get("/", [validarJWT], contratoGets);
+
+// Obtener contratos por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  contratoByRefineria
+);
+
 router.get(
   "/:id",
   [

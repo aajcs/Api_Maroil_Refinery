@@ -23,11 +23,25 @@ const {
   torreDelete,
   torrePatch,
   torreGets,
+  torreByRefineria,
 } = require("../controllers/torre");
 
 const router = Router();
 
 router.get("/", [validarJWT], torreGets);
+
+// Obtener torres por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  torreByRefineria
+);
+
+// Obtener una torre específica por ID
 router.get(
   "/:id",
   [

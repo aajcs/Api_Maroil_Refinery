@@ -23,11 +23,24 @@ const {
   lineaCargaDelete,
   lineaCargaPatch,
   lineaCargaGets,
+  lineaCargaByRefineria,
 } = require("../controllers/lineaCarga");
 
 const router = Router();
 
 router.get("/", [validarJWT], lineaCargaGets);
+
+// Obtener líneas de carga por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  lineaCargaByRefineria
+);
+
 router.get(
   "/:id",
   [
