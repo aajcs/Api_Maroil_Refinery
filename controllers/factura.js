@@ -5,7 +5,7 @@ const LineaFactura = require("../models/lineaFactura");
 
 // Opciones de población reutilizables
 const populateOptions = [
-  { path: "idRefinerias", select: "nombre" },
+  { path: "idRefineria", select: "nombre" },
   { 
     path: "idLineasFactura",
     populate: { path: "idSubPartida" } // <--- Popular idSubPartida dentro de cada línea
@@ -73,22 +73,24 @@ const facturaGet = async (req = request, res = response, next) => {
 
 // Controlador para crear una nueva factura
 const facturaPost = async (req = request, res = response, next) => {
+   console.log("Datos recibidos en facturaPost:", req.body);
   const {
     concepto,
-    idRefinerias = [],
+    idRefineria,
     lineas = [],
     aprobada,
     idPartida,
     idSubPartida,
     fechaFactura,
   } = req.body;
+  console.log("Datos recibidos en facturaPost:", req.body);
 
   try {
     const { nuevasLineas, total } = calcularTotales(lineas);
 
     const nuevaFactura = new Factura({
       concepto,
-      idRefinerias,
+      idRefineria,
       lineas: nuevasLineas,
       total,
       aprobada,

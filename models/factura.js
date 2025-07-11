@@ -5,12 +5,12 @@ const Counter = require("./counter");
 // Esquema principal de facturación
 const FacturaSchema = new Schema(
   {
-   idRefinerias: [
+   idRefineria: 
       {
         type: Schema.Types.ObjectId,
         ref: "Refineria",
       },
-    ],
+    
 
    idLineasFactura: [
       {

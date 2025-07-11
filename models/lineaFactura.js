@@ -27,10 +27,6 @@ const LineaFacturaSchema = new Schema(
       required: [false, "El subtotal es obligatorio"], // Campo obligatorio
     },
 
-    fecha: {
-      type: Date,
-      default: Date.now, // Valor por defecto: fecha actual
-    },
     idSubPartida: {
       type: Schema.Types.ObjectId, 
       ref: "SubPartida", // Relación con el modelo SubPartida

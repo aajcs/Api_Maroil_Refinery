@@ -9,7 +9,7 @@ const SubPartidaSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Refineria", // Relación con el modelo Refineria
       required: [
-        true,
+        false,
         "El ID de la Refinería asociada a la recepción es obligatorio",
       ], // Campo obligatorio
     },
