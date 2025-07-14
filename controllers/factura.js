@@ -10,6 +10,11 @@ const populateOptions = [
     path: "idLineasFactura",
     populate: [{ path: "idPartida", select: "descripcion codigo" }],
   },
+  { path: "createdBy", select: "nombre correo" },
+  {
+    path: "historial",
+    populate: { path: "modificadoPor", select: "nombre correo" },
+  },
 ];
 // Función auxiliar para calcular subtotales y total
 function calcularTotales(lineas = []) {
@@ -92,6 +97,7 @@ const facturaPost = async (req = request, res = response, next) => {
       estado,
       idPartida,
       fechaFactura,
+      createdBy: req.usuario._id, // ID del usuario que creó el tanque
     });
 
     await nuevaFactura.save();
@@ -142,7 +148,14 @@ const facturaPut = async (req = request, res = response, next) => {
         eliminado: false,
       }))
     );
-
+    const antes = await Factura.findById(id);
+    console.log("Datos antes de la actualización:", antes);
+    const cambios = {};
+    for (let key in resto) {
+      if (String(antes[key]) !== String(resto[key])) {
+        cambios[key] = { from: antes[key], to: resto[key] };
+      }
+    }
     // Actualiza la factura con los nuevos IDs de líneas
     const facturaActualizada = await Factura.findOneAndUpdate(
       { _id: id, eliminado: false },
@@ -151,6 +164,7 @@ const facturaPut = async (req = request, res = response, next) => {
         lineas: nuevasLineas,
         total,
         idLineasFactura: lineasCreadas.map((l) => l._id),
+        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
       },
       { new: true }
     ).populate(populateOptions);

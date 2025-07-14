@@ -62,18 +62,29 @@ const FacturaSchema = new Schema(
     versionKey: false,
   }
 );
-
-// Middleware para generar un número único y secuencial
+FacturaSchema.plugin(auditPlugin);
+// Middleware para incrementar el contador antes de guardar
 FacturaSchema.pre("save", async function (next) {
-  if (this.isNew) {
+  if (this.isNew && this.idRefineria) {
     try {
-      const counterKey = "factura"; // Clave para el contador
-      const result = await Counter.findOneAndUpdate(
-        { _id: counterKey },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-      );
-      this.numeroFactura = result.seq; // Asigna el número secuencial
+      // Generar la clave del contador específico para cada refinería
+      const counterKey = `facturaGasto_${this.idRefineria.toString()}`;
+
+      // Buscar el contador
+      let refineriaCounter = await Counter.findOne({ _id: counterKey });
+
+      // Si el contador no existe, crearlo con el valor inicial de 1000
+      if (!refineriaCounter) {
+        refineriaCounter = new Counter({ _id: counterKey, seq: 999 });
+        await refineriaCounter.save();
+      }
+
+      // Incrementar el contador en 1
+      refineriaCounter.seq += 1;
+      await refineriaCounter.save();
+
+      // Asignar el valor actualizado al campo "numeroChequeoCalidad"
+      this.numeroChequeoCalidad = refineriaCounter.seq;
       next();
     } catch (error) {
       next(error);
