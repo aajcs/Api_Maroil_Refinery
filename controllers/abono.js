@@ -28,7 +28,9 @@ const abonoGets = async (req = request, res = response, next) => {
   try {
     const [total, abonos] = await Promise.all([
       Abono.countDocuments(query),
-      Abono.find(query).populate(populateOptions),
+      Abono.find(query)
+      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+      .populate(populateOptions),
     ]);
 
     // Obtener contratos y cuentas asociadas a los abonos

@@ -42,7 +42,9 @@ const despachoGets = async (req = request, res = response, next) => {
   try {
     const [total, despachos] = await Promise.all([
       Despacho.countDocuments(query), // Cuenta el total de despachoes
-      Despacho.find(query).populate(populateOptions), // Obtiene las despachoes con referencias pobladas
+      Despacho.find(query)
+      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+      .populate(populateOptions), // Obtiene las despachoes con referencias pobladas
     ]);
     // Ordenar historial por fecha ascendente en cada torre
     despachos.forEach((t) => {

@@ -43,7 +43,9 @@ const contratoGets = async (req = request, res = response, next) => {
   try {
     const [total, contratos] = await Promise.all([
       Contrato.countDocuments(query),
-      Contrato.find(query).populate(populateOptions),
+      Contrato.find(query)
+      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+      .populate(populateOptions),
     ]);
     contratos.forEach((t) => {
       if (Array.isArray(t.historial)) {

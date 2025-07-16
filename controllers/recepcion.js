@@ -44,7 +44,9 @@ const recepcionGets = async (req = request, res = response, next) => {
   try {
     const [total, recepcions] = await Promise.all([
       Recepcion.countDocuments(query), // Cuenta el total de recepciones
-      Recepcion.find(query).populate(populateOptions), // Obtiene las recepciones con referencias pobladas
+      Recepcion.find(query)
+      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+      .populate(populateOptions), // Obtiene las recepciones con referencias pobladas
     ]);
     // Ordenar historial por fecha ascendente en cada torre
     recepcions.forEach((t) => {

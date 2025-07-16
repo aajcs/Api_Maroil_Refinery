@@ -45,7 +45,9 @@ const facturaGets = async (req = request, res = response, next) => {
   try {
     const [total, facturas] = await Promise.all([
       Factura.countDocuments(query),
-      Factura.find(query).populate(populateOptions),
+      Factura.find(query)
+      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+      .populate(populateOptions),
     ]);
 
     res.json({ total, facturas });

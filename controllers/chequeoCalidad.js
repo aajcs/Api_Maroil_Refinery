@@ -103,7 +103,9 @@ const chequeoCalidadGets = async (req = request, res = response, next) => {
   try {
     const [total, chequeoCalidads] = await Promise.all([
       ChequeoCalidad.countDocuments(query),
-      ChequeoCalidad.find(query).populate(populateOptions),
+      ChequeoCalidad.find(query)
+      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+      .populate(populateOptions),
     ]);
 
     // Popular idTipoProducto manualmente si existe

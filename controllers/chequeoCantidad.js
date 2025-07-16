@@ -80,7 +80,9 @@ const chequeoCantidadGets = async (req = request, res = response, next) => {
   try {
     const [total, chequeoCantidads] = await Promise.all([
       ChequeoCantidad.countDocuments(query), // Cuenta el total de chequeos
-      ChequeoCantidad.find(query).populate(populateOptions), // Obtiene los chequeos con referencias pobladas
+      ChequeoCantidad.find(query)
+      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+      .populate(populateOptions), // Obtiene los chequeos con referencias pobladas
     ]);
 
     // Ordenar historial por fecha ascendente en cada torre
