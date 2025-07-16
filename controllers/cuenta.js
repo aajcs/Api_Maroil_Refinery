@@ -23,7 +23,9 @@ const cuentaGets = async (req = request, res = response, next) => {
   try {
     const [total, cuentas] = await Promise.all([
       Cuenta.countDocuments(query),
-      Cuenta.find(query).populate(populateOptions),
+      Cuenta.find(query)
+      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+      .populate(populateOptions),
     ]);
 
     res.json({ total, cuentas });

@@ -19,7 +19,9 @@ const contactoGets = async (req = request, res = response, next) => {
   try {
     const [total, contactos] = await Promise.all([
       Contacto.countDocuments(query), // Cuenta el total de contactos
-      Contacto.find(query).populate(populateOptions), // Obtiene los contactos con referencias pobladas
+      Contacto.find(query)
+      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+      .populate(populateOptions), // Obtiene los contactos con referencias pobladas
     ]);
     // Ordenar historial por fecha ascendente en cada torre
     contactos.forEach((t) => {
