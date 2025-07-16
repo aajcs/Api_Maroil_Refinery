@@ -1,13 +1,14 @@
 const { response, request } = require("express");
 const Contrato = require("../models/contrato");
 const contratoItems = require("../models/contratoItems");
-const Cuenta = require("../models/cuenta"); // Importar el modelo Cuenta
+const Cuenta = require("../models/cuenta");
+const Recepcion = require("../models/recepcion");
 const usuario = require("../models/usuario");
 const notification = require("../models/notification");
-const admin = require("firebase-admin"); // Add import for Firebase Admin
+const admin = require("firebase-admin");
 const { sendEmail } = require("../utils/resend");
 const NotificationService = require("../services/notificationService");
-// Opciones de población reutilizables para consultas
+
 const populateOptions = [
   {
     path: "idRefineria",
@@ -29,14 +30,13 @@ const populateOptions = [
       { path: "idTipoProducto", select: "nombre" },
     ],
   },
-  { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
+  { path: "createdBy", select: "nombre correo" },
   {
     path: "historial",
     populate: { path: "modificadoPor", select: "nombre correo" },
-  }, // Popula historial.modificadoPor en el array
+  },
 ];
 
-// Obtener todos los contratos
 const contratoGets = async (req = request, res = response, next) => {
   const query = { eliminado: false };
 
@@ -45,7 +45,6 @@ const contratoGets = async (req = request, res = response, next) => {
       Contrato.countDocuments(query),
       Contrato.find(query).populate(populateOptions),
     ]);
-    // Ordenar historial por fecha ascendente en cada torre
     contratos.forEach((t) => {
       if (Array.isArray(t.historial)) {
         t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
@@ -53,11 +52,10 @@ const contratoGets = async (req = request, res = response, next) => {
     });
     res.json({ total, contratos });
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
-// Obtener un contrato específico por ID
 const contratoGet = async (req = request, res = response, next) => {
   const { id } = req.params;
 
@@ -67,7 +65,6 @@ const contratoGet = async (req = request, res = response, next) => {
       eliminado: false,
     }).populate(populateOptions);
 
-    // Ordenar historial por fecha descendente
     if (Array.isArray(contrato.historial)) {
       contrato.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     }
@@ -78,13 +75,10 @@ const contratoGet = async (req = request, res = response, next) => {
 
     res.json(contrato);
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
-// Crear un nuevo contrato
-// Crear un nuevo contrato
-// Crear un nuevo contrato
 const contratoPost = async (req, res = response, next) => {
   const {
     idRefineria,
@@ -111,12 +105,10 @@ const contratoPost = async (req, res = response, next) => {
   let nuevoContrato;
 
   try {
-    // Calcular montoPagado y montoPendiente según reglas de negocio
     let montoPagado = 0;
     if (abono && Array.isArray(abono)) {
       montoPagado = abono.reduce((sum, a) => sum + (a.monto || 0), 0);
     }
-    // Validar que los abonos no excedan el monto total ni dejen pendiente menor a 0
     if (montoPagado > montoTotal) {
       return res.status(400).json({
         error: "La suma de los abonos no puede ser mayor al monto total.",
@@ -130,7 +122,6 @@ const contratoPost = async (req, res = response, next) => {
     }
     if (montoPendiente > montoTotal) montoPendiente = montoTotal;
 
-    // Crear el contrato
     nuevoContrato = new Contrato({
       idRefineria,
       idContacto,
@@ -162,7 +153,6 @@ const contratoPost = async (req, res = response, next) => {
       });
     }
 
-    // Guardar el contrato
     await nuevoContrato.save();
 
     // Crear y guardar los ítems asociados al contrato
@@ -176,7 +166,6 @@ const contratoPost = async (req, res = response, next) => {
       })
     );
 
-    // Actualizar el contrato con los IDs de los ítems
     nuevoContrato.idItems = nuevosItems.map((item) => item.id);
     await nuevoContrato.save();
 
@@ -193,12 +182,9 @@ const contratoPost = async (req, res = response, next) => {
       montoPendiente: montoPendiente,
     });
 
-    // Guardar la cuenta
     await nuevaCuenta.save();
 
-    // Validar balance pendiente después de todas las operaciones
     if (nuevoContrato.montoPendiente < 0) {
-      // Revertir todo si el balance es inválido
       await Cuenta.findByIdAndDelete(nuevaCuenta._id);
       await Promise.all(
         nuevosItems.map(
@@ -212,110 +198,46 @@ const contratoPost = async (req, res = response, next) => {
       });
     }
 
-    // Poblar referencias y responder con el contrato creado
+    // --- CREAR RECEPCIONES AUTOMÁTICAMENTE POR ITEM ---
+    const fechaCreacion = new Date();
+    const nuevasRecepciones = [];
+
+   for (const item of nuevosItems) {
+  const cantidad = item.cantidad || 0;
+  const numRecepcionesPorItem = Math.ceil(cantidad / 250);
+
+  for (let i = 0; i < numRecepcionesPorItem; i++) {
+    // Si es la última recepción, usa el restante
+    let cantidadEnviada = 250;
+    if (i === numRecepcionesPorItem - 1) {
+      cantidadEnviada = cantidad - 250 * (numRecepcionesPorItem - 1);
+    }
+
+    const nuevaRecepcion = new Recepcion({
+      idContrato: nuevoContrato._id,
+      idContratoItems: item._id,
+      idRefineria: nuevoContrato.idRefineria,
+      estadoRecepcion: "PROGRAMADO",
+      fechaInicio: fechaCreacion,
+      fechaInicioRecepcion: fechaCreacion,
+      cantidadEnviada,
+      idGuia: 0,
+      cantidadRecibida: 0,
+      createdBy: req.usuario._id,
+    });
+    await nuevaRecepcion.save();
+    nuevasRecepciones.push(nuevaRecepcion);
+  }
+}
+
+    // Guardar los IDs de las recepciones en el contrato
+    nuevoContrato.idRecepciones = nuevasRecepciones.map(r => r._id);
+    await nuevoContrato.save();
+
     await nuevoContrato.populate(populateOptions);
 
-    // if (nuevoContrato) {
-    //   const notificacionNewContrato = await notification.create({
-    //     title: "Nuevo contrato creado",
-    //     message: `Se ha creado un nuevo contrato (${nuevoContrato.numeroContrato}) para la refinería ${nuevoContrato.idRefineria.nombre} y el contacto ${nuevoContrato.idContacto.nombre}.`,
-    //     type: "in-app",
-    //     createdBy: req.usuario._id,
-    //     read: false,
-    //     userId: req.usuario._id,
-    //   });
-    //   console.log("noti", notificacionNewContrato);
-    // }
-    // if (nuevoContrato) {
-    //   // Fetch users based on access type and refinery association
-    //   const usuariosFinanzas = await usuario.find({
-    //     departamento: { $in: ["Finanzas"] },
-
-    //     eliminado: false,
-    //     $or: [
-    //       { acceso: "completo" }, // Include users with complete access
-    //       { acceso: "limitado", idRefineria: nuevoContrato.idRefineria }, // Include users with limited access and matching refinery
-    //     ],
-    //   });
-    //   console.log("usuariosFinanzas", usuariosFinanzas);
-    //   // Create notifications for each user
-    //   const notificaciones = usuariosFinanzas.map((usuario) => ({
-    //     title: "Nuevo contrato creado",
-    //     message: `Se ha creado un nuevo contrato (${nuevoContrato.numeroContrato}) para la refinería ${nuevoContrato.idRefineria.nombre} y el contacto ${nuevoContrato.idContacto.nombre}.`,
-    //     type: "in-app",
-    //     createdBy: req.usuario._id,
-    //     read: false,
-    //     userId: usuario._id,
-    //   }));
-
-    //   await notification.insertMany(notificaciones); // Bulk insert notifications
-    //   // Emitir notificación en tiempo real a cada usuario
-    //   notificaciones.forEach((newNotification) => {
-    //     req.io
-    //       .to(`user-${newNotification.userId}`)
-    //       .emit("new-notification", newNotification);
-    //   });
-    //   // Enviar correo a cada usuario de finanzas
-    //   for (const usuarioFinanza of usuariosFinanzas) {
-    //     if (usuarioFinanza.correo) {
-    //       try {
-    //         const result = await sendEmail(
-    //           usuarioFinanza.correo,
-    //           "Tienes una nueva notificación",
-    //           `<p>Hola ${usuarioFinanza.nombre},</p>
-    //            <p>Se ha creado un nuevo contrato ${nuevoContrato.numeroContrato}.</p>
-    //            <a href="https://tudominio.com/contratos/${nuevoContrato._id}">Ver detalle</a>`
-    //         );
-    //         console.log("Email enviado con ID:", result.id);
-    //         // Si quieres inspeccionar todo el payload devuelto:
-    //         console.log("Respuesta cruda de Resend:", result.raw);
-    //       } catch (err) {
-    //         console.error(
-    //           `Error al enviar email a ${usuarioFinanza.correo}:`,
-    //           err
-    //         );
-    //       }
-    //     }
-    //   }
-    //   // Enviar push via FCM a cada dispositivo individualmente
-    //   const tokens = usuariosFinanzas.flatMap((u) => u.fcmTokens || []);
-    //   if (tokens.length > 0) {
-    //     const sendPromises = tokens.map((token) => {
-    //       const message = {
-    //         token,
-    //         notification: {
-    //           title: "Nuevo contrato creado",
-    //           body: `Contrato ${nuevoContrato.numeroContrato} creado exitosamente.`,
-    //         },
-    //         webpush: {
-    //           fcmOptions: {
-    //             link: `https://tudominio.com/contratos/${nuevoContrato._id}`,
-    //           },
-    //         },
-    //         data: {
-    //           contractId: nuevoContrato._id.toString(),
-    //         },
-    //       };
-    //       return admin.messaging().send(message);
-    //     });
-    //     const results = await Promise.all(sendPromises);
-    //     console.log("FCM results:", results);
-    //   }
-    // }
-    // if (nuevoContrato) {
-    //   // Enviar notificaciones
-    //   // Instancia el servicio con Socket.IO
-    //   const notificationService = new NotificationService(req.io);
-    //   // Lanza las notificaciones para el nuevo contrato
-    //   const result = await notificationService.sendContractNotifications(
-    //     nuevoContrato,
-    //     req.usuario
-    //   );
-    //   console.log("Notificaciones enviadas:", result);
-    // }
-
+    // Notificaciones y lógica adicional igual que antes...
     if (nuevoContrato) {
-      // 1. Definir QUIÉN recibe la notificación
       const usuariosANotificar = await usuario.find({
         departamento: { $in: ["Finanzas", "Logistica", "Gerencia"] },
         eliminado: false,
@@ -325,7 +247,6 @@ const contratoPost = async (req, res = response, next) => {
         ],
       });
 
-      // 2. Instanciar el servicio y definir QUÉ se notifica
       const notificationService = new NotificationService(req.io);
       notificationService.dispatch({
         users: usuariosANotificar,
@@ -338,9 +259,8 @@ const contratoPost = async (req, res = response, next) => {
           },
           email: {
             subject: `Nuevo Contrato Creado: ${nuevoContrato.numeroContrato}`,
-            templateName: "contractNotification", // Especificar el nombre de la plantilla
+            templateName: "contractNotification",
             context: {
-              // Enviar todos los datos que la plantilla necesita
               numeroContrato: nuevoContrato.numeroContrato,
               nombreRefineria: nuevoContrato.idRefineria.nombre,
               nombreContacto: nuevoContrato.idContacto.nombre,
@@ -358,11 +278,10 @@ const contratoPost = async (req, res = response, next) => {
     }
     res.status(201).json(nuevoContrato);
   } catch (err) {
-    // Si ocurre un error, eliminar el contrato creado
     if (nuevoContrato && nuevoContrato.id) {
       await Contrato.findByIdAndDelete(nuevoContrato.id);
     }
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
