@@ -3,6 +3,7 @@ const { check } = require("express-validator");
 
 const { validarCampos, validarJWT, tieneRole } = require("../middlewares");
 const { cuentaSaldosPendientes } = require("../controllers/cuenta");
+const { cuentaAgruparPorContacto } = require("../controllers/cuenta");
 
 const { existeContratoPorId } = require("../helpers/db-validators");
 
@@ -23,6 +24,10 @@ const router = Router();
 router.get("/", [validarJWT], cuentaGets);
 
 router.get("/saldos", cuentaSaldosPendientes);
+
+//Agrupar cuentas por contacto
+router.get("/agrupar", cuentaAgruparPorContacto);
+
 
 // Obtener una cuenta específica por ID de cuenta
 router.get(
@@ -122,5 +127,6 @@ router.post(
   ],
   cuentaSyncFromContrato
 );
+
 
 module.exports = router;

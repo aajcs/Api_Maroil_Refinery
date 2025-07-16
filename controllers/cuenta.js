@@ -78,13 +78,20 @@ const cuentaPostFromContrato = async (req = request, res = response, next) => {
       });
     }
 
+    // Calcula el balance pendiente correctamente
+    const montoTotal = contrato.montoTotal || 0;
+    const abonos = contrato.abono || [];
+    const montoAbonado = abonos.reduce((sum, a) => sum + (a.monto || 0), 0);
+    const balancePendiente = montoTotal - montoAbonado;
+
     const nuevaCuenta = new Cuenta({
       idContrato: contrato._id,
       tipoCuenta,
       idContacto: contrato.idContacto,
-      abonos: contrato.abono || [],
-      montoTotalContrato: contrato.montoTotal || 0,
-      createdBy: req.usuario._id, // ID del usuario que creó la cuenta
+      abonos: abonos,
+      montoTotalContrato: montoTotal,
+      balancePendiente, // <-- Aquí se inicializa correctamente
+      createdBy: req.usuario._id,
     });
 
     await nuevaCuenta.save();
@@ -97,7 +104,7 @@ const cuentaPostFromContrato = async (req = request, res = response, next) => {
       cuenta: cuentaPopulada,
     });
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
@@ -252,6 +259,46 @@ const cuentaSaldosPendientes = async (req = request, res = response, next) => {
   }
 };
 
+const cuentaAgruparPorContacto = async (req = request, res = response, next) => {
+  try {
+    const { tipoCuenta } = req.query; // "Cuentas por Cobrar" o "Cuentas por Pagar"
+    const filtro = {};
+    if (tipoCuenta) {
+      filtro.tipoCuenta = tipoCuenta;
+    }
+
+    // Trae las cuentas con el contacto populado
+    const cuentas = await Cuenta.find(filtro).populate({
+      path: "idContacto",
+      select: "nombre"
+    });
+
+    // Agrupa por nombre de contacto y suma los montos
+    const agrupadas = {};
+    cuentas.forEach((cuenta) => {
+      const nombre = cuenta.idContacto?.nombre || "Sin Nombre";
+      if (!agrupadas[nombre]) {
+        agrupadas[nombre] = {
+          nombreContacto: nombre,
+          total: 0,
+          cuentas: []
+        };
+      }
+      agrupadas[nombre].total += Number(cuenta.balancePendiente || 0);
+      agrupadas[nombre].cuentas.push({
+        id: cuenta._id,
+        numeroContrato: cuenta.idContrato?.numeroContrato || "",
+        balancePendiente: Number(cuenta.balancePendiente || 0)
+      });
+    });
+
+    // Devuelve como array
+    res.json(Object.values(agrupadas));
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   cuentaGets,
   cuentaGet,
@@ -260,4 +307,5 @@ module.exports = {
   cuentaDelete,
   cuentaSyncFromContrato,
   cuentaSaldosPendientes,
+cuentaAgruparPorContacto,
 };

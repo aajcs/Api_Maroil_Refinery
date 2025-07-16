@@ -182,6 +182,7 @@ const contratoPost = async (req, res = response, next) => {
       montoTotalContrato: montoTotal || 0,
       montoPagado: montoPagado,
       montoPendiente: montoPendiente,
+      balancePendiente: montoPendiente,
     });
 
     await nuevaCuenta.save();
