@@ -156,6 +156,13 @@ const contratoPost = async (req, res = response, next) => {
       });
     }
 
+
+if (fechaInicio && fechaFin && new Date(fechaInicio) > new Date(fechaFin)) {
+  return res.status(400).json({
+    error: "La fecha de inicio no puede ser mayor que la fecha de finalización.",
+  });
+}
+
     await nuevoContrato.save();
 
     // Crear y guardar los ítems asociados al contrato
@@ -369,6 +376,16 @@ const contratoPut = async (req, res = response, next) => {
     if (montoPendiente > montoTotalContrato)
       montoPendiente = montoTotalContrato;
 
+    // Usa los valores nuevos si vienen, si no, los existentes
+const fechaInicioValidar = resto.fechaInicio || contratoExistente.fechaInicio;
+const fechaFinValidar = resto.fechaFin || contratoExistente.fechaFin;
+
+if (fechaInicioValidar && fechaFinValidar && new Date(fechaInicioValidar) > new Date(fechaFinValidar)) {
+  return res.status(400).json({
+    error: "La fecha de inicio no puede ser mayor que la fecha de finalización.",
+  });
+}
+    
     // Actualizar el contrato
     const contratoActualizado = await Contrato.findOneAndUpdate(
       { _id: id, eliminado: false },
