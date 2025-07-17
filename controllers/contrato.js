@@ -3,6 +3,7 @@ const Contrato = require("../models/contrato");
 const contratoItems = require("../models/contratoItems");
 const Cuenta = require("../models/cuenta");
 const Recepcion = require("../models/recepcion");
+const Despacho = require("../models/despacho");
 const usuario = require("../models/usuario");
 const notification = require("../models/notification");
 const admin = require("firebase-admin");
@@ -203,41 +204,59 @@ const contratoPost = async (req, res = response, next) => {
 
     // --- CREAR RECEPCIONES AUTOMÁTICAMENTE POR ITEM ---
     const fechaCreacion = new Date();
-    const nuevasRecepciones = [];
+    const nuevasOperaciones = [];
 
-   for (const item of nuevosItems) {
+for (const item of nuevosItems) {
   const cantidad = item.cantidad || 0;
-  const numRecepcionesPorItem = Math.ceil(cantidad / 250);
+  const numOperacionesPorItem = Math.ceil(cantidad / 250);
 
-  for (let i = 0; i < numRecepcionesPorItem; i++) {
-    // Si es la última recepción, usa el restante
+  for (let i = 0; i < numOperacionesPorItem; i++) {
     let cantidadEnviada = 250;
-    if (i === numRecepcionesPorItem - 1) {
-      cantidadEnviada = cantidad - 250 * (numRecepcionesPorItem - 1);
+    if (i === numOperacionesPorItem - 1) {
+      cantidadEnviada = cantidad - 250 * (numOperacionesPorItem - 1);
     }
 
-    const nuevaRecepcion = new Recepcion({
-      idContrato: nuevoContrato._id,
-      idContratoItems: item._id,
-      idRefineria: nuevoContrato.idRefineria,
-      estadoRecepcion: "PROGRAMADO",
-      fechaInicio: fechaCreacion,
-      fechaInicioRecepcion: fechaCreacion,
-      cantidadEnviada,
-      idGuia: 0,
-      cantidadRecibida: 0,
-      createdBy: req.usuario._id,
-    });
-    await nuevaRecepcion.save();
-    nuevasRecepciones.push(nuevaRecepcion);
+    if (tipoContrato === "Venta") {
+      // Crear despacho
+      const nuevoDespacho = new Despacho({
+        idContrato: nuevoContrato._id,
+        idContratoItems: item._id,
+        idRefineria: nuevoContrato.idRefineria,
+        estadoDespacho: "PROGRAMADO",
+        fechaInicio: fechaCreacion,
+        cantidadEnviada,
+        idGuia: 0,
+        cantidadRecibida: 0,
+        createdBy: req.usuario._id,
+      });
+      await nuevoDespacho.save();
+      nuevasOperaciones.push(nuevoDespacho);
+    } else {
+      // Crear recepción
+      const nuevaRecepcion = new Recepcion({
+        idContrato: nuevoContrato._id,
+        idContratoItems: item._id,
+        idRefineria: nuevoContrato.idRefineria,
+        estadoRecepcion: "PROGRAMADO",
+        fechaInicio: fechaCreacion,
+        cantidadEnviada,
+        idGuia: 0,
+        cantidadRecibida: 0,
+        createdBy: req.usuario._id,
+      });
+      await nuevaRecepcion.save();
+      nuevasOperaciones.push(nuevaRecepcion);
+    }
   }
 }
 
-    // Guardar los IDs de las recepciones en el contrato
-    nuevoContrato.idRecepciones = nuevasRecepciones.map(r => r._id);
-    await nuevoContrato.save();
-
-    await nuevoContrato.populate(populateOptions);
+// Guardar los IDs de las operaciones en el contrato
+if (tipoContrato === "Venta") {
+  nuevoContrato.idDespachos = nuevasOperaciones.map(o => o._id);
+} else {
+  nuevoContrato.idRecepciones = nuevasOperaciones.map(o => o._id);
+}
+await nuevoContrato.save();
 
     // Notificaciones y lógica adicional igual que antes...
     if (nuevoContrato) {
