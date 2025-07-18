@@ -29,7 +29,7 @@ router.get("/", [validarJWT], usuariosGets);
 router.get(
   "/:id",
   [
-    validarJWT,
+    // validarJWT,
     check("id", "No es un id de Mongo válido").isMongoId(),
     // check('id').custom( existeProductoPorId ),
     validarCampos,

@@ -48,13 +48,14 @@ const usuariosGet = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del usuario desde los parámetros de la URL
   const usuario = await Usuario.findById(id).populate(populateOptions); // Busca el usuario por su ID
   // Ordenar historial por fecha ascendente en cada torre
-  usuario.forEach((t) => {
-    if (Array.isArray(t.historial)) {
-      t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-    }
-  });
+  // usuario.forEach((t) => {
+  //   if (Array.isArray(t.historial)) {
+  //     t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  //   }
+  // });
   // Verifica si el usuario existe y no está marcado como eliminado
   if (usuario && !usuario.eliminado) {
+    console.log(`Usuario encontrado: ${usuario.nombre}`); // Log para depuración
     res.json(usuario); // Responde con los datos del usuario
   } else {
     // Responde con un error 404 si el usuario no existe o está eliminado

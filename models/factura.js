@@ -5,6 +5,9 @@ const Counter = require("./counter");
 // Esquema principal de facturación
 const FacturaSchema = new Schema(
   {
+    numeroFactura: {
+      type: Number,
+    },
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
@@ -84,7 +87,7 @@ FacturaSchema.pre("save", async function (next) {
       await refineriaCounter.save();
 
       // Asignar el valor actualizado al campo "numeroChequeoCalidad"
-      this.numeroChequeoCalidad = refineriaCounter.seq;
+      this.numeroFactura = refineriaCounter.seq;
       next();
     } catch (error) {
       next(error);
