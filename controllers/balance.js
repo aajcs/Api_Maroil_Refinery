@@ -68,6 +68,18 @@ const balancePost = async (req, res = response, next) => {
   } = req.body;
 
   try {
+    // Validar que los contratos no estén ya asociados a otro balance
+    const contratosUsados = await Contrato.find({
+      _id: { $in: [...contratosCompras, ...contratosVentas] },
+      idBalance: { $exists: true, $ne: null }
+    });
+    if (contratosUsados.length > 0) {
+      return res.status(400).json({
+        error: "Uno o más contratos ya están asociados a otro balance.",
+        contratos: contratosUsados.map(c => c.numeroContrato)
+      });
+    }
+
     // Calcular totales
     const compras = await Contrato.find({
       _id: { $in: contratosCompras },
@@ -115,20 +127,24 @@ const balancePost = async (req, res = response, next) => {
     });
 
     await nuevoBalance.save();
-    const balancePopulado = await Balance.findById(nuevoBalance._id).populate(
-      populateOptions
+
+    // Asignar idBalance a cada contrato involucrado
+    await Contrato.updateMany(
+      { _id: { $in: [...contratosCompras, ...contratosVentas] } },
+      { $set: { idBalance: nuevoBalance._id } }
     );
 
+    const balancePopulado = await Balance.findById(nuevoBalance._id).populate(populateOptions);
     res.status(201).json(balancePopulado);
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
 // Actualizar un balance existente
 const balancePut = async (req, res = response, next) => {
   const { id } = req.params;
-  const { _id, ...resto } = req.body;
+  const { contratosCompras = [], contratosVentas = [], ...resto } = req.body;
 
   try {
     const antes = await Balance.findById(id);
@@ -136,41 +152,96 @@ const balancePut = async (req, res = response, next) => {
       return res.status(404).json({ msg: "Balance no encontrado." });
     }
 
-    const cambios = {};
-    for (let key in resto) {
-      if (String(antes[key]) !== String(resto[key])) {
-        cambios[key] = { from: antes[key], to: resto[key] };
+    // Detectar contratos nuevos agregados
+    const prevCompras = antes.contratosCompras.map(c => String(c));
+    const prevVentas = antes.contratosVentas.map(c => String(c));
+    const nuevosCompras = contratosCompras.filter(c => !prevCompras.includes(String(c)));
+    const nuevosVentas = contratosVentas.filter(c => !prevVentas.includes(String(c)));
+    const nuevosContratos = [...nuevosCompras, ...nuevosVentas];
+
+    // Validar que los nuevos contratos no estén en otro balance
+    if (nuevosContratos.length > 0) {
+      const usados = await Contrato.find({
+        _id: { $in: nuevosContratos },
+        idBalance: { $exists: true, $ne: null }
+      });
+      if (usados.length > 0) {
+        return res.status(400).json({
+          error: "Uno o más contratos agregados ya están asociados a otro balance.",
+          contratos: usados.map(c => c.numeroContrato)
+        });
       }
+      // Asignar idBalance a los nuevos contratos
+      await Contrato.updateMany(
+        { _id: { $in: nuevosContratos } },
+        { $set: { idBalance: id } }
+      );
     }
 
+    // Actualizar el balance
     const balanceActualizado = await Balance.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
         ...resto,
-        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+        contratosCompras,
+        contratosVentas,
+        $push: { historial: { modificadoPor: req.usuario._id } },
       },
       { new: true }
     ).populate(populateOptions);
 
-    if (!balanceActualizado) {
-      return res.status(404).json({ msg: "Balance no encontrado." });
-    }
-
     res.json(balanceActualizado);
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
 // Actualizar parcialmente un balance existente
 const balancePatch = async (req, res = response, next) => {
   const { id } = req.params;
-  const { ...resto } = req.body;
+  const { contratosCompras = [], contratosVentas = [], ...resto } = req.body;
 
   try {
+    const antes = await Balance.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Balance no encontrado." });
+    }
+
+    // Detectar contratos nuevos agregados
+    const prevCompras = antes.contratosCompras.map(c => String(c));
+    const prevVentas = antes.contratosVentas.map(c => String(c));
+    const nuevosCompras = contratosCompras.filter(c => !prevCompras.includes(String(c)));
+    const nuevosVentas = contratosVentas.filter(c => !prevVentas.includes(String(c)));
+    const nuevosContratos = [...nuevosCompras, ...nuevosVentas];
+
+    // Validar que los nuevos contratos no estén en otro balance
+    if (nuevosContratos.length > 0) {
+      const usados = await Contrato.find({
+        _id: { $in: nuevosContratos },
+        idBalance: { $exists: true, $ne: null }
+      });
+      if (usados.length > 0) {
+        return res.status(400).json({
+          error: "Uno o más contratos agregados ya están asociados a otro balance.",
+          contratos: usados.map(c => c.numeroContrato)
+        });
+      }
+      // Asignar idBalance a los nuevos contratos
+      await Contrato.updateMany(
+        { _id: { $in: nuevosContratos } },
+        { $set: { idBalance: id } }
+      );
+    }
+
+    // Actualizar el balance parcialmente
     const balanceActualizado = await Balance.findOneAndUpdate(
       { _id: id, eliminado: false },
-      { $set: resto },
+      {
+        ...resto,
+        ...(contratosCompras.length ? { contratosCompras } : {}),
+        ...(contratosVentas.length ? { contratosVentas } : {}),
+        $push: { historial: { modificadoPor: req.usuario._id } },
+      },
       { new: true }
     ).populate(populateOptions);
 
@@ -194,27 +265,28 @@ const balanceDelete = async (req, res = response) => {
       return res.status(404).json({ msg: "Balance no encontrado." });
     }
 
-    const cambios = { eliminado: { from: antes.eliminado, to: true } };
+    // Quitar idBalance de los contratos asociados
+    await Contrato.updateMany(
+      { _id: { $in: [...antes.contratosCompras, ...antes.contratosVentas] } },
+      { $unset: { idBalance: "" } }
+    );
 
+    // Eliminar el balance (lógica actual)
     const balance = await Balance.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
         eliminado: true,
-        $push: { historial: { modificadoPor: req.usuario._id, cambios } },
+        $push: { historial: { modificadoPor: req.usuario._id } },
       },
       { new: true }
     ).populate(populateOptions);
-
-    if (!balance) {
-      return res.status(404).json({ msg: "Balance no encontrado." });
-    }
 
     res.json({
       msg: "Balance eliminado exitosamente.",
       balance,
     });
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 

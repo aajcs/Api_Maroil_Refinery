@@ -169,6 +169,12 @@ const ContratoSchema = Schema(
       type: Boolean,
       default: false,
     },
+
+    // Relación con el modelo Balance
+    idBalance: {
+      type: Schema.Types.ObjectId,
+      ref: "Balance",
+    },
   },
   {
     timestamps: true, // Añade createdAt y updatedAt automáticamente
