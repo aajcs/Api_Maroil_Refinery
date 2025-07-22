@@ -27,8 +27,8 @@ const usuariosGets = async (req = request, res = response, next) => {
   const [total, usuarios] = await Promise.all([
     Usuario.countDocuments(query), // Cuenta el total de usuarios no eliminados
     Usuario.find(query)
-    .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
-    .populate(populateOptions), // Obtiene los usuarios no eliminados
+      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+      .populate(populateOptions), // Obtiene los usuarios no eliminados
   ]);
   // Ordenar historial por fecha ascendente en cada torre
   usuarios.forEach((t) => {
