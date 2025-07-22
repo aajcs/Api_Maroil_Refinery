@@ -1,7 +1,6 @@
 const Balance = require("../models/balance");
 const Contrato = require("../models/contrato");
 const Factura = require("../models/factura");
-const Counter = require("../models/counter"); // Importa el modelo Counter
 
 
 
@@ -63,19 +62,6 @@ const balancePost = async (req, res = response) => {
     req.body;
 
   try {
-    // Obtener y actualizar el contador de balances
-    const counterKey = "balance";
-    let balanceCounter = await Counter.findById(counterKey);
-    if (!balanceCounter) {
-      balanceCounter = new Counter({ _id: counterKey, seq: 0 });
-      await balanceCounter.save();
-    }
-    balanceCounter.seq += 1;
-    await balanceCounter.save();
-
-    // Formatea el número correlativo con ceros a la izquierda (ej: 001, 002, ...)
-    const numeroBalance = balanceCounter.seq.toString().padStart(3, "0");
-
     // Calcular totales
     const compras = await Contrato.find({
       _id: { $in: contratosCompras },
@@ -109,7 +95,6 @@ const balancePost = async (req, res = response) => {
 
     // Crear el balance
     const nuevoBalance = new Balance({
-      numeroBalance, // <-- correlativo
       fechaInicio,
       fechaFin,
       contratosCompras,
