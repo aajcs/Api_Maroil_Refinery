@@ -22,6 +22,13 @@ const BalanceSchema = new Schema({
       ref: "Contrato",
     },
   ],
+
+     idRefineria: {
+      type: Schema.Types.ObjectId,
+      ref: "Refineria",
+      required: true,
+    },
+
   facturas: [
     {
       type: Schema.Types.ObjectId,
@@ -48,7 +55,27 @@ const BalanceSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-});
+  numeroBalance: {
+    type: Number,
+    unique: true,
+  },
+     eliminado: {
+      type: Boolean,
+      default: false,
+    }
+  },
+  {
+    timestamps: true,
+    versionKey: false,
+  }
+);
 BalanceSchema.plugin(auditPlugin);
+
+BalanceSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject.__v;
+  },
+});
 
 module.exports = model("Balance", BalanceSchema);

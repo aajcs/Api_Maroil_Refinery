@@ -1,6 +1,9 @@
 const Balance = require("../models/balance");
 const Contrato = require("../models/contrato");
 const Factura = require("../models/factura");
+const Counter = require("../models/counter"); // Importa el modelo Counter
+
+
 
 // Opciones de población reutilizables
 const populateOptions = [
@@ -11,15 +14,16 @@ const populateOptions = [
   { path: "contratosVentas", select: "numeroContrato montoTotal tipoContrato" },
   { path: "facturas", select: "total concepto fechaFactura" },
   { path: "createdBy", select: "nombre correo" },
+  { path: "idRefineria", select: "nombre img direccion" },
   {
     path: "historial",
     populate: { path: "modificadoPor", select: "nombre correo" },
   },
 ];
 
-// Obtener todos los balances
 const balanceGets = async (req, res = response) => {
-  const query = { eliminado: false }; // Filtro para balances no eliminados
+  // Busca balances donde eliminado sea false o no exista
+  const query = { $or: [{ eliminado: false }, { eliminado: { $exists: false } }] };
 
   try {
     const [total, balances] = await Promise.all([
@@ -55,10 +59,23 @@ const balanceGet = async (req, res = response) => {
 
 // Crear un nuevo balance
 const balancePost = async (req, res = response) => {
-  const { fechaInicio, fechaFin, contratosCompras, contratosVentas, facturas } =
+  const { fechaInicio, fechaFin, contratosCompras, contratosVentas, facturas, idRefineria } =
     req.body;
 
   try {
+    // Obtener y actualizar el contador de balances
+    const counterKey = "balance";
+    let balanceCounter = await Counter.findById(counterKey);
+    if (!balanceCounter) {
+      balanceCounter = new Counter({ _id: counterKey, seq: 0 });
+      await balanceCounter.save();
+    }
+    balanceCounter.seq += 1;
+    await balanceCounter.save();
+
+    // Formatea el número correlativo con ceros a la izquierda (ej: 001, 002, ...)
+    const numeroBalance = balanceCounter.seq.toString().padStart(3, "0");
+
     // Calcular totales
     const compras = await Contrato.find({
       _id: { $in: contratosCompras },
@@ -92,6 +109,7 @@ const balancePost = async (req, res = response) => {
 
     // Crear el balance
     const nuevoBalance = new Balance({
+      numeroBalance, // <-- correlativo
       fechaInicio,
       fechaFin,
       contratosCompras,
@@ -101,6 +119,7 @@ const balancePost = async (req, res = response) => {
       totalVentas: totalVentas - totalFacturas,
       ganancia: ganancia > 0 ? ganancia : 0,
       perdida,
+      idRefineria,
       createdBy: req.usuario._id,
     });
 
