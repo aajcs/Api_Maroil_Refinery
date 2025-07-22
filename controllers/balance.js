@@ -5,10 +5,12 @@ const Factura = require("../models/factura");
 // Opciones de población reutilizables
 const populateOptions = [
   {
-    path: "contratosCompras",
-    select: "numeroContrato montoTotal tipoContrato",
+    path: "contratosCompras", select: "numeroContrato tipoContrato montoTotal descripcion estadoContrato",
+      populate: { path: "idItems", select: "cantidad rendimiento" },
   },
-  { path: "contratosVentas", select: "numeroContrato montoTotal tipoContrato" },
+  { path: "contratosVentas", select: "numeroContrato tipoContrato montoTotal descripcion estadoContrato",
+    populate: { path: "idItems", select: "cantidad rendimiento" },
+  },
   { path: "facturas", select: "total concepto fechaFactura" },
   { path: "createdBy", select: "nombre correo" },
   { path: "idRefineria", select: "nombre img direccion" },
@@ -80,21 +82,32 @@ const balancePost = async (req, res = response, next) => {
       });
     }
 
-    // Calcular totales
+    // Obtener contratos con sus items populados
     const compras = await Contrato.find({
       _id: { $in: contratosCompras },
       tipoContrato: "Compra",
       eliminado: false,
-    });
+    }).populate("idItems");
     const ventas = await Contrato.find({
       _id: { $in: contratosVentas },
       tipoContrato: "Venta",
       eliminado: false,
-    });
+    }).populate("idItems");
     const facturasSeleccionadas = await Factura.find({
       _id: { $in: facturas },
     });
 
+    // Calcular total de barriles de compra
+    const totalBarrilesCompra = compras.reduce((total, contrato) => {
+      return total + contrato.idItems.reduce((sum, item) => sum + (item.cantidad || 0), 0);
+    }, 0);
+
+    // Calcular total de barriles de venta
+    const totalBarrilesVenta = ventas.reduce((total, contrato) => {
+      return total + contrato.idItems.reduce((sum, item) => sum + (item.cantidad || 0), 0);
+    }, 0);
+
+    // Calcular totales monetarios
     const totalCompras = compras.reduce(
       (total, compra) => total + (compra.montoTotal || 0),
       0
@@ -123,6 +136,8 @@ const balancePost = async (req, res = response, next) => {
       ganancia: ganancia > 0 ? ganancia : 0,
       perdida,
       idRefineria,
+      totalBarrilesCompra,
+      totalBarrilesVenta,
       createdBy: req.usuario._id,
     });
 

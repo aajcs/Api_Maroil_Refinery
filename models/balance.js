@@ -25,6 +25,16 @@ const BalanceSchema = new Schema(
       },
     ],
 
+    totalBarrilesCompra: {
+      type: Number,
+      default: 0,
+    },
+
+    totalBarrilesVenta: {
+      type: Number,
+      default: 0,
+    },
+
     idRefineria: {
       type: Schema.Types.ObjectId,
       ref: "Refineria",
