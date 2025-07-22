@@ -27,7 +27,7 @@ const populateOptions = [
     path: "idContratoItems", // Relación con los ítems del contrato
     populate: {
       path: "producto", // Relación con el modelo Producto
-      select: "nombre", // Selecciona el campo nombre
+      select: "nombre color", // Selecciona el campo nombre
     },
   },
   { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre

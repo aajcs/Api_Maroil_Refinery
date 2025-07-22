@@ -24,7 +24,7 @@ const populateOptions = [
       numeroDespacho: 1, // Campo para el modelo Despacho
     },
   },
-  { path: "idProducto", select: "nombre" }, // Relación con el modelo Producto
+  { path: "idProducto", select: "nombre color" }, // Relación con el modelo Producto
   { path: "idOperador", select: "nombre" }, // Relación con el modelo Operador
   { path: "createdBy", select: "nombre correo" }, // Popula quién creó la torre
   {
@@ -81,8 +81,8 @@ const chequeoCantidadGets = async (req = request, res = response, next) => {
     const [total, chequeoCantidads] = await Promise.all([
       ChequeoCantidad.countDocuments(query), // Cuenta el total de chequeos
       ChequeoCantidad.find(query)
-      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
-      .populate(populateOptions), // Obtiene los chequeos con referencias pobladas
+        .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+        .populate(populateOptions), // Obtiene los chequeos con referencias pobladas
     ]);
 
     // Ordenar historial por fecha ascendente en cada torre
