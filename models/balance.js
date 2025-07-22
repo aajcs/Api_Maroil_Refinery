@@ -1,5 +1,6 @@
 const { Schema, model } = require("mongoose");
 const auditPlugin = require("./plugins/audit");
+const Counter = require("./counter");
 
 const BalanceSchema = new Schema(
   {

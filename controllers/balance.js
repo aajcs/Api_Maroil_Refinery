@@ -2,8 +2,6 @@ const Balance = require("../models/balance");
 const Contrato = require("../models/contrato");
 const Factura = require("../models/factura");
 
-
-
 // Opciones de población reutilizables
 const populateOptions = [
   {
@@ -20,9 +18,11 @@ const populateOptions = [
   },
 ];
 
-const balanceGets = async (req, res = response) => {
+const balanceGets = async (req, res = response, next) => {
   // Busca balances donde eliminado sea false o no exista
-  const query = { $or: [{ eliminado: false }, { eliminado: { $exists: false } }] };
+  const query = {
+    $or: [{ eliminado: false }, { eliminado: { $exists: false } }],
+  };
 
   try {
     const [total, balances] = await Promise.all([
@@ -37,7 +37,7 @@ const balanceGets = async (req, res = response) => {
 };
 
 // Obtener un balance específico por ID
-const balanceGet = async (req, res = response) => {
+const balanceGet = async (req, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -57,9 +57,15 @@ const balanceGet = async (req, res = response) => {
 };
 
 // Crear un nuevo balance
-const balancePost = async (req, res = response) => {
-  const { fechaInicio, fechaFin, contratosCompras, contratosVentas, facturas, idRefineria } =
-    req.body;
+const balancePost = async (req, res = response, next) => {
+  const {
+    fechaInicio,
+    fechaFin,
+    contratosCompras,
+    contratosVentas,
+    facturas,
+    idRefineria,
+  } = req.body;
 
   try {
     // Calcular totales
@@ -120,7 +126,7 @@ const balancePost = async (req, res = response) => {
 };
 
 // Actualizar un balance existente
-const balancePut = async (req, res = response) => {
+const balancePut = async (req, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body;
 
@@ -157,7 +163,7 @@ const balancePut = async (req, res = response) => {
 };
 
 // Actualizar parcialmente un balance existente
-const balancePatch = async (req, res = response) => {
+const balancePatch = async (req, res = response, next) => {
   const { id } = req.params;
   const { ...resto } = req.body;
 
