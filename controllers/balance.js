@@ -159,12 +159,9 @@ const balancePost = async (req, res = response, next) => {
 // Actualizar un balance existente
 const balancePut = async (req, res = response, next) => {
   const { id } = req.params;
-
-  // Validar que el ID sea un ObjectId válido
   if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
     return res.status(400).json({ msg: "El ID proporcionado no es válido." });
   }
-
   const { contratosCompras = [], contratosVentas = [], ...resto } = req.body;
 
   try {
@@ -173,6 +170,19 @@ const balancePut = async (req, res = response, next) => {
       return res.status(404).json({ msg: "Balance no encontrado." });
     }
 
+    // Detectar contratos eliminados (ya no están en el arreglo)
+    const contratosQuitados = [
+      ...antes.contratosCompras.filter(c => !contratosCompras.includes(String(c))),
+      ...antes.contratosVentas.filter(c => !contratosVentas.includes(String(c)))
+    ];
+    if (contratosQuitados.length > 0) {
+      await Contrato.updateMany(
+        { _id: { $in: contratosQuitados } },
+        { $unset: { idBalance: "" } }
+      );
+    }
+
+    // ...el resto de tu código (nuevosContratos, auditoría, update, etc)...
     // Detectar contratos nuevos agregados
     const prevCompras = antes.contratosCompras.map(c => String(c));
     const prevVentas = antes.contratosVentas.map(c => String(c));
@@ -192,11 +202,27 @@ const balancePut = async (req, res = response, next) => {
           contratos: usados.map(c => c.numeroContrato)
         });
       }
-      // Asignar idBalance a los nuevos contratos
       await Contrato.updateMany(
         { _id: { $in: nuevosContratos } },
         { $set: { idBalance: id } }
       );
+    }
+
+    // Auditoría: detectar cambios (igual que antes)
+    const cambios = {};
+    [
+      "fechaInicio", "fechaFin", "totalCompras", "totalVentas", "ganancia", "perdida",
+      "totalBarrilesCompra", "totalBarrilesVenta", "idRefineria"
+    ].forEach(key => {
+      if (typeof req.body[key] !== "undefined" && String(antes[key]) !== String(req.body[key])) {
+        cambios[key] = { from: antes[key], to: req.body[key] };
+      }
+    });
+    if (JSON.stringify(prevCompras) !== JSON.stringify(contratosCompras)) {
+      cambios.contratosCompras = { from: prevCompras, to: contratosCompras };
+    }
+    if (JSON.stringify(prevVentas) !== JSON.stringify(contratosVentas)) {
+      cambios.contratosVentas = { from: prevVentas, to: contratosVentas };
     }
 
     // Actualizar el balance
@@ -206,7 +232,7 @@ const balancePut = async (req, res = response, next) => {
         ...resto,
         contratosCompras,
         contratosVentas,
-        $push: { historial: { modificadoPor: req.usuario._id } },
+        $push: { historial: { modificadoPor: req.usuario._id, cambios, fecha: new Date() } },
       },
       { new: true }
     ).populate(populateOptions);
@@ -277,7 +303,8 @@ const balancePatch = async (req, res = response, next) => {
 };
 
 // Eliminar un balance (eliminación lógica)
-const balanceDelete = async (req, res = response) => {
+// Eliminar un balance (eliminación lógica)
+const balanceDelete = async (req, res = response, next) => {
   const { id } = req.params;
 
   try {
@@ -292,15 +319,22 @@ const balanceDelete = async (req, res = response) => {
       { $unset: { idBalance: "" } }
     );
 
+    // Auditoría: guardar cambios
+    const cambios = { eliminado: { from: antes.eliminado, to: true } };
+
     // Eliminar el balance (lógica actual)
     const balance = await Balance.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
         eliminado: true,
-        $push: { historial: { modificadoPor: req.usuario._id } },
+        $push: { historial: { modificadoPor: req.usuario._id, cambios, fecha: new Date() } },
       },
       { new: true }
     ).populate(populateOptions);
+
+    if (!balance) {
+      return res.status(404).json({ msg: "Balance no encontrado." });
+    }
 
     res.json({
       msg: "Balance eliminado exitosamente.",
