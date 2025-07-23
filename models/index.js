@@ -118,4 +118,5 @@ module.exports = {
   ChequeoCalidadBK,
   Abono,
   notification,
+  Balance,
 };

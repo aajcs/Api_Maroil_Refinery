@@ -159,6 +159,12 @@ const balancePost = async (req, res = response, next) => {
 // Actualizar un balance existente
 const balancePut = async (req, res = response, next) => {
   const { id } = req.params;
+
+  // Validar que el ID sea un ObjectId válido
+  if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ msg: "El ID proporcionado no es válido." });
+  }
+
   const { contratosCompras = [], contratosVentas = [], ...resto } = req.body;
 
   try {
