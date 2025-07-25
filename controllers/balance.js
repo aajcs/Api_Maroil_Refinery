@@ -188,7 +188,12 @@ const balancePut = async (req, res = response, next) => {
   if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
     return res.status(400).json({ msg: "El ID proporcionado no es válido." });
   }
-  const { contratosCompras = [], contratosVentas = [], facturas = [], ...resto } = req.body;
+  const {
+    contratosCompras = [],
+    contratosVentas = [],
+    facturas = [],
+    ...resto
+  } = req.body;
 
   try {
     const antes = await Balance.findById(id);
@@ -198,8 +203,12 @@ const balancePut = async (req, res = response, next) => {
 
     // Detectar contratos eliminados (ya no están en el arreglo)
     const contratosQuitados = [
-      ...antes.contratosCompras.filter(c => !contratosCompras.includes(String(c))),
-      ...antes.contratosVentas.filter(c => !contratosVentas.includes(String(c)))
+      ...antes.contratosCompras.filter(
+        (c) => !contratosCompras.includes(String(c))
+      ),
+      ...antes.contratosVentas.filter(
+        (c) => !contratosVentas.includes(String(c))
+      ),
     ];
     if (contratosQuitados.length > 0) {
       await Contrato.updateMany(
@@ -209,22 +218,27 @@ const balancePut = async (req, res = response, next) => {
     }
 
     // Detectar contratos nuevos agregados
-    const prevCompras = antes.contratosCompras.map(c => String(c));
-    const prevVentas = antes.contratosVentas.map(c => String(c));
-    const nuevosCompras = contratosCompras.filter(c => !prevCompras.includes(String(c)));
-    const nuevosVentas = contratosVentas.filter(c => !prevVentas.includes(String(c)));
+    const prevCompras = antes.contratosCompras.map((c) => String(c));
+    const prevVentas = antes.contratosVentas.map((c) => String(c));
+    const nuevosCompras = contratosCompras.filter(
+      (c) => !prevCompras.includes(String(c))
+    );
+    const nuevosVentas = contratosVentas.filter(
+      (c) => !prevVentas.includes(String(c))
+    );
     const nuevosContratos = [...nuevosCompras, ...nuevosVentas];
 
     // Validar que los nuevos contratos no estén en otro balance
     if (nuevosContratos.length > 0) {
       const usados = await Contrato.find({
         _id: { $in: nuevosContratos },
-        idBalance: { $exists: true, $ne: null }
+        idBalance: { $exists: true, $ne: null },
       });
       if (usados.length > 0) {
         return res.status(400).json({
-          error: "Uno o más contratos agregados ya están asociados a otro balance.",
-          contratos: usados.map(c => c.numeroContrato)
+          error:
+            "Uno o más contratos agregados ya están asociados a otro balance.",
+          contratos: usados.map((c) => c.numeroContrato),
         });
       }
       await Contrato.updateMany(
@@ -251,12 +265,18 @@ const balancePut = async (req, res = response, next) => {
 
     // Calcular total de barriles de compra
     const totalBarrilesCompra = compras.reduce((total, contrato) => {
-      return total + contrato.idItems.reduce((sum, item) => sum + (item.cantidad || 0), 0);
+      return (
+        total +
+        contrato.idItems.reduce((sum, item) => sum + (item.cantidad || 0), 0)
+      );
     }, 0);
 
     // Calcular total de barriles de venta
     const totalBarrilesVenta = ventas.reduce((total, contrato) => {
-      return total + contrato.idItems.reduce((sum, item) => sum + (item.cantidad || 0), 0);
+      return (
+        total +
+        contrato.idItems.reduce((sum, item) => sum + (item.cantidad || 0), 0)
+      );
     }, 0);
 
     // Calcular totales monetarios
@@ -279,9 +299,20 @@ const balancePut = async (req, res = response, next) => {
     // Auditoría: detectar cambios
     const cambios = {};
     [
-      "fechaInicio", "fechaFin", "idRefineria"
-    ].forEach(key => {
-      if (typeof req.body[key] !== "undefined" && String(antes[key]) !== String(req.body[key])) {
+      "fechaInicio",
+      "fechaFin",
+      "totalCompras",
+      "totalVentas",
+      "ganancia",
+      "perdida",
+      "totalBarrilesCompra",
+      "totalBarrilesVenta",
+      "idRefineria",
+    ].forEach((key) => {
+      if (
+        typeof req.body[key] !== "undefined" &&
+        String(antes[key]) !== String(req.body[key])
+      ) {
         cambios[key] = { from: antes[key], to: req.body[key] };
       }
     });
@@ -299,14 +330,13 @@ const balancePut = async (req, res = response, next) => {
         ...resto,
         contratosCompras,
         contratosVentas,
-        facturas,
-        totalCompras,
-        totalVentas: totalVentas - totalFacturas,
-        ganancia: ganancia > 0 ? ganancia : 0,
-        perdida,
-        totalBarrilesCompra,
-        totalBarrilesVenta,
-        $push: { historial: { modificadoPor: req.usuario._id, cambios, fecha: new Date() } },
+        $push: {
+          historial: {
+            modificadoPor: req.usuario._id,
+            cambios,
+            fecha: new Date(),
+          },
+        },
       },
       { new: true }
     ).populate(populateOptions);
@@ -320,7 +350,12 @@ const balancePut = async (req, res = response, next) => {
 // Actualizar parcialmente un balance existente
 const balancePatch = async (req, res = response, next) => {
   const { id } = req.params;
-  const { contratosCompras = [], contratosVentas = [], facturas = [], ...resto } = req.body;
+  const {
+    contratosCompras = [],
+    contratosVentas = [],
+    facturas = [],
+    ...resto
+  } = req.body;
 
   try {
     const antes = await Balance.findById(id);
@@ -330,8 +365,12 @@ const balancePatch = async (req, res = response, next) => {
 
     // Detectar contratos eliminados (ya no están en el arreglo)
     const contratosQuitados = [
-      ...antes.contratosCompras.filter(c => !contratosCompras.includes(String(c))),
-      ...antes.contratosVentas.filter(c => !contratosVentas.includes(String(c)))
+      ...antes.contratosCompras.filter(
+        (c) => !contratosCompras.includes(String(c))
+      ),
+      ...antes.contratosVentas.filter(
+        (c) => !contratosVentas.includes(String(c))
+      ),
     ];
     if (contratosQuitados.length > 0) {
       await Contrato.updateMany(
@@ -387,11 +426,17 @@ const balancePatch = async (req, res = response, next) => {
     });
 
     const totalBarrilesCompra = compras.reduce((total, contrato) => {
-      return total + contrato.idItems.reduce((sum, item) => sum + (item.cantidad || 0), 0);
+      return (
+        total +
+        contrato.idItems.reduce((sum, item) => sum + (item.cantidad || 0), 0)
+      );
     }, 0);
 
     const totalBarrilesVenta = ventas.reduce((total, contrato) => {
-      return total + contrato.idItems.reduce((sum, item) => sum + (item.cantidad || 0), 0);
+      return (
+        total +
+        contrato.idItems.reduce((sum, item) => sum + (item.cantidad || 0), 0)
+      );
     }, 0);
 
     const totalCompras = compras.reduce(
@@ -412,10 +457,11 @@ const balancePatch = async (req, res = response, next) => {
 
     // Auditoría: detectar cambios
     const cambios = {};
-    [
-      "fechaInicio", "fechaFin", "idRefineria"
-    ].forEach(key => {
-      if (typeof req.body[key] !== "undefined" && String(antes[key]) !== String(req.body[key])) {
+    ["fechaInicio", "fechaFin", "idRefineria"].forEach((key) => {
+      if (
+        typeof req.body[key] !== "undefined" &&
+        String(antes[key]) !== String(req.body[key])
+      ) {
         cambios[key] = { from: antes[key], to: req.body[key] };
       }
     });
@@ -440,7 +486,13 @@ const balancePatch = async (req, res = response, next) => {
         perdida,
         totalBarrilesCompra,
         totalBarrilesVenta,
-        $push: { historial: { modificadoPor: req.usuario._id, cambios, fecha: new Date() } },
+        $push: {
+          historial: {
+            modificadoPor: req.usuario._id,
+            cambios,
+            fecha: new Date(),
+          },
+        },
       },
       { new: true }
     ).populate(populateOptions);
@@ -480,7 +532,13 @@ const balanceDelete = async (req, res = response, next) => {
       { _id: id, eliminado: false },
       {
         eliminado: true,
-        $push: { historial: { modificadoPor: req.usuario._id, cambios, fecha: new Date() } },
+        $push: {
+          historial: {
+            modificadoPor: req.usuario._id,
+            cambios,
+            fecha: new Date(),
+          },
+        },
       },
       { new: true }
     ).populate(populateOptions);
