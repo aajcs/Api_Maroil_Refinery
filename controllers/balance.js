@@ -325,21 +325,28 @@ const balancePut = async (req, res = response, next) => {
 
     // Actualizar el balance
     const balanceActualizado = await Balance.findOneAndUpdate(
-      { _id: id, eliminado: false },
-      {
-        ...resto,
-        contratosCompras,
-        contratosVentas,
-        $push: {
-          historial: {
-            modificadoPor: req.usuario._id,
-            cambios,
-            fecha: new Date(),
-          },
-        },
+  { _id: id, eliminado: false },
+  {
+    ...resto,
+    contratosCompras,
+    contratosVentas,
+    facturas,
+    totalCompras,
+    totalVentas: totalVentas - totalFacturas,
+    ganancia: ganancia > 0 ? ganancia : 0,
+    perdida,
+    totalBarrilesCompra, // <-- Agrega este campo
+    totalBarrilesVenta,  // <-- Agrega este campo
+    $push: {
+      historial: {
+        modificadoPor: req.usuario._id,
+        cambios,
+        fecha: new Date(),
       },
-      { new: true }
-    ).populate(populateOptions);
+    },
+  },
+  { new: true }
+).populate(populateOptions);
 
     res.json(balanceActualizado);
   } catch (err) {
