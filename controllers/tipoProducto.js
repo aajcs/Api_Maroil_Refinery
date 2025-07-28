@@ -83,7 +83,6 @@ const tipoProductoGet = async (req = request, res = response, next) => {
 // Controlador para crear un nuevo tipo de producto
 const tipoProductoPost = async (req = request, res = response, next) => {
   // Extrae los datos del cuerpo de la solicitud
-  console.log("aqui?");
 
   const {
     idRefineria,
@@ -224,11 +223,9 @@ const tipoProductoPatch = (req = request, res = response, next) => {
 const tipoProductoByRefineria = async (req = request, res = response, next) => {
   const { idRefineria } = req.params;
   const query = { eliminado: false, idRefineria };
-  console.log("query", query);
   try {
     const tipoProductos =
       await TipoProducto.find(query).populate(populateOptions);
-    console.log("tipoProductos", tipoProductos);
     tipoProductos.forEach((t) => {
       if (Array.isArray(t.historial)) {
         t.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));

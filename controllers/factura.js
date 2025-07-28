@@ -46,8 +46,8 @@ const facturaGets = async (req = request, res = response, next) => {
     const [total, facturas] = await Promise.all([
       Factura.countDocuments(query),
       Factura.find(query)
-      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
-      .populate(populateOptions),
+        .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+        .populate(populateOptions),
     ]);
 
     res.json({ total, facturas });
@@ -77,7 +77,6 @@ const facturaGet = async (req = request, res = response, next) => {
 
 // Controlador para crear una nueva factura
 const facturaPost = async (req = request, res = response, next) => {
-  console.log("Datos recibidos en facturaPost:", req.body);
   const {
     concepto,
     idRefineria,
@@ -86,7 +85,6 @@ const facturaPost = async (req = request, res = response, next) => {
     idPartida,
     fechaFactura,
   } = req.body;
-  console.log("Datos recibidos en facturaPost:", req.body);
 
   try {
     const { nuevasLineas, total } = calcularTotales(lineas);
@@ -151,7 +149,6 @@ const facturaPut = async (req = request, res = response, next) => {
       }))
     );
     const antes = await Factura.findById(id);
-    console.log("Datos antes de la actualización:", antes);
     const cambios = {};
     for (let key in resto) {
       if (String(antes[key]) !== String(resto[key])) {
@@ -274,6 +271,23 @@ const facturaDelete = async (req = request, res = response, next) => {
   }
 };
 
+// Controlador para obtener facturas por refinería
+const facturasByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const facturas = await Factura.find(query).populate(populateOptions);
+    facturas.forEach((f) => {
+      if (Array.isArray(f.historial)) {
+        f.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: facturas.length, facturas });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   facturaGets,
   facturaGet,
@@ -281,4 +295,5 @@ module.exports = {
   facturaPut,
   facturaPatch,
   facturaDelete,
+  facturasByRefineria,
 };

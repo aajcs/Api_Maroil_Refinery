@@ -24,6 +24,7 @@ const {
   facturaDelete,
   facturaPatch,
   facturaGets,
+  facturasByRefineria,
 } = require("../controllers/factura");
 
 const router = Router();
@@ -86,5 +87,8 @@ router.delete(
 );
 
 router.patch("/", facturaPatch);
+
+// Ruta para obtener facturas por refinería
+router.get("/refineria/:idRefineria", facturasByRefineria);
 
 module.exports = router;

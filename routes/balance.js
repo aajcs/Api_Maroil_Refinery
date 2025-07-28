@@ -12,11 +12,23 @@ const {
   balanceDelete,
   balancePatch,
   balanceGets,
+  balancesByRefineria,
 } = require("../controllers/balance");
 
 const router = Router();
 
 router.get("/", [validarJWT], balanceGets);
+
+// Obtener balances por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un id de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  balancesByRefineria
+);
 router.get(
   "/:id",
   [

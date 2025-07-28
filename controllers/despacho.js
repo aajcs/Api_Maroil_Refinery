@@ -43,8 +43,8 @@ const despachoGets = async (req = request, res = response, next) => {
     const [total, despachos] = await Promise.all([
       Despacho.countDocuments(query), // Cuenta el total de despachoes
       Despacho.find(query)
-      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
-      .populate(populateOptions), // Obtiene las despachoes con referencias pobladas
+        .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+        .populate(populateOptions), // Obtiene las despachoes con referencias pobladas
     ]);
     // Ordenar historial por fecha ascendente en cada torre
     despachos.forEach((t) => {
@@ -87,8 +87,6 @@ const despachoGet = async (req = request, res = response, next) => {
 
 // Controlador para crear una nueva recepción
 const despachoPost = async (req, res = response) => {
-  console.log("aqui?");
-
   const {
     idContrato,
     idContratoItems,

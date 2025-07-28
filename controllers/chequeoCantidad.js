@@ -35,10 +35,6 @@ const populateOptions = [
 // Función auxiliar para actualizar el modelo relacionado
 const actualizarModeloRelacionado = async (idReferencia, tipo, datos) => {
   try {
-    console.log(`Actualizando modelo relacionado: ${tipo}`);
-    console.log(`ID de referencia: ${idReferencia}`);
-    console.log(`Datos enviados:`, datos);
-
     let resultado;
 
     if (tipo === "Recepcion") {
@@ -60,8 +56,6 @@ const actualizarModeloRelacionado = async (idReferencia, tipo, datos) => {
         { new: true }
       );
     }
-
-    console.log("Resultado de la actualización:", resultado);
 
     if (!resultado) {
       throw new Error(
@@ -228,7 +222,6 @@ const chequeoCantidadPost = async (req = request, res = response, next) => {
 
 // Controlador para actualizar un chequeo de cantidad existente
 const chequeoCantidadPut = async (req = request, res = response, next) => {
-  console.log(req.body);
   const { id } = req.params;
   const { _id, aplicar, ...resto } = req.body;
 

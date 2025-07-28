@@ -55,7 +55,6 @@ const usuariosGet = async (req = request, res = response, next) => {
   // });
   // Verifica si el usuario existe y no está marcado como eliminado
   if (usuario && !usuario.eliminado) {
-    console.log(`Usuario encontrado: ${usuario.nombre}`); // Log para depuración
     res.json(usuario); // Responde con los datos del usuario
   } else {
     // Responde con un error 404 si el usuario no existe o está eliminado

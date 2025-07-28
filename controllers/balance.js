@@ -556,6 +556,23 @@ const balanceDelete = async (req, res = response, next) => {
   }
 };
 
+// Controlador para obtener balances por refinería
+const balancesByRefineria = async (req, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const balances = await Balance.find(query).populate(populateOptions);
+    balances.forEach((b) => {
+      if (Array.isArray(b.historial)) {
+        b.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: balances.length, balances });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   balanceGets,
   balanceGet,
@@ -563,4 +580,5 @@ module.exports = {
   balancePut,
   balanceDelete,
   balancePatch,
+  balancesByRefineria,
 };

@@ -28,7 +28,9 @@ const CuentaSchema = new Schema(
       enum: ["Cuentas por Cobrar", "Cuentas por Pagar"],
       required: [true, "El tipo de cuenta es obligatorio"],
     },
-
+    fechaCuenta: {
+      type: Date,
+    },
     idContacto: {
       type: Schema.Types.ObjectId,
       ref: "Contacto",

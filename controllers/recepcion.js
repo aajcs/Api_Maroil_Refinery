@@ -349,7 +349,6 @@ const recepcionPut = async (req, res = response, next) => {
 // Controlador para eliminar (marcar como eliminado) una recepción
 const recepcionDelete = async (req, res = response, next) => {
   const { id } = req.params; // Obtiene el ID de la recepción desde los parámetros de la URL
-  console.log("aqui entro", id);
   try {
     // Auditoría: captura estado antes de eliminar
     const antes = await Recepcion.findById(id);
@@ -454,7 +453,6 @@ const recepcionAgruparPorStatus = async (
 const recepcionPorRangoFechas = async (req = request, res = response, next) => {
   try {
     const { fechaInicio, fechaFin, estadoRecepcion } = req.query;
-    console.log("fechaInicio", req.params);
     if (!fechaInicio || !fechaFin) {
       return res
         .status(400)

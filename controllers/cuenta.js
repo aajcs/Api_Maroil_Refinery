@@ -24,8 +24,8 @@ const cuentaGets = async (req = request, res = response, next) => {
     const [total, cuentas] = await Promise.all([
       Cuenta.countDocuments(query),
       Cuenta.find(query)
-      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
-      .populate(populateOptions),
+        .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+        .populate(populateOptions),
     ]);
 
     res.json({ total, cuentas });
@@ -92,12 +92,15 @@ const cuentaPostFromContrato = async (req = request, res = response, next) => {
       montoTotalContrato: montoTotal,
       balancePendiente, // <-- Aquí se inicializa correctamente
       createdBy: req.usuario._id,
+      fechaCuenta: contrato.fechaInicio || new Date(),
     });
 
     await nuevaCuenta.save();
 
     // Devuelve la cuenta populada
-    const cuentaPopulada = await Cuenta.findById(nuevaCuenta._id).populate(populateOptions);
+    const cuentaPopulada = await Cuenta.findById(nuevaCuenta._id).populate(
+      populateOptions
+    );
 
     res.status(201).json({
       msg: "Cuenta creada correctamente desde el contrato.",
@@ -259,7 +262,11 @@ const cuentaSaldosPendientes = async (req = request, res = response, next) => {
   }
 };
 
-const cuentaAgruparPorContacto = async (req = request, res = response, next) => {
+const cuentaAgruparPorContacto = async (
+  req = request,
+  res = response,
+  next
+) => {
   try {
     const { tipoCuenta } = req.query; // "Cuentas por Cobrar" o "Cuentas por Pagar"
     const filtro = {};
@@ -270,7 +277,7 @@ const cuentaAgruparPorContacto = async (req = request, res = response, next) => 
     // Trae las cuentas con el contacto populado
     const cuentas = await Cuenta.find(filtro).populate({
       path: "idContacto",
-      select: "nombre"
+      select: "nombre",
     });
 
     // Agrupa por nombre de contacto y suma los montos
@@ -281,14 +288,14 @@ const cuentaAgruparPorContacto = async (req = request, res = response, next) => 
         agrupadas[nombre] = {
           nombreContacto: nombre,
           total: 0,
-          cuentas: []
+          cuentas: [],
         };
       }
       agrupadas[nombre].total += Number(cuenta.balancePendiente || 0);
       agrupadas[nombre].cuentas.push({
         id: cuenta._id,
         numeroContrato: cuenta.idContrato?.numeroContrato || "",
-        balancePendiente: Number(cuenta.balancePendiente || 0)
+        balancePendiente: Number(cuenta.balancePendiente || 0),
       });
     });
 
@@ -298,7 +305,22 @@ const cuentaAgruparPorContacto = async (req = request, res = response, next) => 
     next(err);
   }
 };
-
+// Controlador para obtener cuentas por refinería
+const cuentasByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { idRefineria };
+  try {
+    const cuentas = await Cuenta.find(query).populate(populateOptions);
+    cuentas.forEach((c) => {
+      if (Array.isArray(c.historial)) {
+        c.historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      }
+    });
+    res.json({ total: cuentas.length, cuentas });
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports = {
   cuentaGets,
   cuentaGet,
@@ -307,5 +329,6 @@ module.exports = {
   cuentaDelete,
   cuentaSyncFromContrato,
   cuentaSaldosPendientes,
-cuentaAgruparPorContacto,
+  cuentaAgruparPorContacto,
+  cuentasByRefineria,
 };

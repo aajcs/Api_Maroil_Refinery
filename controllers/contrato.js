@@ -45,8 +45,8 @@ const contratoGets = async (req = request, res = response, next) => {
     const [total, contratos] = await Promise.all([
       Contrato.countDocuments(query),
       Contrato.find(query)
-      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
-      .populate(populateOptions),
+        .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+        .populate(populateOptions),
     ]);
     contratos.forEach((t) => {
       if (Array.isArray(t.historial)) {
@@ -156,12 +156,12 @@ const contratoPost = async (req, res = response, next) => {
       });
     }
 
-
-if (fechaInicio && fechaFin && new Date(fechaInicio) > new Date(fechaFin)) {
-  return res.status(400).json({
-    error: "La fecha de inicio no puede ser mayor que la fecha de finalización.",
-  });
-}
+    if (fechaInicio && fechaFin && new Date(fechaInicio) > new Date(fechaFin)) {
+      return res.status(400).json({
+        error:
+          "La fecha de inicio no puede ser mayor que la fecha de finalización.",
+      });
+    }
 
     await nuevoContrato.save();
 
@@ -191,6 +191,7 @@ if (fechaInicio && fechaFin && new Date(fechaInicio) > new Date(fechaFin)) {
       montoPagado: montoPagado,
       montoPendiente: montoPendiente,
       balancePendiente: montoPendiente,
+      fechaCuenta: nuevoContrato.fechaInicio || new Date(),
     });
 
     await nuevaCuenta.save();
@@ -213,59 +214,59 @@ if (fechaInicio && fechaFin && new Date(fechaInicio) > new Date(fechaFin)) {
     const fechaCreacion = new Date();
     const nuevasOperaciones = [];
 
-for (const item of nuevosItems) {
-  const cantidad = item.cantidad || 0;
-  const numOperacionesPorItem = Math.ceil(cantidad / 250);
+    for (const item of nuevosItems) {
+      const cantidad = item.cantidad || 0;
+      const numOperacionesPorItem = Math.ceil(cantidad / 250);
 
-  for (let i = 0; i < numOperacionesPorItem; i++) {
-    let cantidadEnviada = 250;
-    if (i === numOperacionesPorItem - 1) {
-      cantidadEnviada = cantidad - 250 * (numOperacionesPorItem - 1);
+      for (let i = 0; i < numOperacionesPorItem; i++) {
+        let cantidadEnviada = 250;
+        if (i === numOperacionesPorItem - 1) {
+          cantidadEnviada = cantidad - 250 * (numOperacionesPorItem - 1);
+        }
+
+        if (tipoContrato === "Venta") {
+          // Crear despacho
+          const nuevoDespacho = new Despacho({
+            idContrato: nuevoContrato._id,
+            idContratoItems: item._id,
+            idRefineria: nuevoContrato.idRefineria,
+            estadoDespacho: "PROGRAMADO",
+            fechaInicio: fechaCreacion,
+            fechaInicioDespacho: fechaCreacion,
+            cantidadEnviada,
+            idGuia: 0,
+            cantidadRecibida: 0,
+            createdBy: req.usuario._id,
+          });
+          await nuevoDespacho.save();
+          nuevasOperaciones.push(nuevoDespacho);
+        } else {
+          // Crear recepción
+          const nuevaRecepcion = new Recepcion({
+            idContrato: nuevoContrato._id,
+            idContratoItems: item._id,
+            idRefineria: nuevoContrato.idRefineria,
+            estadoRecepcion: "PROGRAMADO",
+            fechaInicio: fechaCreacion,
+            fechaInicioRecepcion: fechaCreacion,
+            cantidadEnviada,
+            idGuia: 0,
+            cantidadRecibida: 0,
+            createdBy: req.usuario._id,
+          });
+          await nuevaRecepcion.save();
+          nuevasOperaciones.push(nuevaRecepcion);
+        }
+      }
     }
 
+    // Guardar los IDs de las operaciones en el contrato
     if (tipoContrato === "Venta") {
-      // Crear despacho
-      const nuevoDespacho = new Despacho({
-        idContrato: nuevoContrato._id,
-        idContratoItems: item._id,
-        idRefineria: nuevoContrato.idRefineria,
-        estadoDespacho: "PROGRAMADO",
-        fechaInicio: fechaCreacion,
-        fechaInicioDespacho: fechaCreacion,
-        cantidadEnviada,
-        idGuia: 0,
-        cantidadRecibida: 0,
-        createdBy: req.usuario._id,
-      });
-      await nuevoDespacho.save();
-      nuevasOperaciones.push(nuevoDespacho);
+      nuevoContrato.idDespachos = nuevasOperaciones.map((o) => o._id);
     } else {
-      // Crear recepción
-      const nuevaRecepcion = new Recepcion({
-        idContrato: nuevoContrato._id,
-        idContratoItems: item._id,
-        idRefineria: nuevoContrato.idRefineria,
-        estadoRecepcion: "PROGRAMADO",
-        fechaInicio: fechaCreacion,
-        fechaInicioRecepcion: fechaCreacion,
-        cantidadEnviada,
-        idGuia: 0,
-        cantidadRecibida: 0,
-        createdBy: req.usuario._id,
-      });
-      await nuevaRecepcion.save();
-      nuevasOperaciones.push(nuevaRecepcion);
+      nuevoContrato.idRecepciones = nuevasOperaciones.map((o) => o._id);
     }
-  }
-}
-
-// Guardar los IDs de las operaciones en el contrato
-if (tipoContrato === "Venta") {
-  nuevoContrato.idDespachos = nuevasOperaciones.map(o => o._id);
-} else {
-  nuevoContrato.idRecepciones = nuevasOperaciones.map(o => o._id);
-}
-await nuevoContrato.save();
+    await nuevoContrato.save();
 
     // Notificaciones y lógica adicional igual que antes...
     if (nuevoContrato) {
@@ -377,15 +378,21 @@ const contratoPut = async (req, res = response, next) => {
       montoPendiente = montoTotalContrato;
 
     // Usa los valores nuevos si vienen, si no, los existentes
-const fechaInicioValidar = resto.fechaInicio || contratoExistente.fechaInicio;
-const fechaFinValidar = resto.fechaFin || contratoExistente.fechaFin;
+    const fechaInicioValidar =
+      resto.fechaInicio || contratoExistente.fechaInicio;
+    const fechaFinValidar = resto.fechaFin || contratoExistente.fechaFin;
 
-if (fechaInicioValidar && fechaFinValidar && new Date(fechaInicioValidar) > new Date(fechaFinValidar)) {
-  return res.status(400).json({
-    error: "La fecha de inicio no puede ser mayor que la fecha de finalización.",
-  });
-}
-    
+    if (
+      fechaInicioValidar &&
+      fechaFinValidar &&
+      new Date(fechaInicioValidar) > new Date(fechaFinValidar)
+    ) {
+      return res.status(400).json({
+        error:
+          "La fecha de inicio no puede ser mayor que la fecha de finalización.",
+      });
+    }
+
     // Actualizar el contrato
     const contratoActualizado = await Contrato.findOneAndUpdate(
       { _id: id, eliminado: false },

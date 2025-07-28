@@ -51,7 +51,6 @@ const corteRefinacionGet = async (req = request, res = response, next) => {
 
 // Controlador para crear un nuevo corte de refinación
 const corteRefinacionPost = async (req = request, res = response, next) => {
-  console.log("req.body", JSON.stringify(req.body, null, 2)); // Log para depuración
   const {
     idRefineria,
     corteTorre,

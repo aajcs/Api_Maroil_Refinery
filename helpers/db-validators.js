@@ -73,7 +73,6 @@ const existeUsuarioPorId = async (id) => {
 
 const existeRefineriaPorId = async (id) => {
   // Verificar si la refineria existe
-  console.log("aqui entro?");
   const existeRefineria = await Refineria.findById(id);
   if (!existeRefineria) {
     throw new Error(`La refineria no existe ${id}`);
@@ -214,7 +213,6 @@ const existeCostoPorId = async (id) => {
 
 const existeRefinacionPorId = async (id) => {
   // Verificar si refinacion existe
-  console.log(id);
   const existeRefinacion = await Refinacion.findById(id);
   if (!existeRefinacion) {
     throw new Error(`El id no existe ${id}`);
@@ -274,7 +272,6 @@ const existeTipoProductoPorId = async (id) => {
 };
 const existeTipoProductoBKPorId = async (id) => {
   // Verificar si la refineria existe
-  console.log("id", id);
   const existeTipoProducto = await TipoProductoBK.findById(id);
   if (!existeTipoProducto) {
     throw new Error(`Tipo de Producto no existe ${id}`);

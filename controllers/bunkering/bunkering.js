@@ -124,7 +124,6 @@ const bunkeringPut = async (req = request, res = response, next) => {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
     }
-    console.log("entra aqui");
     // Actualiza la refinería en la base de datos y devuelve la refinería actualizada
     const bunkeringActualizada = await Bunkering.findOneAndUpdate(
       { _id: id, eliminado: false }, // Filtro para encontrar la refinería no eliminada

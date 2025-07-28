@@ -14,20 +14,29 @@ const {
   cuentaPut,
   cuentaDelete,
   cuentaSyncFromContrato,
-  
+  cuentasByRefineria,
 } = require("../controllers/cuenta");
 
 const router = Router();
 
-
 // Obtener todas las cuentas
 router.get("/", [validarJWT], cuentaGets);
+
+// Obtener cuentas por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  cuentasByRefineria
+);
 
 router.get("/saldos", cuentaSaldosPendientes);
 
 //Agrupar cuentas por contacto
 router.get("/agrupar", cuentaAgruparPorContacto);
-
 
 // Obtener una cuenta específica por ID de cuenta
 router.get(
@@ -39,9 +48,6 @@ router.get(
   ],
   cuentaGet
 );
-
-
-
 
 // Obtener una cuenta específica por ID de contrato
 router.get(
@@ -127,6 +133,5 @@ router.post(
   ],
   cuentaSyncFromContrato
 );
-
 
 module.exports = router;

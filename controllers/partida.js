@@ -82,7 +82,6 @@ const partidaPost = async (req = request, res = response, next) => {
 const partidaPut = async (req = request, res = response, next) => {
   const { id } = req.params;
   const { _id, ...resto } = req.body; // Excluye el campo _id del cuerpo de la solicitud
-  console.log("Datos a actualizar:", resto); // Log para depuración
   try {
     // Obtener la partida antes de la actualización
     const antes = await Partida.findById(id);
