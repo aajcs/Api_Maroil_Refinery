@@ -72,6 +72,17 @@ const torrePost = async (req = request, res = response, next) => {
     ubicacion,
   } = req.body;
 
+  // Validar suma de porcentajes
+  const sumaPorcentajes = Array.isArray(material)
+    ? material.reduce((sum, m) => sum + (Number(m.porcentaje) || 0), 0)
+    : 0;
+
+  if (sumaPorcentajes > 100) {
+    return res.status(400).json({
+      error: "La suma de los porcentajes de material no puede ser mayor a 100%.",
+    });
+  }
+
   try {
     const nuevaTorre = new Torre({
       idRefineria,
@@ -96,7 +107,20 @@ const torrePost = async (req = request, res = response, next) => {
 // Controlador para actualizar una torre existente
 const torrePut = async (req = request, res = response, next) => {
   const { id } = req.params;
-  const { _id, ...resto } = req.body;
+  const { _id, material, ...resto } = req.body;
+
+  // Validar suma de porcentajes de material si viene en la actualización
+  if (material) {
+    const sumaPorcentajes = Array.isArray(material)
+      ? material.reduce((sum, m) => sum + (Number(m.porcentaje) || 0), 0)
+      : 0;
+
+    if (sumaPorcentajes > 100) {
+      return res.status(400).json({
+        error: "La suma de los porcentajes de material no puede ser mayor a 100%.",
+      });
+    }
+  }
 
   try {
     const antes = await Torre.findById(id);
@@ -110,11 +134,15 @@ const torrePut = async (req = request, res = response, next) => {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
     }
+    if (material && JSON.stringify(antes.material) !== JSON.stringify(material)) {
+      cambios.material = { from: antes.material, to: material };
+    }
 
     const torreActualizada = await Torre.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
         ...resto,
+        ...(material && { material }),
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
       },
       { new: true }
