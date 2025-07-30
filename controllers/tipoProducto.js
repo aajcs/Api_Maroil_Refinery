@@ -101,6 +101,17 @@ const tipoProductoPost = async (req = request, res = response, next) => {
     indiceCetano,
   } = req.body;
 
+   const sumaPorcentajes = Array.isArray(rendimientos)
+    ? rendimientos.reduce((sum, r) => sum + (Number(r.porcentaje) || 0), 0)
+    : 0;
+
+  if (sumaPorcentajes > 100) {
+    return res.status(400).json({
+      error: "La suma de los porcentajes de los rendimientos no puede ser mayor a 100%.",
+    });
+  }
+
+  
   try {
     // Crea una nueva instancia del modelo TipoProducto con los datos proporcionados
     const nuevoTipoProducto = new TipoProducto({
@@ -139,7 +150,20 @@ const tipoProductoPost = async (req = request, res = response, next) => {
 // Controlador para actualizar un tipo de producto existente
 const tipoProductoPut = async (req = request, res = response, next) => {
   const { id } = req.params; // Obtiene el ID del tipo de producto desde los parámetros de la URL
-  const { idProducto, datosProducto, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, incluyendo datos para actualizar en idProducto
+  const { idProducto, datosProducto, rendimientos, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud
+
+  // Validar suma de porcentajes de rendimientos si se actualizan
+  if (rendimientos) {
+    const sumaPorcentajes = Array.isArray(rendimientos)
+      ? rendimientos.reduce((sum, r) => sum + (Number(r.porcentaje) || 0), 0)
+      : 0;
+
+    if (sumaPorcentajes > 100) {
+      return res.status(400).json({
+        error: "La suma de los porcentajes de los rendimientos no puede ser mayor a 100%.",
+      });
+    }
+  }
 
   try {
     const antes = await TipoProducto.findById(id);
@@ -148,34 +172,39 @@ const tipoProductoPut = async (req = request, res = response, next) => {
       if (String(antes[key]) !== String(resto[key])) {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
-    } // Actualiza el tipo de producto en la base de datos y devuelve el tipo de producto actualizado
+    }
+    if (rendimientos && JSON.stringify(antes.rendimientos) !== JSON.stringify(rendimientos)) {
+      cambios.rendimientos = { from: antes.rendimientos, to: rendimientos };
+    }
+
+    // Actualiza el tipo de producto en la base de datos y devuelve el tipo de producto actualizado
     const tipoProductoActualizado = await TipoProducto.findOneAndUpdate(
-      { _id: id, eliminado: false }, // Filtro para encontrar el tipo de producto no eliminado
+      { _id: id, eliminado: false },
       {
         ...resto,
+        ...(rendimientos && { rendimientos }),
         idProducto,
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
-      }, // Datos a actualizar
-      { new: true } // Devuelve el documento actualizado
-    ).populate(populateOptions); // Población de referencias
+      },
+      { new: true }
+    ).populate(populateOptions);
 
     if (!tipoProductoActualizado) {
-      return res.status(404).json({ msg: "Tipo de Producto no encontrado" }); // Responde con un error 404 si no se encuentra el tipo de producto
+      return res.status(404).json({ msg: "Tipo de Producto no encontrado" });
     }
 
     // Si se proporciona un nuevo idProducto o datos para actualizar en idProducto
     if (idProducto || datosProducto) {
-      // Actualiza los datos del producto referenciado en idProducto
       await Producto.findByIdAndUpdate(
         idProducto,
-        { ...datosProducto }, // Actualiza los datos proporcionados en datosProducto
-        { new: true } // Devuelve el documento actualizado
+        { ...datosProducto },
+        { new: true }
       );
     }
 
-    res.json(tipoProductoActualizado); // Responde con los datos del tipo de producto actualizado
+    res.json(tipoProductoActualizado);
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
