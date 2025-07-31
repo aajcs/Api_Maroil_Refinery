@@ -86,6 +86,7 @@ const tanquePost = async (req = request, res = response, next) => {
     idProducto,
     idChequeoCalidad,
     idChequeoCantidad,
+    estado,
   } = req.body;
 
   try {
@@ -100,6 +101,7 @@ const tanquePost = async (req = request, res = response, next) => {
       idProducto,
       idChequeoCalidad,
       idChequeoCantidad,
+      estado,
       createdBy: req.usuario._id, // ID del usuario que creó el tanque
     });
 
