@@ -7,7 +7,7 @@ const ContratoSchema = Schema(
     numeroContrato: {
       type: String,
       required: [true, "El número de contrato es obligatorio"],
-      unique: true,
+      unique: false,
       minlength: [3, "El número de contrato debe tener al menos 3 caracteres"],
       maxlength: [
         50,

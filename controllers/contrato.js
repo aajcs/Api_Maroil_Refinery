@@ -105,6 +105,19 @@ const contratoPost = async (req, res = response, next) => {
     brent,
   } = req.body;
 
+    // Validar unicidad de numeroContrato por refinería
+  const existeContrato = await Contrato.findOne({
+    idRefineria,
+    numeroContrato,
+    eliminado: false,
+  });
+  if (existeContrato) {
+    return res.status(400).json({
+      error: `Ya existe un contrato con el número ${numeroContrato} en esta refinería.`,
+    });
+  }
+
+
   let nuevoContrato;
 
   try {
@@ -320,6 +333,21 @@ const contratoPost = async (req, res = response, next) => {
 const contratoPut = async (req, res = response, next) => {
   const { id } = req.params;
   const { items, abono, ...resto } = req.body;
+
+    // Validar unicidad solo si se cambia el número o la refinería
+  if (numeroContrato || idRefineria) {
+    const contratoExistente = await Contrato.findOne({
+      _id: { $ne: id },
+      numeroContrato: numeroContrato || undefined,
+      idRefineria: idRefineria || undefined,
+      eliminado: false,
+    });
+    if (contratoExistente) {
+      return res.status(400).json({
+        error: `Ya existe un contrato con el número ${numeroContrato} en esta refinería.`,
+      });
+    }
+  }
 
   try {
     const antes = await Contrato.findById(id);
