@@ -114,7 +114,18 @@ const recepcionPost = async (req, res = response, next) => {
     placa,
     tipo,
     nombreChofer,
-  } = req.body; // Extrae los datos del cuerpo de la solicitud
+  } = req.body;
+
+  // Validación: fechaSalida no puede ser mayor que fechaLlegada
+  if (
+    fechaSalida &&
+    fechaLlegada &&
+    new Date(fechaSalida) > new Date(fechaLlegada)
+  ) {
+    return res.status(400).json({
+      error: "La fecha de salida no puede ser mayor que la fecha de llegada.",
+    });
+  }
 
   const nuevaRecepcion = new Recepcion({
     idContrato,
@@ -140,55 +151,83 @@ const recepcionPost = async (req, res = response, next) => {
     placa,
     tipo,
     nombreChofer,
-    createdBy: req.usuario._id, // ID del usuario que creó el tanque
+    createdBy: req.usuario._id,
   });
 
   try {
-    await nuevaRecepcion.save(); // Guarda la nueva recepción en la base de datos
+    await nuevaRecepcion.save();
+    await nuevaRecepcion.populate(populateOptions);
 
-    await nuevaRecepcion.populate(populateOptions); // Poblar referencias después de guardar
-
-    res.json({ recepcion: nuevaRecepcion }); // Responde con la recepción creada
+    res.status(201).json({ recepcion: nuevaRecepcion });
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
 // Controlador para actualizar una recepción existente
 const recepcionPut = async (req, res = response, next) => {
-  const { id } = req.params; // Obtiene el ID de la recepción desde los parámetros de la URL
-  const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
+  const { id } = req.params;
+  const { _id, fechaSalida, fechaLlegada, ...resto } = req.body;
+
+  // Validación: fechaSalida no puede ser mayor que fechaLlegada
+  if (
+    fechaSalida &&
+    fechaLlegada &&
+    new Date(fechaSalida) > new Date(fechaLlegada)
+  ) {
+    return res.status(400).json({
+      error: "La fecha de salida no puede ser mayor que la fecha de llegada.",
+    });
+  }
 
   try {
     const antes = await Recepcion.findById(id);
+    if (!antes) {
+      return res.status(404).json({ msg: "Recepción no encontrada" });
+    }
+
     const cambios = {};
     for (let key in resto) {
       if (String(antes[key]) !== String(resto[key])) {
         cambios[key] = { from: antes[key], to: resto[key] };
       }
     }
+    if (
+      typeof fechaSalida !== "undefined" &&
+      String(antes.fechaSalida) !== String(fechaSalida)
+    ) {
+      cambios.fechaSalida = { from: antes.fechaSalida, to: fechaSalida };
+    }
+    if (
+      typeof fechaLlegada !== "undefined" &&
+      String(antes.fechaLlegada) !== String(fechaLlegada)
+    ) {
+      cambios.fechaLlegada = { from: antes.fechaLlegada, to: fechaLlegada };
+    }
+
     const recepcionActualizada = await Recepcion.findByIdAndUpdate(
       id,
       {
         ...resto,
+        ...(typeof fechaSalida !== "undefined" && { fechaSalida }),
+        ...(typeof fechaLlegada !== "undefined" && { fechaLlegada }),
         $push: { historial: { modificadoPor: req.usuario._id, cambios } },
-      }, // Actualiza la recepción y agrega un historial de cambios
-      {
-        new: true,
-      }
-    ).populate(populateOptions); // Actualiza la recepción y popula las referencias
+      },
+      { new: true }
+    ).populate(populateOptions);
 
     if (!recepcionActualizada) {
       return res.status(404).json({
-        msg: "Recepción no encontrada", // Responde con un error 404 si no se encuentra la recepción
+        msg: "Recepción no encontrada",
       });
     }
+
+    // Notificaciones según cambios de estadoRecepcion
     if (
       typeof cambios.estadoRecepcion !== "undefined" &&
       cambios.estadoRecepcion.to === "EN_REFINERIA" &&
       recepcionActualizada
     ) {
-      // 1. Definir QUIÉN recibe la notificación
       const usuariosANotificar = await usuario.find({
         departamento: { $in: ["Logistica", "Operaciones", "Laboratorio"] },
         eliminado: false,
@@ -201,7 +240,6 @@ const recepcionPut = async (req, res = response, next) => {
         ],
       });
 
-      // 2. Instanciar el servicio y definir QUÉ se notifica
       const notificationService = new NotificationService(req.io);
       notificationService.dispatch({
         users: usuariosANotificar,
@@ -212,7 +250,6 @@ const recepcionPut = async (req, res = response, next) => {
             message: `La recepción con la guía número ${recepcionActualizada.idGuia} ha llegado a la refinería ${recepcionActualizada.idRefineria.nombre}.`,
             link: `/recepcion/${recepcionActualizada._id}`,
           },
-
           push: {
             title: "Nueva Recepción en Refinería",
             body: `La recepción ${recepcionActualizada.idGuia} ha llegado a la refineria ${recepcionActualizada.idRefineria.nombre}.`,
@@ -220,9 +257,8 @@ const recepcionPut = async (req, res = response, next) => {
           },
           email: {
             subject: `Nuevo Recepcion en Refineria: ${recepcionActualizada.idGuia}`,
-            templateName: "recepcionRefineria", // Especificar el nombre de la plantilla
+            templateName: "recepcionRefineria",
             context: {
-              // Enviar todos los datos que la plantilla necesita
               idGuia: recepcionActualizada.idGuia,
               nombreRefineria: recepcionActualizada.idRefineria.nombre,
               numeroContrato: recepcionActualizada.idContrato.numeroContrato,
@@ -240,7 +276,6 @@ const recepcionPut = async (req, res = response, next) => {
       cambios.estadoRecepcion.to === "COMPLETADO" &&
       recepcionActualizada
     ) {
-      // 1. Definir QUIÉN recibe la notificación
       const usuariosANotificar = await usuario.find({
         departamento: { $in: ["Logistica", "Operaciones"] },
         eliminado: false,
@@ -253,7 +288,6 @@ const recepcionPut = async (req, res = response, next) => {
         ],
       });
 
-      // 2. Instanciar el servicio y definir QUÉ se notifica
       const notificationService = new NotificationService(req.io);
       notificationService.dispatch({
         users: usuariosANotificar,
@@ -264,25 +298,11 @@ const recepcionPut = async (req, res = response, next) => {
             message: `La recepción con la guía número ${recepcionActualizada.idGuia} ha finalizado ${recepcionActualizada.idRefineria.nombre}.`,
             link: `/recepcion/${recepcionActualizada._id}`,
           },
-
           push: {
             title: "Ha finalizado una recepción",
             body: `La recepción ${recepcionActualizada.idGuia} ha finalizado ${recepcionActualizada.idRefineria.nombre}.`,
             link: `/recepcion/${recepcionActualizada._id}`,
           },
-          // email: {
-          //   subject: `Nuevo Recepcion en Refineria: ${recepcionActualizada.idGuia}`,
-          //   templateName: "recepcionRefineria", // Especificar el nombre de la plantilla
-          //   context: {
-          //     // Enviar todos los datos que la plantilla necesita
-          //     idGuia: recepcionActualizada.idGuia,
-          //     nombreRefineria: recepcionActualizada.idRefineria.nombre,
-          //     numeroContrato: recepcionActualizada.idContrato.numeroContrato,
-          //     creadoPor: req.usuario.nombre,
-          //     fecha: recepcionActualizada.fechaLlegada,
-          //     enlaceDetalle: `https://maroil-refinery.vercel.app/contratos/${recepcionActualizada._id}`,
-          //   },
-          // },
         },
       });
     }
@@ -292,7 +312,6 @@ const recepcionPut = async (req, res = response, next) => {
       cambios.estadoRecepcion.to === "CANCELADO" &&
       recepcionActualizada
     ) {
-      // 1. Definir QUIÉN recibe la notificación
       const usuariosANotificar = await usuario.find({
         departamento: { $in: ["Logistica", "Operaciones", "Laboratorio"] },
         eliminado: false,
@@ -305,7 +324,6 @@ const recepcionPut = async (req, res = response, next) => {
         ],
       });
 
-      // 2. Instanciar el servicio y definir QUÉ se notifica
       const notificationService = new NotificationService(req.io);
       notificationService.dispatch({
         users: usuariosANotificar,
@@ -316,7 +334,6 @@ const recepcionPut = async (req, res = response, next) => {
             message: `La recepción con la guía número ${recepcionActualizada.idGuia} ha sido cancelada ${recepcionActualizada.idRefineria.nombre}.`,
             link: `/recepcion/${recepcionActualizada._id}`,
           },
-
           push: {
             title: "Se ha cancelado una recepción",
             body: `La recepción ${recepcionActualizada.idGuia} ha sido cancelada ${recepcionActualizada.idRefineria.nombre}.`,
@@ -324,9 +341,8 @@ const recepcionPut = async (req, res = response, next) => {
           },
           email: {
             subject: `Recepción Cancelada: ${recepcionActualizada.idGuia}`,
-            templateName: "recepcionCancelada", // Especificar el nombre de la plantilla
+            templateName: "recepcionCancelada",
             context: {
-              // Enviar todos los datos que la plantilla necesita
               idGuia: recepcionActualizada.idGuia,
               nombreRefineria: recepcionActualizada.idRefineria.nombre,
               numeroContrato: recepcionActualizada.idContrato.numeroContrato,
@@ -339,10 +355,10 @@ const recepcionPut = async (req, res = response, next) => {
       });
     }
 
-    req.io.emit("recepcion-modificada", recepcionActualizada); // Emite un evento de WebSocket para notificar la modificación
-    res.json(recepcionActualizada); // Responde con los datos de la recepción actualizada
+    req.io.emit("recepcion-modificada", recepcionActualizada);
+    res.json(recepcionActualizada);
   } catch (err) {
-    next(err); // Propaga el error al middleware
+    next(err);
   }
 };
 
