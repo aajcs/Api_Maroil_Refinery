@@ -24,11 +24,23 @@ const {
   abonoPatch,
   abonoGets,
   sumarAbonosPorTipoYFecha,
+  abonosByRefineria,
 } = require("../controllers/abono");
 
 const router = Router();
 
 router.get("/sumar", sumarAbonosPorTipoYFecha); // <-- agrega la ruta
+
+// Obtener abonos por refinería
+router.get(
+  "/refineria/:idRefineria",
+  [
+    validarJWT,
+    check("idRefineria", "No es un ID de Mongo válido").isMongoId(),
+    validarCampos,
+  ],
+  abonosByRefineria
+);
 
 router.get("/", [validarJWT], abonoGets);
 router.get(
@@ -83,8 +95,5 @@ router.delete(
 );
 
 router.patch("/", abonoPatch);
-
-
-
 
 module.exports = router;

@@ -29,8 +29,8 @@ const abonoGets = async (req = request, res = response, next) => {
     const [total, abonos] = await Promise.all([
       Abono.countDocuments(query),
       Abono.find(query)
-      .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
-      .populate(populateOptions),
+        .sort({ createdAt: -1 }) // Ordena del más nuevo al más antiguo
+        .populate(populateOptions),
     ]);
 
     // Obtener contratos y cuentas asociadas a los abonos
@@ -136,8 +136,6 @@ const abonoPost = async (req = request, res = response, next) => {
     // // Agregar el abono al array de la cuenta (array de IDs)
     cuenta.abonos.push(nuevoAbono._id);
 
-  
-
     // CORRECCIÓN PRINCIPAL: Usar el valor calculado en lugar de 5000
     const abonosActivos = await Abono.find({
       _id: { $in: cuenta.abonos },
@@ -164,7 +162,6 @@ const abonoPost = async (req = request, res = response, next) => {
     next(err); // Propaga el error al middleware
   }
 };
-
 
 const abonoPut = async (req = request, res = response, next) => {
   const { id } = req.params;
@@ -358,7 +355,10 @@ const sumarAbonosPorTipoYFecha = async (req, res, next) => {
     }).populate(populateOptions);
 
     // Suma los montos
-    const totalMonto = abonos.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0);
+    const totalMonto = abonos.reduce(
+      (sum, a) => sum + parseFloat(a.monto || 0),
+      0
+    );
 
     res.json({
       tipoAbono,
@@ -371,6 +371,22 @@ const sumarAbonosPorTipoYFecha = async (req, res, next) => {
   }
 };
 
+// Controlador para obtener abonos por refinería
+const abonosByRefineria = async (req = request, res = response, next) => {
+  const { idRefineria } = req.params;
+  const query = { eliminado: false, idRefineria };
+  try {
+    const abonos = await Abono.find(query).populate(populateOptions);
+    abonos.forEach((a) => {
+      if (Array.isArray(a.historial)) {
+        a.historial.sort((x, y) => new Date(y.fecha) - new Date(x.fecha));
+      }
+    });
+    res.json({ total: abonos.length, abonos });
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = {
   abonoGets,
@@ -379,6 +395,6 @@ module.exports = {
   abonoPut,
   abonoDelete,
   abonoPatch,
-  sumarAbonosPorTipoYFecha, // <-- exporta la función
-
+  sumarAbonosPorTipoYFecha,
+  abonosByRefineria,
 };
