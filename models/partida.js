@@ -25,7 +25,7 @@ const PartidaSchema = new Schema(
     // Color de la partida
     color: {
       type: String,
-      required: [true, "El color de la partida es obligatorio"], // Campo obligatorio
+      required: [false, "El color de la partida es obligatorio"], // Campo obligatorio
     },
     // Eliminación lógica
     eliminado: {
