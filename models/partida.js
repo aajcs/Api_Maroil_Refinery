@@ -22,7 +22,11 @@ const PartidaSchema = new Schema(
       type: Number,
       required: [true, "La partida es obligatoria"], // Campo obligatorio
     },
-
+    // Color de la partida
+    color: {
+      type: String,
+      required: [true, "El color de la partida es obligatorio"], // Campo obligatorio
+    },
     // Eliminación lógica
     eliminado: {
       type: Boolean,

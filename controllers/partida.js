@@ -60,13 +60,14 @@ const partidaGet = async (req = request, res = response, next) => {
 
 // Controlador para crear una nueva partida
 const partidaPost = async (req = request, res = response, next) => {
-  const { idRefineria, descripcion, codigo } = req.body;
+  const { idRefineria, descripcion, codigo, color } = req.body;
 
   try {
     const nuevaPartida = new Partida({
       idRefineria,
       descripcion,
       codigo,
+      color,
       createdBy: req.usuario._id, // ID del usuario que crea la partida
     });
 

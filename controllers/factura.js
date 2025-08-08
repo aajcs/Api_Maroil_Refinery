@@ -8,7 +8,7 @@ const populateOptions = [
   { path: "idRefineria", select: "nombre" },
   {
     path: "idLineasFactura",
-    populate: [{ path: "idPartida", select: "descripcion codigo" }],
+    populate: [{ path: "idPartida", select: "descripcion codigo color" }],
   },
   { path: "createdBy", select: "nombre correo" },
   {
