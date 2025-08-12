@@ -6,6 +6,7 @@ const {
   validarJWT,
   esAdminRole,
   tieneRole,
+  esSuperAdminRole,
 } = require("../middlewares");
 
 const { existeRefinacionPorId } = require("../helpers/db-validators");
@@ -58,7 +59,7 @@ router.delete(
   "/:id",
   [
     validarJWT,
-    // esAdminRole,
+    esSuperAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),
     // check("idRefineria").custom(existeRefineriaPorId),
