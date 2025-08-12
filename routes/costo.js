@@ -5,6 +5,8 @@ const {
   validarCampos,
   validarJWT,
   esAdminRole,
+  esOperadorRole,
+  esSuperAdminRole,
   tieneRole,
 } = require("../middlewares");
 
@@ -35,6 +37,7 @@ router.get(
 router.put(
   "/:id",
   [ validarJWT,
+    esAdminRole,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeCostoPorId),
     // check("idRefineria").custom(existeRefineriaPorId),
@@ -49,6 +52,7 @@ router.put(
 router.post(
   "/",
   [ validarJWT,
+    esOperadorRole,
     // // check("idRefineria").custom(existeRefineriaPorId),
     // // check("idTanque").custom(existeTanquePorId),
     // // check("idTorre").custom(existeTorrePorId),
@@ -61,8 +65,7 @@ router.delete(
   "/:id",
   [
     validarJWT,
-    // esAdminRole,
-    tieneRole("superAdmin", "admin"),
+    esSuperAdminRole,
     check("id", "No es un ID válido").isMongoId(),
     // check("idRefineria").custom(existeRefineriaPorId),
     // check("idTanque").custom(existeTanquePorId),

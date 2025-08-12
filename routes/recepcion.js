@@ -5,6 +5,8 @@ const {
   validarCampos,
   validarJWT,
   esAdminRole,
+  esOperadorRole,
+  esSuperAdminRole,
   tieneRole,
 } = require("../middlewares");
 
@@ -60,10 +62,12 @@ router.put(
   "/:id",
   [
     validarJWT,
+    esOperadorRole,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeRecepcionPorId),
     //check("rol").custom(esRoleValido), subiendo cambioos
     validarCampos,
+    
   ],
   recepcionPut
 );
@@ -72,6 +76,7 @@ router.post(
   "/",
   [
     validarJWT,
+    esOperadorRole,
     // check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
     // check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),
     // check("nit", "El NIT es obligatorio").not().isEmpty(),
@@ -85,8 +90,7 @@ router.delete(
   "/:id",
   [
     validarJWT,
-    // esAdminRole,
-    tieneRole("superAdmin", "admin"),
+    esSuperAdminRole,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeRecepcionPorId),
     validarCampos,

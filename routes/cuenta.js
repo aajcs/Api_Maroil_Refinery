@@ -1,7 +1,14 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
 
-const { validarCampos, validarJWT, tieneRole } = require("../middlewares");
+const {
+  validarCampos,
+  validarJWT,
+  esAdminRole,
+  esOperadorRole,
+  esSuperAdminRole,
+  tieneRole,
+} = require("../middlewares");
 const { cuentaSaldosPendientes } = require("../controllers/cuenta");
 const { cuentaAgruparPorContacto } = require("../controllers/cuenta");
 
@@ -79,6 +86,7 @@ router.post(
   "/from-contrato",
   [
     validarJWT,
+    esOperadorRole,
     check("idContrato", "El ID del contrato es obligatorio").not().isEmpty(),
     check("idContrato", "No es un ID de Mongo válido").isMongoId(),
     check("idContrato").custom(existeContratoPorId),
@@ -92,6 +100,7 @@ router.put(
   "/:id",
   [
     validarJWT,
+    esAdminRole,
     check("id", "No es un ID válido").isMongoId(),
     check("contrato", "El ID del contrato debe ser válido")
       .optional()
@@ -115,7 +124,7 @@ router.delete(
   "/:id",
   [
     validarJWT,
-    tieneRole("superAdmin", "admin"),
+    esSuperAdminRole,
     check("id", "No es un ID válido").isMongoId(),
     validarCampos,
   ],

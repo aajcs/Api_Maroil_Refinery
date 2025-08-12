@@ -4,7 +4,7 @@ const { check } = require("express-validator");
 const {
   validarCampos,
   validarJWT,
-  esAdminRole,
+  esSuperAdminRole,
   tieneRole,
 } = require("../middlewares");
 
@@ -40,6 +40,7 @@ router.put(
   "/:id",
   [
     validarJWT,
+    esSuperAdminRole,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeUsuarioPorId),
     //check("rol").custom(esRoleValido),
@@ -52,6 +53,7 @@ router.post(
   "/",
   [
     validarJWT,
+    esSuperAdminRole,
     check("nombre", "El nombre es obligatorio").not().isEmpty(),
     check("password", "El password debe de ser más de 6 letras").isLength({
       min: 6,
@@ -69,8 +71,7 @@ router.delete(
   "/:id",
   [
     validarJWT,
-    // esAdminRole,
-    tieneRole("ADMIN_ROLE", "VENTAR_ROLE", "OTRO_ROLE", "superAdmin"),
+    esSuperAdminRole,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeUsuarioPorId),
     validarCampos,

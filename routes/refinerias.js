@@ -4,10 +4,9 @@ const { check } = require("express-validator");
 const {
   validarCampos,
   validarJWT,
-  esAdminRole,
+  esSuperAdminRole,
   tieneRole,
 } = require("../middlewares");
-
 const {
   //esRoleValido,
   emailExiste,
@@ -42,6 +41,7 @@ router.put(
   "/:id",
   [
     validarJWT,
+    esSuperAdminRole,
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(existeRefineriaPorId),
     //check("rol").custom(esRoleValido), subiendo cambioos
@@ -54,6 +54,7 @@ router.post(
   "/",
   [
     validarJWT,
+    esSuperAdminRole,
     check("ubicacion", "La ubicación es obligatorio").not().isEmpty(),
     check("nombre", "El nombre del tanque es obligatorio").not().isEmpty(),
     check("nit", "El NIT es obligatorio").not().isEmpty(),
@@ -67,6 +68,7 @@ router.delete(
   "/:id",
   [
     validarJWT,
+    esSuperAdminRole,
     // esAdminRole,
     tieneRole("superAdmin", "admin"),
     check("id", "No es un ID válido").isMongoId(),

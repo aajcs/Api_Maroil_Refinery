@@ -1,11 +1,11 @@
 const { response } = require("express");
 
 const ROLES = [
-  "LECTURA_ROLE",
-  "USER_ROLE",
-  "OPERADOR_ROLE",
-  "ADMIN_ROLE",
-  "SUPER_ADMIN_ROLE",
+  "lectura",
+  "user",
+  "operador",
+  "admin",
+  "superAdmin",
 ];
 
 const checkRole = (requiredRole) => {
@@ -21,15 +21,16 @@ const checkRole = (requiredRole) => {
     const requiredRoleIndex = ROLES.indexOf(requiredRole);
 
     if (userRoleIndex === -1) {
-      return res.status(401).json({
+      return res.status(403).json({
         msg: `${nombre} tiene un rol no válido`,
       });
     }
 
     // Permite acceso si el rol del usuario es igual o superior al requerido
     if (userRoleIndex < requiredRoleIndex) {
-      return res.status(401).json({
-        msg: `${nombre} no tiene permisos suficientes - Se requiere al menos ${requiredRole}`,
+      return res.status(403).json({
+        message:  `El rol (${rol}) no es permitido`,        
+        errors: [`${nombre} no tiene permisos suficientes - Se requiere al menos ${requiredRole}`],
       });
     }
 
@@ -37,11 +38,11 @@ const checkRole = (requiredRole) => {
   };
 };
 
-const esSuperAdminRole = checkRole("SUPERADMIN_ROLE");
-const esAdminRole = checkRole("ADMIN_ROLE");
-const esOperadorRole = checkRole("OPERADOR_ROLE");
-const esUserRole = checkRole("USER_ROLE");
-const esLecturaRole = checkRole("LECTURA_ROLE");
+const esSuperAdminRole = checkRole("superAdmin");
+const esAdminRole = checkRole("admin");
+const esOperadorRole = checkRole("operador");
+const esUserRole = checkRole("user");
+const esLecturaRole = checkRole("lectura");
 
 const tieneRole = (...roles) => {
   return (req, res = response, next) => {
