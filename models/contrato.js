@@ -53,6 +53,14 @@ const ContratoSchema = Schema(
       required: false,
     },
 
+     // Relación con el modelo Cuenta 
+    idCuenta: {
+      type: Schema.Types.ObjectId,
+      ref: "Cuenta",
+      required: false,
+    },
+
+
     // Array de IDs de items del contrato
     idItems: [{ type: Schema.Types.ObjectId, ref: "ContratoItems" }],
 

@@ -193,21 +193,26 @@ const contratoPost = async (req, res = response, next) => {
     await nuevoContrato.save();
 
     // Crear la cuenta asociada al contrato
-    const nuevaCuenta = new Cuenta({
-      idContrato: nuevoContrato._id,
-      idContacto: nuevoContrato.idContacto,
-      idRefineria: nuevoContrato.idRefineria,
-      tipoCuenta:
-        tipoContrato === "Venta" ? "Cuentas por Cobrar" : "Cuentas por Pagar",
-      abonos: abono || [],
-      montoTotalContrato: montoTotal || 0,
-      montoPagado: montoPagado,
-      montoPendiente: montoPendiente,
-      balancePendiente: montoPendiente,
-      fechaCuenta: nuevoContrato.fechaInicio || new Date(),
-    });
+   const nuevaCuenta = new Cuenta({
+  idContrato: nuevoContrato._id,
+  idContacto: nuevoContrato.idContacto,
+  idRefineria: nuevoContrato.idRefineria,
+  tipoCuenta:
+    tipoContrato === "Venta" ? "Cuentas por Cobrar" : "Cuentas por Pagar",
+  abonos: abono || [],
+  montoTotalContrato: montoTotal || 0,
+  montoPagado: montoPagado,
+  montoPendiente: montoPendiente,
+  balancePendiente: montoPendiente,
+  fechaCuenta: nuevoContrato.fechaInicio || new Date(),
+});
 
-    await nuevaCuenta.save();
+await nuevaCuenta.save();
+
+// ASOCIAR EL ID DE LA CUENTA AL CONTRATO AQUÍ
+nuevoContrato.idCuenta = nuevaCuenta._id;
+await nuevoContrato.save();
+
 
     if (nuevoContrato.montoPendiente < 0) {
       await Cuenta.findByIdAndDelete(nuevaCuenta._id);
@@ -591,6 +596,8 @@ const contratoPut = async (req, res = response, next) => {
 };
 
 // Eliminar (marcar como eliminado) un contrato
+// Eliminar (marcar como eliminado) un contrato
+// Eliminar (marcar como eliminado) un contrato
 const contratoDelete = async (req, res = response, next) => {
   const { id } = req.params;
 
@@ -598,6 +605,12 @@ const contratoDelete = async (req, res = response, next) => {
     // Auditoría: captura estado antes de eliminar
     const antes = await Contrato.findById(id);
     const cambios = { eliminado: { from: antes.eliminado, to: true } };
+
+    // Marcar la cuenta asociada como eliminada (eliminación lógica)
+    if (antes && antes.idCuenta) {
+      await Cuenta.findByIdAndUpdate(antes.idCuenta, { eliminado: true });
+    }
+
     const contrato = await Contrato.findOneAndUpdate(
       { _id: id, eliminado: false },
       {
@@ -613,7 +626,6 @@ const contratoDelete = async (req, res = response, next) => {
 
     // Notificar solo si el contrato fue marcado como eliminado (eliminado: true)
     if (contrato && contrato.eliminado === true) {
-      // 1. Definir QUIÉN recibe la notificación
       const usuariosANotificar = await usuario.find({
         departamento: { $in: ["Finanzas", "Gerencia"] },
         eliminado: false,
@@ -623,7 +635,6 @@ const contratoDelete = async (req, res = response, next) => {
         ],
       });
 
-      // 2. Instanciar el servicio y definir QUÉ se notifica
       const notificationService = new NotificationService(req.io);
       notificationService.dispatch({
         users: usuariosANotificar,
@@ -636,9 +647,8 @@ const contratoDelete = async (req, res = response, next) => {
           },
           email: {
             subject: `Contrato Eliminado: ${contrato.numeroContrato}`,
-            templateName: "contractElminado", // Especificar el nombre de la plantilla
+            templateName: "contractElminado",
             context: {
-              // Enviar todos los datos que la plantilla necesita
               numeroContrato: contrato.numeroContrato,
               nombreRefineria: contrato.idRefineria.nombre,
               nombreContacto: contrato.idContacto.nombre,

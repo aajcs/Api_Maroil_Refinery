@@ -31,6 +31,12 @@ const CuentaSchema = new Schema(
     fechaCuenta: {
       type: Date,
     },
+
+      eliminado: {
+      type: Boolean,
+      default: false,
+    },
+
     idContacto: {
       type: Schema.Types.ObjectId,
       ref: "Contacto",
