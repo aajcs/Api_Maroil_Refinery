@@ -113,7 +113,7 @@ const despachoPost = async (req, res = response) => {
     nombreChofer,
   } = req.body; // Extrae los datos del cuerpo de la solicitud
 
-   if (
+  if (
     fechaSalida &&
     fechaLlegada &&
     new Date(fechaSalida) > new Date(fechaLlegada)
@@ -161,16 +161,16 @@ const despachoPost = async (req, res = response) => {
   }
 };
 
-// Controlador para actualizar una recepción existente
+// Controlador para actualizar una despacho existente
 const despachoPut = async (req, res = response) => {
-  const { id } = req.params; // Obtiene el ID de la recepción desde los parámetros de la URL
-  const { _id,  fechaSalida, fechaLlegada, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
+  const { id } = req.params; // Obtiene el ID de la despacho desde los parámetros de la URL
+  const { _id, ...resto } = req.body; // Extrae los datos del cuerpo de la solicitud, excluyendo el campo _id
 
   // Validación: fechaSalida no puede ser mayor que fechaLlegada
   if (
-    fechaSalida &&
-    fechaLlegada &&
-    new Date(fechaSalida) > new Date(fechaLlegada)
+    resto.fechaSalida &&
+    resto.fechaLlegada &&
+    new Date(resto.fechaSalida) > new Date(resto.fechaLlegada)
   ) {
     return res.status(400).json({
       error: "La fecha de salida no puede ser mayor que la fecha de llegada.",
