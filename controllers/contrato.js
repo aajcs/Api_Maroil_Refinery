@@ -463,6 +463,7 @@ const contratoPut = async (req, res = response, next) => {
       await contratoActualizado.save();
     }
 
+
     // Sincronizar la cuenta asociada al contrato
     let cuentaExistente = await Cuenta.findOne({ idContrato: id });
 
@@ -486,6 +487,7 @@ const contratoPut = async (req, res = response, next) => {
         montoTotalContrato: montoTotalContrato,
         montoPagado: montoPagado,
         montoPendiente: montoPendiente,
+        fechaCuenta: contratoActualizado.fechaInicio
       });
 
       await nuevaCuenta.save();
@@ -497,8 +499,15 @@ const contratoPut = async (req, res = response, next) => {
       cuentaExistente.abonos = contratoActualizado.abono || [];
       cuentaExistente.montoPagado = montoPagado;
       cuentaExistente.montoPendiente = montoPendiente;
+      // Sincronizar la fecha de la cuenta con la fecha de inicio del contrato
+      if (typeof resto.fechaInicio !== "undefined") {
+        cuentaExistente.fechaCuenta = contratoActualizado.fechaInicio;
+      }
       await cuentaExistente.save();
     }
+    // Log para depuración
+    const cuentaDebug = await Cuenta.findOne({ idContrato: contratoActualizado._id });
+    console.log('Cuenta asociada después de PUT:', cuentaDebug ? cuentaDebug.fechaCuenta : null);
 
     // Validar balance pendiente después de todas las operaciones
     if (contratoActualizado.montoPendiente < 0) {
