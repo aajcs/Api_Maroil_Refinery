@@ -105,7 +105,7 @@ const contratoPost = async (req, res = response, next) => {
     brent,
   } = req.body;
 
-    // Validar unicidad de numeroContrato por refinería
+  // Validar unicidad de numeroContrato por refinería
   const existeContrato = await Contrato.findOne({
     idRefineria,
     numeroContrato,
@@ -116,7 +116,6 @@ const contratoPost = async (req, res = response, next) => {
       error: `Ya existe un contrato con el número ${numeroContrato} en esta refinería.`,
     });
   }
-
 
   let nuevoContrato;
 
@@ -193,26 +192,25 @@ const contratoPost = async (req, res = response, next) => {
     await nuevoContrato.save();
 
     // Crear la cuenta asociada al contrato
-   const nuevaCuenta = new Cuenta({
-  idContrato: nuevoContrato._id,
-  idContacto: nuevoContrato.idContacto,
-  idRefineria: nuevoContrato.idRefineria,
-  tipoCuenta:
-    tipoContrato === "Venta" ? "Cuentas por Cobrar" : "Cuentas por Pagar",
-  abonos: abono || [],
-  montoTotalContrato: montoTotal || 0,
-  montoPagado: montoPagado,
-  montoPendiente: montoPendiente,
-  balancePendiente: montoPendiente,
-  fechaCuenta: nuevoContrato.fechaInicio || new Date(),
-});
+    const nuevaCuenta = new Cuenta({
+      idContrato: nuevoContrato._id,
+      idContacto: nuevoContrato.idContacto,
+      idRefineria: nuevoContrato.idRefineria,
+      tipoCuenta:
+        tipoContrato === "Venta" ? "Cuentas por Cobrar" : "Cuentas por Pagar",
+      abonos: abono || [],
+      montoTotalContrato: montoTotal || 0,
+      montoPagado: montoPagado,
+      montoPendiente: montoPendiente,
+      balancePendiente: montoPendiente,
+      fechaCuenta: nuevoContrato.fechaInicio || new Date(),
+    });
 
-await nuevaCuenta.save();
+    await nuevaCuenta.save();
 
-// ASOCIAR EL ID DE LA CUENTA AL CONTRATO AQUÍ
-nuevoContrato.idCuenta = nuevaCuenta._id;
-await nuevoContrato.save();
-
+    // ASOCIAR EL ID DE LA CUENTA AL CONTRATO AQUÍ
+    nuevoContrato.idCuenta = nuevaCuenta._id;
+    await nuevoContrato.save();
 
     if (nuevoContrato.montoPendiente < 0) {
       await Cuenta.findByIdAndDelete(nuevaCuenta._id);
@@ -339,17 +337,17 @@ const contratoPut = async (req, res = response, next) => {
   const { id } = req.params;
   const { items, abono, ...resto } = req.body;
 
-    // Validar unicidad solo si se cambia el número o la refinería
-  if (numeroContrato || idRefineria) {
+  // Validar unicidad solo si se cambia el número o la refinería
+  if (resto.numeroContrato || resto.idRefineria) {
     const contratoExistente = await Contrato.findOne({
       _id: { $ne: id },
-      numeroContrato: numeroContrato || undefined,
-      idRefineria: idRefineria || undefined,
+      numeroContrato: resto.numeroContrato || undefined,
+      idRefineria: resto.idRefineria || undefined,
       eliminado: false,
     });
     if (contratoExistente) {
       return res.status(400).json({
-        error: `Ya existe un contrato con el número ${numeroContrato} en esta refinería.`,
+        error: `Ya existe un contrato con el número ${resto.numeroContrato} en esta refinería.`,
       });
     }
   }
