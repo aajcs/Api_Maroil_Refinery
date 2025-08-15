@@ -6,7 +6,12 @@ const Contrato = require("../models/contrato");
 const populateOptions = [
   {
     path: "idContrato",
-    select: "numeroContrato tipoContrato montoTotal descripcion estadoContrato",
+    select:
+      "numeroContrato tipoContrato montoTotal descripcion estadoContrato idItems",
+    populate: {
+      path: "idItems",
+      select: "cantidad precioUnitario",
+    },
   },
   { path: "idRefineria", select: "nombre" }, // Relación con el modelo Refineria
   {
